@@ -566,10 +566,12 @@ public sealed class MainForm : Form
     private async Task StartSparringAsync()
     {
         _startButton.Enabled = false;
+        PracticeSettings? settingsForCleanup = null;
 
         try
         {
             var settings = CurrentSettings();
+            settingsForCleanup = settings;
             SavePreferences();
             if (!_confineMouseBox.Checked)
             {
@@ -620,15 +622,12 @@ public sealed class MainForm : Form
             var botIni = _configurator.ApplyBotJoin(botSettings);
             Log($"AI 참가 설정 완료: {settings.Bot.Name} / {RaceKo(settings.Bot.Race)} / 소리 OFF. INI: {botIni}");
 
-            Log("ChaosLauncher 두 개를 먼저 병렬로 엽니다. 방 생성/참가 단계만 순서대로 진행합니다.");
-            var playerLauncherTask = Task.Run(() => _launcher.OpenChaos(settings.StarCraftRoot, ChaosLaunchMode.Bot));
-            var botLauncherTask = Task.Run(() => _launcher.OpenChaos(botSettings.StarCraftRoot, ChaosLaunchMode.Bot));
+            Log("ChaosLauncher 자동 시작 모드로 두 StarCraft 클라이언트를 띄웁니다. 전역 게임 경로만 짧게 보호하고, 방 생성/참가는 BWAPI auto_menu가 처리합니다.");
+            var playerLauncherTask = Task.Run(() => _launcher.OpenChaosAndStartStarCraft(settings.StarCraftRoot, ChaosLaunchMode.Bot));
+            var botLauncherTask = Task.Run(() => _launcher.OpenChaosAndStartStarCraft(botSettings.StarCraftRoot, ChaosLaunchMode.Bot));
             await Task.WhenAll(playerLauncherTask, botLauncherTask);
-
-            var playerStartTask = Task.Run(() => _launcher.ClickStart(playerLauncherTask.Result, settings.StarCraftRoot, TimeSpan.FromSeconds(30)));
-            var botStartTask = Task.Run(() => _launcher.ClickStart(botLauncherTask.Result, botSettings.StarCraftRoot, TimeSpan.FromSeconds(30)));
-            await Task.WhenAll(playerStartTask, botStartTask);
-            Log("내 클라이언트와 AI 클라이언트 StarCraft 시작을 동시에 보냈습니다. 방 생성/참가는 BWAPI auto_menu가 처리합니다.");
+            _launcher.DisableStartupLaunch(settings.StarCraftRoot);
+            Log("내 클라이언트와 AI 클라이언트 StarCraft 자동 시작 요청을 모두 보냈습니다.");
 
             _history.Add(settings.StarCraftRoot, new MatchRecord(
                 DateTime.Now,
@@ -648,6 +647,18 @@ public sealed class MainForm : Form
         }
         finally
         {
+            if (settingsForCleanup is not null)
+            {
+                try
+                {
+                    _launcher.DisableStartupLaunch(settingsForCleanup.StarCraftRoot);
+                }
+                catch
+                {
+                    // Best-effort cleanup only. A launch failure should keep the original error visible.
+                }
+            }
+
             _startButton.Enabled = true;
         }
     }

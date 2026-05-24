@@ -75,6 +75,20 @@ if ($automationSource -notmatch "starCraftRoot") {
     throw "ChaosLauncher window targeting must include the StarCraft root."
 }
 
+$chaosConfiguratorSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\ChaosLauncherConfigurator.cs") -Raw
+if ($chaosConfiguratorSource -notmatch "RunScOnStartup") {
+    throw "ChaosLauncher startup must use RunScOnStartup instead of relying only on UI button clicks."
+}
+
+if ($chaosConfiguratorSource -notmatch "WOW6432Node\\Blizzard Entertainment\\StarCraft") {
+    throw "ChaosLauncher startup must set the 1.16.1 StarCraft install path before each launch."
+}
+
+$practiceLauncherSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\PracticeLauncher.cs") -Raw
+if ($practiceLauncherSource -notmatch "ChaosStartupLock") {
+    throw "ChaosLauncher startup must guard the global StarCraft install path while launching multiple clients."
+}
+
 $runtimeSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\StarCraftRuntimeRoot.cs") -Raw
 if ($runtimeSource -notmatch "catch \(IOException\) when \(target\.Exists\)") {
     throw "AI runtime sync must tolerate locked StarCraft runtime files."

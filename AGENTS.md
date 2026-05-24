@@ -25,9 +25,10 @@
 - `bwapi.ini` 분리 조건을 깨면 안 된다.
   - 플레이어: CoachAI DLL, 플레이어 종족, 선택 맵, sound ON
   - AI: 선택 봇 DLL, 봇 종족, map 빈 값, sound OFF, character_name `StarAIBot`
-- ChaosLauncher 자동 클릭은 PID만 믿지 말고 StarCraft root/exe 경로로 창을 구분한다.
-- 물리 마우스 클릭은 전역 커서 하나를 공유하므로 병렬 태스크에서 동시에 움직이면 안 된다. 메시지 기반 클릭을 먼저 쓰고, 물리 클릭 fallback은 lock으로 보호한다.
-- "병렬 실행"은 두 ChaosLauncher를 먼저 띄운 뒤 두 StarCraft Start 요청을 거의 동시에 보내는 의미다. 방 생성/참가는 BWAPI `auto_menu`가 기다리게 한다.
+- ChaosLauncher는 실행 폴더가 아니라 `HKLM\SOFTWARE\WOW6432Node\Blizzard Entertainment\StarCraft`의 `InstallPath`/`Program`을 본다. 플레이어/AI 런처를 열기 직전에 이 값을 해당 root로 바꿔야 한다.
+- Start 버튼 UI 자동 클릭은 회귀하기 쉽다. 기본 실행 경로는 ChaosLauncher의 `RunScOnStartup=1`로 StarCraft를 자동 시작하는 방식이어야 한다.
+- `WarnNoAdmin=0`을 유지해서 `SeDebugPrivilege` 경고 모달이 자동 시작을 막지 않게 한다.
+- "병렬 실행"은 두 태스크를 동시에 요청하되, 전역 StarCraft install path를 바꾸는 짧은 구간만 lock으로 보호한다. 방 생성/참가는 BWAPI `auto_menu`가 기다리게 한다.
 - W-MODE 커서 클립은 앱 체크박스와 `wmode.ini`의 `ClipCursor`가 같이 맞아야 한다.
 - StarCraft가 실행 중일 때 `patch_rt.mpq`는 잠길 수 있다. 잠금은 실행 실패가 아니라 패치 갱신 skip으로 처리한다.
 

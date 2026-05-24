@@ -5,12 +5,13 @@ namespace StarAI.PracticeClient.Core;
 
 public sealed class PracticeLauncher
 {
+    private static readonly object ChaosStartupLock = new();
     private readonly ChaosLauncherConfigurator _chaos = new();
 
     [SupportedOSPlatform("windows")]
     public Process LaunchChaos(string starCraftRoot, ChaosLaunchMode mode, bool clickStart = false, bool closeLauncherAfterStart = false)
     {
-        var process = OpenChaos(starCraftRoot, mode);
+        var process = OpenChaos(starCraftRoot, mode, runStarCraftOnStartup: false);
 
         if (clickStart)
         {
@@ -26,24 +27,42 @@ public sealed class PracticeLauncher
     }
 
     [SupportedOSPlatform("windows")]
-    public Process OpenChaos(string starCraftRoot, ChaosLaunchMode mode)
+    public Process OpenChaos(string starCraftRoot, ChaosLaunchMode mode, bool runStarCraftOnStartup = false)
     {
-        _chaos.Apply(mode);
-
-        var launcher = Path.Combine(starCraftRoot, "Chaoslauncher - MultiInstance.exe");
-        if (!File.Exists(launcher))
+        lock (ChaosStartupLock)
         {
-            throw new FileNotFoundException("ChaosLauncher MultiInstance executable not found.", launcher);
+            _chaos.Apply(mode, starCraftRoot, runStarCraftOnStartup);
+
+            var launcher = Path.Combine(starCraftRoot, "Chaoslauncher - MultiInstance.exe");
+            if (!File.Exists(launcher))
+            {
+                throw new FileNotFoundException("ChaosLauncher MultiInstance executable not found.", launcher);
+            }
+
+            var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = launcher,
+                WorkingDirectory = starCraftRoot,
+                UseShellExecute = true
+            }) ?? throw new InvalidOperationException("Failed to start ChaosLauncher.");
+
+            // ChaosLauncher reads the global StarCraft install path during early startup.
+            // Keep the registry stable briefly before another launcher instance changes it.
+            Thread.Sleep(runStarCraftOnStartup ? 700 : 250);
+            return process;
         }
+    }
 
-        var process = Process.Start(new ProcessStartInfo
-        {
-            FileName = launcher,
-            WorkingDirectory = starCraftRoot,
-            UseShellExecute = true
-        }) ?? throw new InvalidOperationException("Failed to start ChaosLauncher.");
+    [SupportedOSPlatform("windows")]
+    public Process OpenChaosAndStartStarCraft(string starCraftRoot, ChaosLaunchMode mode)
+    {
+        return OpenChaos(starCraftRoot, mode, runStarCraftOnStartup: true);
+    }
 
-        return process;
+    [SupportedOSPlatform("windows")]
+    public void DisableStartupLaunch(string starCraftRoot)
+    {
+        _chaos.Apply(ChaosLaunchMode.Human, starCraftRoot, runStarCraftOnStartup: false);
     }
 
     [SupportedOSPlatform("windows")]
