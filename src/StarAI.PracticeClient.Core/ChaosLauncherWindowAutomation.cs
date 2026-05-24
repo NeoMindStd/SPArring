@@ -23,6 +23,11 @@ internal static class ChaosLauncherWindowAutomation
                 if (button != IntPtr.Zero)
                 {
                     SetForegroundWindow(window);
+                    if (ClickCenter(button))
+                    {
+                        return true;
+                    }
+
                     SendMessage(button, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
                     return true;
                 }
@@ -125,6 +130,27 @@ internal static class ChaosLauncherWindowAutomation
         SetForegroundWindow(window);
         Thread.Sleep(80);
         SetCursorPos(rect.Left + 45, rect.Bottom - 24);
+        mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
+        mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
+        return true;
+    }
+
+    private static bool ClickCenter(IntPtr window)
+    {
+        if (!GetWindowRect(window, out var rect))
+        {
+            return false;
+        }
+
+        var width = rect.Right - rect.Left;
+        var height = rect.Bottom - rect.Top;
+        if (width <= 0 || height <= 0)
+        {
+            return false;
+        }
+
+        SetCursorPos(rect.Left + width / 2, rect.Top + height / 2);
+        Thread.Sleep(80);
         mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
         mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
         return true;

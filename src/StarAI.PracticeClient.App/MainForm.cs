@@ -625,13 +625,10 @@ public sealed class MainForm : Form
             var botLauncherTask = Task.Run(() => _launcher.OpenChaos(botSettings.StarCraftRoot, ChaosLaunchMode.Bot));
             await Task.WhenAll(playerLauncherTask, botLauncherTask);
 
-            _launcher.ClickStart(playerLauncherTask.Result, TimeSpan.FromSeconds(20));
-            Log("내 클라이언트를 시작했습니다. 자동으로 Local PC 방 생성을 시도합니다.");
-
-            await Task.Delay(TimeSpan.FromSeconds(1));
-
-            _launcher.ClickStart(botLauncherTask.Result, TimeSpan.FromSeconds(20));
-            Log("AI 클라이언트를 바로 시작했습니다. 같은 방에 자동 참가를 시도합니다.");
+            var playerStartTask = Task.Run(() => _launcher.ClickStart(playerLauncherTask.Result, TimeSpan.FromSeconds(30)));
+            var botStartTask = Task.Run(() => _launcher.ClickStart(botLauncherTask.Result, TimeSpan.FromSeconds(30)));
+            await Task.WhenAll(playerStartTask, botStartTask);
+            Log("내 클라이언트와 AI 클라이언트 StarCraft 시작을 동시에 보냈습니다. 방 생성/참가는 BWAPI auto_menu가 처리합니다.");
 
             _history.Add(settings.StarCraftRoot, new MatchRecord(
                 DateTime.Now,
