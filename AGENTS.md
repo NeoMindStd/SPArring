@@ -7,6 +7,7 @@
 1. 수정 전후 실제 실행 중인 프로세스 경로를 확인한다.
    - `Get-CimInstance Win32_Process`로 `StarAI.PracticeClient.App.exe`, `Chaoslauncher - MultiInstance.exe`, `StarCraft.exe`를 확인한다.
    - 사용자가 실행하는 진입점은 `C:\starai\Start-StarAI-PracticeClient.cmd`다. repo 안 `Start-AIStarClient.cmd`만 확인하고 끝내지 않는다.
+   - 사용자는 작업표시줄에 고정한 `StarAI.PracticeClient.lnk`로 실행한다. 이 바로가기가 `cmd.exe /c "C:\starai\Start-StarAI-PracticeClient.cmd"`를 가리키는지 `scripts\smoke.ps1`로 확인하고, 틀어졌으면 `scripts\ensure-taskbar-shortcut.ps1`로 복구한다.
 2. 코드 변경 후 최소 검증을 반드시 실행한다.
    - `dotnet test StarAI.PracticeClient.sln -v:minimal`
    - `scripts\smoke.ps1`

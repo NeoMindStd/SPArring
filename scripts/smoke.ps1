@@ -9,6 +9,7 @@ $Artifacts = Join-Path $RepoRoot "artifacts"
 $PublishDir = Join-Path $RepoRoot "artifacts\publish\AIStarClient"
 $BuildDir = Join-Path $Artifacts "smoke-build"
 $Version = (Get-Content (Join-Path $RepoRoot "VERSION") -Raw).Trim()
+$ExpectedRunDir = Join-Path $Artifacts "run\AIStarClient-$Version"
 
 function Invoke-Native {
     param(
@@ -65,6 +66,33 @@ foreach ($launcher in @($repoLauncher, $rootLauncher)) {
     }
 }
 
+Write-Host "[smoke] Checking taskbar shortcut entrypoint"
+$taskbarShortcut = Join-Path $env:APPDATA "Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\StarAI.PracticeClient.lnk"
+if (-not (Test-Path $taskbarShortcut)) {
+    throw "Taskbar shortcut is missing: $taskbarShortcut"
+}
+
+$shell = New-Object -ComObject WScript.Shell
+$shortcut = $shell.CreateShortcut($taskbarShortcut)
+$expectedCmd = Join-Path $env:WINDIR "System32\cmd.exe"
+$expectedArguments = "/c ""$rootLauncher"""
+$expectedIconPrefix = Join-Path $ExpectedRunDir "StarAI.PracticeClient.App.exe"
+if ($shortcut.TargetPath -ne $expectedCmd) {
+    throw "Taskbar shortcut target is stale. Expected '$expectedCmd', got '$($shortcut.TargetPath)'."
+}
+
+if ($shortcut.Arguments -ne $expectedArguments) {
+    throw "Taskbar shortcut arguments are stale. Expected '$expectedArguments', got '$($shortcut.Arguments)'."
+}
+
+if ($shortcut.WorkingDirectory -ne "C:\starai") {
+    throw "Taskbar shortcut working directory is stale. Expected 'C:\starai', got '$($shortcut.WorkingDirectory)'."
+}
+
+if (-not $shortcut.IconLocation.StartsWith($expectedIconPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+    throw "Taskbar shortcut icon should point at the current artifacts run exe. Expected prefix '$expectedIconPrefix', got '$($shortcut.IconLocation)'."
+}
+
 Write-Host "[smoke] Checking runtime split safety in source"
 $automationSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\ChaosLauncherWindowAutomation.cs") -Raw
 if ($automationSource -notmatch "PhysicalClickLock") {
@@ -94,7 +122,6 @@ if ($runtimeSource -notmatch "catch \(IOException\) when \(target\.Exists\)") {
     throw "AI runtime sync must tolerate locked StarCraft runtime files."
 }
 
-$expectedRunDir = Join-Path $Artifacts "run\AIStarClient-$Version"
 Write-Host "[smoke] Local run output path: $expectedRunDir"
 
 $forbiddenPatterns = @(
