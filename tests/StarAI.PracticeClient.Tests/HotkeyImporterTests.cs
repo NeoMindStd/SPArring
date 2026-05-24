@@ -35,4 +35,26 @@ public class HotkeyImporterTests
         Assert.Equal("599,e,protoss_train_probe", File.ReadAllText(Path.Combine(sc, "bwapi-data", "read", "sc_hotkeys.csv")));
         Assert.Contains("STR_BLD_PYLON=e", File.ReadAllText(Path.Combine(sc, "bwapi-data", "read", "remastered_hotkeys.txt")));
     }
+
+    [Fact]
+    public void ImportBestAvailable_SkipsPatchWhenStarCraftLocksPatchFile()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "starai-tests", Guid.NewGuid().ToString("N"));
+        var schnail = Path.Combine(root, "schnail");
+        var sc = Path.Combine(root, "sc");
+        Directory.CreateDirectory(Path.Combine(schnail, "starcraft_bundled"));
+        Directory.CreateDirectory(Path.Combine(schnail, "res"));
+        Directory.CreateDirectory(sc);
+
+        var targetPatch = Path.Combine(sc, "patch_rt.mpq");
+        File.WriteAllText(targetPatch, "original");
+        File.WriteAllText(Path.Combine(schnail, "starcraft_bundled", "patch_rt.mpq"), "patched");
+
+        using var lockedPatch = new FileStream(targetPatch, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+        var result = HotkeyImporter.ImportBestAvailable(sc, schnail, Path.Combine(root, "missing.json"));
+
+        Assert.False(result.AppliedPatch);
+        Assert.Contains("사용 중", result.Message);
+    }
 }

@@ -51,7 +51,19 @@ public static class StarCraftRuntimeRoot
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
-        File.Copy(sourcePath, targetPath, overwrite: true);
-        File.SetLastWriteTimeUtc(targetPath, source.LastWriteTimeUtc);
+        try
+        {
+            File.Copy(sourcePath, targetPath, overwrite: true);
+            File.SetLastWriteTimeUtc(targetPath, source.LastWriteTimeUtc);
+        }
+        catch (IOException) when (target.Exists)
+        {
+            // StarCraft keeps MPQ files open while a client is running. If the AI
+            // runtime already has a copy, keep using it instead of blocking launch.
+        }
+        catch (UnauthorizedAccessException) when (target.Exists)
+        {
+            // Same fallback as above for file locks reported as access errors.
+        }
     }
 }

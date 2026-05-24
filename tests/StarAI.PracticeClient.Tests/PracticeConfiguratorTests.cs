@@ -345,6 +345,24 @@ public class PracticeConfiguratorTests
     }
 
     [Fact]
+    public void EnsureAiRoot_SkipsLockedRuntimeFileWhenAiCopyAlreadyExists()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var patch = Path.Combine(root, "patch_rt.mpq");
+        File.WriteAllText(patch, "locked source");
+        var aiRoot = StarCraftRuntimeRoot.GetAiRoot(root);
+        Directory.CreateDirectory(aiRoot);
+        File.WriteAllText(Path.Combine(aiRoot, "patch_rt.mpq"), "existing ai copy");
+
+        using var lockedPatch = new FileStream(patch, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+        var result = StarCraftRuntimeRoot.EnsureAiRoot(root);
+
+        Assert.Equal(aiRoot, result);
+        Assert.Equal("existing ai copy", File.ReadAllText(Path.Combine(aiRoot, "patch_rt.mpq")));
+    }
+
+    [Fact]
     public void SplitRuntimeFlow_KeepsPlayerAndBotIniSeparate()
     {
         var root = CreateFakeStarCraftRoot();

@@ -50,14 +50,25 @@ public static partial class HotkeyImporter
             return (false, "StarCraft 폴더에 patch_rt.mpq가 없어 실제 1.16.1 핫키 적용은 건너뛰었습니다.");
         }
 
-        var backup = targetPatch + ".starai-hotkey-original";
-        if (!File.Exists(backup))
+        try
         {
-            File.Copy(targetPatch, backup, overwrite: false);
-        }
+            var backup = targetPatch + ".starai-hotkey-original";
+            if (!File.Exists(backup))
+            {
+                File.Copy(targetPatch, backup, overwrite: false);
+            }
 
-        File.Copy(sourcePatch, targetPatch, overwrite: true);
-        return (true, "SCHNAIL이 생성한 patch_rt.mpq를 복사해서 1.16.1 핫키 적용을 시도했습니다.");
+            File.Copy(sourcePatch, targetPatch, overwrite: true);
+            return (true, "SCHNAIL patch_rt.mpq를 복사해서 1.16.1 핫키 적용을 시도했습니다.");
+        }
+        catch (IOException)
+        {
+            return (false, "StarCraft가 patch_rt.mpq를 사용 중이라 핫키 패치 갱신을 건너뛰었습니다. 이미 적용된 패치 파일로 계속 진행합니다.");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return (false, "StarCraft가 patch_rt.mpq를 사용 중이라 핫키 패치 갱신을 건너뛰었습니다. 이미 적용된 패치 파일로 계속 진행합니다.");
+        }
     }
 
     private static void TryExportRemasteredHotkeys(string settingsPath, string outputPath)
