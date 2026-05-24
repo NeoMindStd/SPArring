@@ -267,6 +267,35 @@ public class PracticeConfiguratorTests
     }
 
     [Fact]
+    public void ApplyMultiInstanceSparring_WritesPlayerAndBotIntoSingleBwapiIni()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var coachDir = Path.Combine(root, "bwapi-data", "AI", "CoachAI");
+        Directory.CreateDirectory(coachDir);
+        var coachDll = Path.Combine(coachDir, "AnyRace_CoachAI.dll");
+        File.WriteAllText(coachDll, "");
+        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
+        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "TestBot.dll"), "");
+        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
+
+        var settings = CreateSettings(root, bot, buildOption: null) with
+        {
+            EnableCoachAi = true
+        };
+
+        var path = new PracticeConfigurator(Path.Combine(root, "replays")).ApplyMultiInstanceSparring(settings, coachDll);
+        var ini = BwapiIni.Load(path);
+
+        Assert.Equal("bwapi-data/AI/CoachAI/AnyRace_CoachAI.dll,bwapi-data/AI/TestBot.dll", ini.Get("ai", "ai"));
+        Assert.Equal("maps/(4)Fighting Spirit.scx", ini.Get("auto_menu", "map"));
+        Assert.Equal("AIPractice", ini.Get("auto_menu", "game"));
+        Assert.Equal("Protoss,Terran", ini.Get("auto_menu", "race"));
+        Assert.Equal("Terran", ini.Get("auto_menu", "enemy_race"));
+        Assert.Equal("ON", ini.Get("starcraft", "sound"));
+        Assert.Equal("2", ini.Get("auto_menu", "wait_for_max_players"));
+    }
+
+    [Fact]
     public void ApplyBotJoin_WithFirstInstanceAiWritesOnlyBotForJoinClient()
     {
         var root = CreateFakeStarCraftRoot();

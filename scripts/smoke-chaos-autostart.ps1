@@ -1,87 +1,238 @@
 param(
-    [string]$PlayerRoot = "C:\starai\SC116AI",
-    [string]$AiRoot = "C:\starai\SC116AI_ai",
-    [int]$TimeoutSeconds = 20
+    [string]$Root = "C:\starai\SC116AI",
+    [int]$TimeoutSeconds = 25
 )
 
 $ErrorActionPreference = "Stop"
 
-$existing = Get-Process "Chaoslauncher - MultiInstance", "StarCraft" -ErrorAction SilentlyContinue
-if ($existing) {
-    $list = ($existing | ForEach-Object { "$($_.ProcessName)#$($_.Id)" }) -join ", "
-    throw "Refusing live smoke while StarCraft/ChaosLauncher is already running: $list"
+$localProcesses = Get-CimInstance Win32_Process | Where-Object {
+    ($_.Name -eq "Chaoslauncher - MultiInstance.exe" -and $_.ExecutablePath -like "C:\starai\*") -or
+    ($_.Name -eq "StarCraft.exe" -and ($_.ExecutablePath -like "C:\starai\*" -or [string]::IsNullOrWhiteSpace($_.ExecutablePath)))
+}
+
+if ($localProcesses) {
+    $list = ($localProcesses | ForEach-Object { "$($_.Name)#$($_.ProcessId)" }) -join ", "
+    throw "Refusing live smoke while local StarCraft/ChaosLauncher is already running: $list"
 }
 
 $installKey = "HKLM:\SOFTWARE\WOW6432Node\Blizzard Entertainment\StarCraft"
 $launcherKey = "HKCU:\Software\Chaoslauncher\Launcher"
+$enabledKey = "HKCU:\Software\Chaoslauncher\PluginsEnabled"
+$runIncompatibleKey = "HKCU:\Software\Chaoslauncher\PluginsRunIncompatible"
+$bwapiPlugin = "BWAPI 4.4.0 Injector [RELEASE]"
+$wmodePlugin = "W-MODE 1.02"
+$ini = Join-Path $Root "bwapi-data\bwapi.ini"
+$iniBackup = "$ini.starai-live-smoke.bak"
+$coachAi = "bwapi-data/AI/CoachAI/AnyRace_CoachAI.dll"
+$botAi = "bwapi-data/AI/practice-bots/NiteKatT/ExampleAIModule.dll"
+$map = "maps/(4)Fighting Spirit.scx"
 
-function Set-ChaosRoot {
-    param([string]$Root, [bool]$RunOnStartup)
+function Set-ChaosForRoot {
+    param([string]$StarCraftRoot, [bool]$RunOnStartup)
 
-    New-Item -Path $launcherKey -Force | Out-Null
-    Set-ItemProperty -LiteralPath $installKey -Name "InstallPath" -Value $Root
-    Set-ItemProperty -LiteralPath $installKey -Name "Program" -Value (Join-Path $Root "StarCraft.exe")
+    New-Item -Path $launcherKey, $enabledKey, $runIncompatibleKey -Force | Out-Null
+    Set-ItemProperty -LiteralPath $installKey -Name "InstallPath" -Value $StarCraftRoot
+    Set-ItemProperty -LiteralPath $installKey -Name "Program" -Value (Join-Path $StarCraftRoot "StarCraft.exe")
     Set-ItemProperty -Path $launcherKey -Name "GameVersion" -Value "Starcraft 1.16.1" -Type String
     Set-ItemProperty -Path $launcherKey -Name "WarnNoAdmin" -Value 0 -Type DWord
     Set-ItemProperty -Path $launcherKey -Name "RunScOnStartup" -Value ($(if ($RunOnStartup) { 1 } else { 0 })) -Type DWord
+    Set-ItemProperty -Path $enabledKey -Name $wmodePlugin -Value 1 -Type DWord
+    Set-ItemProperty -Path $enabledKey -Name $bwapiPlugin -Value 1 -Type DWord
+    Set-ItemProperty -Path $runIncompatibleKey -Name $wmodePlugin -Value 0 -Type DWord
+    Set-ItemProperty -Path $runIncompatibleKey -Name $bwapiPlugin -Value 0 -Type DWord
 }
 
-function Wait-LogLine {
+function Get-CompletedStartCount {
+    param([string]$LogPath)
+
+    if (-not (Test-Path $LogPath)) {
+        return 0
+    }
+
+    return @((Get-Content -LiteralPath $LogPath) | Where-Object { $_ -like "*Starting Starcraft completed*" }).Count
+}
+
+function Wait-CompletedStarts {
     param(
         [string]$LogPath,
-        [string]$Needle,
-        [int]$TimeoutSeconds
+        [int]$Count
     )
 
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     do {
-        if (Test-Path $LogPath) {
-            $content = Get-Content -LiteralPath $LogPath -Raw
-            if ($content -like "*$Needle*") {
-                return
-            }
+        if ((Get-CompletedStartCount -LogPath $LogPath) -ge $Count) {
+            return
         }
 
         Start-Sleep -Milliseconds 250
     } while ((Get-Date) -lt $deadline)
 
-    throw "Timed out waiting for '$Needle' in $LogPath"
+    throw "Timed out waiting for $Count completed StarCraft starts in $LogPath"
 }
 
-function Invoke-ChaosRootSmoke {
-    param([string]$Root)
+function Set-SmokeBwapiIni {
+    param([bool]$SoundOn)
 
-    $launcher = Join-Path $Root "Chaoslauncher - MultiInstance.exe"
-    $log = Join-Path $Root "Chaoslauncher - MultiInstance.log"
+    $sound = if ($SoundOn) { "ON" } else { "OFF" }
+    @"
+[ai]
+ai = $coachAi,$botAi
+
+[auto_menu]
+auto_menu = LAN
+character_name = StarAIHuman
+pause_dbg = OFF
+lan_mode = Local PC
+auto_restart = OFF
+map = $map
+game = StarAILiveSmoke
+mapiteration = RANDOM
+race = Protoss,Terran
+enemy_count = 1
+enemy_race = Terran
+enemy_race_1 = Default
+enemy_race_2 = Default
+enemy_race_3 = Default
+enemy_race_4 = Default
+enemy_race_5 = Default
+enemy_race_6 = Default
+enemy_race_7 = Default
+game_type = MELEE
+game_type_extra =
+save_replay =
+wait_for_min_players = 2
+wait_for_max_players = 2
+wait_for_time = 5000
+
+[window]
+windowed = ON
+left = 0
+top = 0
+width = 640
+height = 480
+
+[starcraft]
+sound = $sound
+screenshots = gif
+drop_players = ON
+speed_override = 42
+"@ | Set-Content -LiteralPath $ini -Encoding ASCII
+}
+
+function Invoke-StartButton {
+    param([int]$ProcessId)
+
+    Add-Type -TypeDefinition @'
+using System;
+using System.Text;
+using System.Runtime.InteropServices;
+public static class StarAiSmokeWin32 {
+ public delegate bool EnumProc(IntPtr h, IntPtr l);
+ [DllImport("user32.dll")] public static extern bool EnumWindows(EnumProc cb, IntPtr l);
+ [DllImport("user32.dll")] public static extern bool EnumChildWindows(IntPtr p, EnumProc cb, IntPtr l);
+ [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out int processId);
+ [DllImport("user32.dll", CharSet=CharSet.Auto)] public static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
+ [DllImport("user32.dll")] public static extern int GetWindowTextLength(IntPtr h);
+ [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
+ [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
+ public static string Txt(IntPtr h){ int len=GetWindowTextLength(h); var sb=new StringBuilder(Math.Max(len+1,256)); GetWindowText(h,sb,sb.Capacity); return sb.ToString(); }
+}
+'@ -ErrorAction SilentlyContinue
+
+    $script:window = [IntPtr]::Zero
+    [StarAiSmokeWin32]::EnumWindows({
+        param($handle, $unused)
+        $candidatePid = 0
+        [StarAiSmokeWin32]::GetWindowThreadProcessId($handle, [ref]$candidatePid) | Out-Null
+        if ($candidatePid -eq $ProcessId -and [StarAiSmokeWin32]::IsWindowVisible($handle) -and [StarAiSmokeWin32]::Txt($handle) -like "*Chaos*") {
+            $script:window = $handle
+            return $false
+        }
+
+        return $true
+    }, [IntPtr]::Zero) | Out-Null
+
+    $script:button = [IntPtr]::Zero
+    [StarAiSmokeWin32]::EnumChildWindows($script:window, {
+        param($handle, $unused)
+        $text = [StarAiSmokeWin32]::Txt($handle).Replace("&", "")
+        if ($text -eq "Start") {
+            $script:button = $handle
+            return $false
+        }
+
+        return $true
+    }, [IntPtr]::Zero) | Out-Null
+
+    if ($script:button -eq [IntPtr]::Zero) {
+        throw "Could not find ChaosLauncher Start button."
+    }
+
+    [StarAiSmokeWin32]::SendMessage($script:button, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+}
+
+function Stop-LocalStarCraft {
+    Get-CimInstance Win32_Process | Where-Object {
+        ($_.Name -eq "Chaoslauncher - MultiInstance.exe" -and $_.ExecutablePath -like "C:\starai\*") -or
+        ($_.Name -eq "StarCraft.exe" -and ($_.ExecutablePath -like "C:\starai\*" -or [string]::IsNullOrWhiteSpace($_.ExecutablePath)))
+    } | ForEach-Object {
+        Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+    }
+}
+
+$launcher = Join-Path $Root "Chaoslauncher - MultiInstance.exe"
+$log = Join-Path $Root "Chaoslauncher - MultiInstance.log"
+
+try {
     if (-not (Test-Path $launcher)) {
         throw "ChaosLauncher not found: $launcher"
     }
 
+    foreach ($required in @(
+        (Join-Path $Root $coachAi.Replace("/", "\")),
+        (Join-Path $Root $botAi.Replace("/", "\")),
+        (Join-Path $Root $map.Replace("/", "\"))
+    )) {
+        if (-not (Test-Path $required)) {
+            throw "Required live-smoke file not found: $required"
+        }
+    }
+
+    Copy-Item -LiteralPath $ini -Destination $iniBackup -Force
     if (Test-Path $log) {
         Remove-Item -LiteralPath $log -Force
     }
 
-    Write-Host "[live-smoke] Launching $launcher"
-    Set-ChaosRoot -Root $Root -RunOnStartup $true
-    $process = Start-Process -FilePath $launcher -WorkingDirectory $Root -PassThru
+    Write-Host "[live-smoke] Launching first StarCraft through RunScOnStartup"
+    Set-SmokeBwapiIni -SoundOn $true
+    Set-ChaosForRoot -StarCraftRoot $Root -RunOnStartup $true
+    $launcherProcess = Start-Process -FilePath $launcher -WorkingDirectory $Root -PassThru
+    Wait-CompletedStarts -LogPath $log -Count 1
 
-    try {
-        Wait-LogLine -LogPath $log -Needle "GamePath: $Root\" -TimeoutSeconds $TimeoutSeconds
-        Wait-LogLine -LogPath $log -Needle "Starting Starcraft completed" -TimeoutSeconds $TimeoutSeconds
-        Write-Host "[live-smoke] OK: $Root"
-    }
-    finally {
-        Get-Process "Chaoslauncher - MultiInstance", "StarCraft" -ErrorAction SilentlyContinue | Stop-Process -Force
-        Set-ChaosRoot -Root $PlayerRoot -RunOnStartup $false
-        Start-Sleep -Milliseconds 500
-    }
-}
+    Write-Host "[live-smoke] Starting second StarCraft through the same ChaosLauncher"
+    Set-SmokeBwapiIni -SoundOn $false
+    Set-ChaosForRoot -StarCraftRoot $Root -RunOnStartup $false
+    Invoke-StartButton -ProcessId $launcherProcess.Id
+    Wait-CompletedStarts -LogPath $log -Count 2
 
-try {
-    Invoke-ChaosRootSmoke -Root $PlayerRoot
-    Invoke-ChaosRootSmoke -Root $AiRoot
+    $starCraftCount = @(
+        Get-CimInstance Win32_Process | Where-Object {
+            $_.Name -eq "StarCraft.exe" -and ($_.ExecutablePath -like "C:\starai\*" -or [string]::IsNullOrWhiteSpace($_.ExecutablePath))
+        }
+    ).Count
+
+    if ($starCraftCount -lt 2) {
+        throw "Expected two local StarCraft instances, found $starCraftCount."
+    }
+
+    Write-Host "[live-smoke] OK: one ChaosLauncher started two StarCraft instances."
 }
 finally {
-    Get-Process "Chaoslauncher - MultiInstance", "StarCraft" -ErrorAction SilentlyContinue | Stop-Process -Force
-    Set-ChaosRoot -Root $PlayerRoot -RunOnStartup $false
+    if (Test-Path $iniBackup) {
+        Copy-Item -LiteralPath $iniBackup -Destination $ini -Force
+        Remove-Item -LiteralPath $iniBackup -Force
+    }
+
+    Set-ChaosForRoot -StarCraftRoot $Root -RunOnStartup $false
+    Stop-LocalStarCraft
 }

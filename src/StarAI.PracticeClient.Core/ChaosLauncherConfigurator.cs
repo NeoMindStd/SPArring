@@ -21,16 +21,11 @@ public sealed class ChaosLauncherConfigurator
     [SupportedOSPlatform("windows")]
     public void Apply(ChaosLaunchMode mode, string starCraftRoot, bool runStarCraftOnStartup = false)
     {
-        var root = Path.GetFullPath(starCraftRoot);
-        var starCraftExe = Path.Combine(root, "StarCraft.exe");
-
-        using var install = Registry.LocalMachine.CreateSubKey(StarCraftInstallKey, true);
         using var launcher = Registry.CurrentUser.CreateSubKey(LauncherKey, true);
         using var enabled = Registry.CurrentUser.CreateSubKey(EnabledKey, true);
         using var incompatible = Registry.CurrentUser.CreateSubKey(RunIncompatibleKey, true);
 
-        install.SetValue("InstallPath", root, RegistryValueKind.String);
-        install.SetValue("Program", starCraftExe, RegistryValueKind.String);
+        SetStarCraftInstallPath(starCraftRoot);
 
         launcher.SetValue("GameVersion", "Starcraft 1.16.1", RegistryValueKind.String);
         launcher.SetValue("AutoUpdate", 0, RegistryValueKind.DWord);
@@ -43,5 +38,27 @@ public sealed class ChaosLauncherConfigurator
         enabled.SetValue(BwapiPlugin, mode == ChaosLaunchMode.Bot ? 1 : 0, RegistryValueKind.DWord);
         incompatible.SetValue(WModePlugin, 0, RegistryValueKind.DWord);
         incompatible.SetValue(BwapiPlugin, 0, RegistryValueKind.DWord);
+    }
+
+    [SupportedOSPlatform("windows")]
+    public void SetRunStarCraftOnStartup(string starCraftRoot, bool enabled)
+    {
+        using var launcher = Registry.CurrentUser.CreateSubKey(LauncherKey, true);
+
+        SetStarCraftInstallPath(starCraftRoot);
+        launcher.SetValue("GameVersion", "Starcraft 1.16.1", RegistryValueKind.String);
+        launcher.SetValue("WarnNoAdmin", 0, RegistryValueKind.DWord);
+        launcher.SetValue("RunScOnStartup", enabled ? 1 : 0, RegistryValueKind.DWord);
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static void SetStarCraftInstallPath(string starCraftRoot)
+    {
+        var root = Path.GetFullPath(starCraftRoot);
+        var starCraftExe = Path.Combine(root, "StarCraft.exe");
+
+        using var install = Registry.LocalMachine.CreateSubKey(StarCraftInstallKey, true);
+        install.SetValue("InstallPath", root, RegistryValueKind.String);
+        install.SetValue("Program", starCraftExe, RegistryValueKind.String);
     }
 }

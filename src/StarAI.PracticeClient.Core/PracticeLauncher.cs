@@ -56,13 +56,25 @@ public sealed class PracticeLauncher
     [SupportedOSPlatform("windows")]
     public Process OpenChaosAndStartStarCraft(string starCraftRoot, ChaosLaunchMode mode)
     {
-        return OpenChaos(starCraftRoot, mode, runStarCraftOnStartup: true);
+        var before = CountCompletedStarts(starCraftRoot);
+        var process = OpenChaos(starCraftRoot, mode, runStarCraftOnStartup: true);
+        WaitForCompletedStart(starCraftRoot, before, TimeSpan.FromSeconds(20));
+        return process;
     }
 
     [SupportedOSPlatform("windows")]
     public void DisableStartupLaunch(string starCraftRoot)
     {
-        _chaos.Apply(ChaosLaunchMode.Human, starCraftRoot, runStarCraftOnStartup: false);
+        _chaos.SetRunStarCraftOnStartup(starCraftRoot, enabled: false);
+    }
+
+    [SupportedOSPlatform("windows")]
+    public void StartAdditionalStarCraft(Process process, string starCraftRoot, TimeSpan timeout)
+    {
+        var before = CountCompletedStarts(starCraftRoot);
+        _chaos.SetRunStarCraftOnStartup(starCraftRoot, enabled: false);
+        ClickStart(process, starCraftRoot, timeout);
+        WaitForCompletedStart(starCraftRoot, before, timeout);
     }
 
     [SupportedOSPlatform("windows")]
@@ -109,5 +121,40 @@ public sealed class PracticeLauncher
             // The StarCraft process is already created by this point; a stale launcher
             // window should not block the next launcher instance.
         }
+    }
+
+    private static int CountCompletedStarts(string starCraftRoot)
+    {
+        var log = Path.Combine(starCraftRoot, "Chaoslauncher - MultiInstance.log");
+        if (!File.Exists(log))
+        {
+            return 0;
+        }
+
+        try
+        {
+            return File.ReadLines(log)
+                .Count(line => line.Contains("Starting Starcraft completed", StringComparison.OrdinalIgnoreCase));
+        }
+        catch (IOException)
+        {
+            return 0;
+        }
+    }
+
+    private static void WaitForCompletedStart(string starCraftRoot, int previousCount, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            if (CountCompletedStarts(starCraftRoot) > previousCount)
+            {
+                return;
+            }
+
+            Thread.Sleep(200);
+        }
+
+        throw new InvalidOperationException("StarCraft launch was requested, but ChaosLauncher did not report a completed start.");
     }
 }

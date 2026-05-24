@@ -150,6 +150,57 @@ public sealed class PracticeConfigurator
         return iniPath;
     }
 
+    public string ApplyMultiInstanceSparring(PracticeSettings settings, string? coachAiDllPath)
+    {
+        var errors = Validate(settings).Where(issue => issue.IsError).ToArray();
+        if (errors.Length > 0)
+        {
+            throw new InvalidOperationException(string.Join(Environment.NewLine, errors.Select(issue => issue.Message)));
+        }
+
+        var iniPath = Path.Combine(settings.StarCraftRoot, BwapiIniRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        EnsureBackup(iniPath);
+
+        var firstInstanceAi = "";
+        if (!string.IsNullOrWhiteSpace(coachAiDllPath))
+        {
+            if (!File.Exists(coachAiDllPath))
+            {
+                throw new FileNotFoundException("CoachAI DLL not found.", coachAiDllPath);
+            }
+
+            firstInstanceAi = Path.GetRelativePath(settings.StarCraftRoot, coachAiDllPath).Replace('\\', '/');
+            EnsureCoachAiConfig(settings.StarCraftRoot);
+        }
+
+        var ini = BwapiIni.Load(iniPath);
+        ini.Set("ai", "ai", $"{firstInstanceAi},{settings.Bot.RelativeDllPath}");
+
+        ApplyCommonSettings(
+            ini,
+            settings,
+            settings.Map.RelativePath,
+            settings.PlayerRace,
+            settings.Bot.Race,
+            soundOn: true,
+            characterName: "StarAIHuman");
+
+        ini.Set("auto_menu", "race", $"{settings.PlayerRace},{settings.Bot.Race}");
+        ini.Save(iniPath);
+        ApplyBuildPatch(settings);
+        EnsureBotRuntimeConfig(settings);
+
+        return iniPath;
+    }
+
+    public static void SetStarCraftSound(string starCraftRoot, bool soundOn)
+    {
+        var iniPath = Path.Combine(starCraftRoot, BwapiIniRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        var ini = BwapiIni.Load(iniPath);
+        ini.Set("starcraft", "sound", soundOn ? "ON" : "OFF");
+        ini.Save(iniPath);
+    }
+
     public string ApplyBotJoin(PracticeSettings settings, string? firstInstanceAiDllPath = null)
     {
         var errors = Validate(settings).Where(issue => issue.IsError).ToArray();

@@ -117,6 +117,32 @@ if ($practiceLauncherSource -notmatch "ChaosStartupLock") {
     throw "ChaosLauncher startup must guard the global StarCraft install path while launching multiple clients."
 }
 
+if ($practiceLauncherSource -notmatch "StartAdditionalStarCraft") {
+    throw "Practice launcher must support starting the second StarCraft instance from the same ChaosLauncher."
+}
+
+if ($practiceLauncherSource -notmatch "SetRunStarCraftOnStartup") {
+    throw "Disabling ChaosLauncher startup must not disable the BWAPI plugin."
+}
+
+$mainFormSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.App\MainForm.cs") -Raw
+if ($mainFormSource -match "OpenChaosAndStartStarCraft\(botSettings\.StarCraftRoot") {
+    throw "The AI client must not be launched as a second ChaosLauncher process; ChaosLauncher refuses with 'Already running'."
+}
+
+if ($mainFormSource -match "ApplyBotJoin\(botSettings") {
+    throw "The active sparring flow must not overwrite bwapi.ini after the player StarCraft starts."
+}
+
+if ($mainFormSource -notmatch "ApplyMultiInstanceSparring" -or $mainFormSource -notmatch "StartAdditionalStarCraft") {
+    throw "The active sparring flow must configure BWAPI multi-instance AI/race values before starting the second StarCraft instance."
+}
+
+$practiceConfiguratorSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\PracticeConfigurator.cs") -Raw
+if ($practiceConfiguratorSource -notmatch "ApplyMultiInstanceSparring" -or $practiceConfiguratorSource -notmatch "\{settings\.PlayerRace\},\{settings\.Bot\.Race\}") {
+    throw "PracticeConfigurator must write comma-separated BWAPI races for player and bot instances."
+}
+
 $runtimeSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\StarCraftRuntimeRoot.cs") -Raw
 if ($runtimeSource -notmatch "catch \(IOException\) when \(target\.Exists\)") {
     throw "AI runtime sync must tolerate locked StarCraft runtime files."
