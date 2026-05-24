@@ -503,8 +503,7 @@ public sealed class MainForm : Form
             var hotkeys = HotkeyImporter.ImportBestAvailable(settings.StarCraftRoot);
             Log(hotkeys.Message);
 
-            Log("같은 StarCraft 폴더에서 1번은 내 클라용 INI, 2번은 봇용 INI로 순차 실행합니다.");
-            var botSettings = settings with { EnableCoachAi = false };
+            Log("내 클라이언트와 AI 클라이언트를 분리된 StarCraft 런타임 폴더로 실행합니다.");
 
             var issues = _configurator.Validate(settings).ToArray();
             var errors = issues.Where(issue => issue.IsError).ToArray();
@@ -527,6 +526,14 @@ public sealed class MainForm : Form
                 PracticeConfigurator.ApplyCoachAiBuildPreset(settings.StarCraftRoot, SelectedCoachBuildPreset(settings.PlayerRace));
             }
 
+            var aiRoot = StarCraftRuntimeRoot.EnsureAiRoot(settings.StarCraftRoot);
+            var botSettings = settings with
+            {
+                StarCraftRoot = aiRoot,
+                EnableCoachAi = false
+            };
+            Log($"AI 전용 런타임 확인 완료: {aiRoot}");
+
             var playerIni = _configurator.ApplyPlayerHost(settings, coachDll);
             Log($"선택값 확인: 내 종족 {RaceKo(settings.PlayerRace)}, 상대 봇 {settings.Bot.Name}({RaceKo(settings.Bot.Race)}), 맵 {settings.Map.Name}");
             Log($"내 클라이언트 설정 완료: {RaceKo(settings.PlayerRace)} / {settings.Map.Name} / {settings.GameName}. INI: {playerIni}");
@@ -539,7 +546,7 @@ public sealed class MainForm : Form
             var botIni = _configurator.ApplyBotJoin(botSettings);
             Log($"AI 참가 설정 완료: {settings.Bot.Name} / {RaceKo(settings.Bot.Race)} / 소리 OFF. INI: {botIni}");
 
-            _launcher.LaunchChaos(settings.StarCraftRoot, ChaosLaunchMode.Bot, clickStart: true, closeLauncherAfterStart: false);
+            _launcher.LaunchChaos(botSettings.StarCraftRoot, ChaosLaunchMode.Bot, clickStart: true, closeLauncherAfterStart: false);
             Log("AI 클라이언트를 실행했습니다. 같은 방에 자동 참가를 시도합니다.");
 
             _history.Add(settings.StarCraftRoot, new MatchRecord(

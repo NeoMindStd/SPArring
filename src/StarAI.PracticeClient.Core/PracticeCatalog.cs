@@ -444,11 +444,16 @@ public static partial class PracticeCatalog
     {
         return GetDefaultBots()
             .Where(bot => File.Exists(bot.DllPath(starCraftRoot)))
+            .Where(bot => !IsKnownUnstableBot(bot))
             .OrderBy(bot => bot.Race)
             .ThenBy(bot => bot.Tier)
             .ThenBy(bot => bot.Name)
             .ToArray();
     }
+
+    public static bool IsKnownUnstableBot(BotProfile bot) =>
+        bot.Id.Equals("xiaoyicog2019", StringComparison.OrdinalIgnoreCase) ||
+        bot.Id.Equals("stone", StringComparison.OrdinalIgnoreCase);
 
     public static IReadOnlyList<MapProfile> GetMaps(string starCraftRoot)
     {

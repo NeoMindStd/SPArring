@@ -10,7 +10,7 @@ SCHNAIL, BWAPI Revamped packages, or third-party bot binaries.
 
 ## Current version
 
-`0.1.0`
+`0.1.1`
 
 Semantic versioning is used:
 
@@ -58,16 +58,25 @@ dotnet build .\src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj -c
 5. The launcher starts the player client first, waits for the host room to be
    created, then starts the AI client with sound disabled.
 
-Known-crashing local bots are blocked before launch when crash evidence is known
-from local StarCraft error logs. At the moment `XIAOYICOG2019` and `Stone` are
-blocked because they produced access-violation crashes in this environment.
+Known-crashing local bots are excluded from the selectable bot list when crash
+evidence is known from local StarCraft error logs. At the moment
+`XIAOYICOG2019` and `Stone` are hidden because they produced access-violation
+crashes in this environment.
+
+## Stability model
+
+AIStarClient launches two local StarCraft instances. The player client uses the
+selected StarCraft folder. The AI client uses a local sibling runtime copy named
+`<StarCraft folder>_ai`. This avoids a race where both clients read and rewrite
+the same `bwapi-data\bwapi.ini` while one client is still creating or joining a
+Local PC game.
 
 ## Smoke test
 
 The smoke test is intentionally non-invasive: it does not start StarCraft,
-ChaosLauncher, or any bot. It only builds, runs unit tests, publishes the client,
-and checks that release output does not contain common forbidden runtime/game
-files.
+ChaosLauncher, or any bot. It builds, runs unit tests, verifies known-crashing
+bots are not selectable, publishes the client, and checks that release output
+does not contain common forbidden runtime/game files.
 
 ```powershell
 .\scripts\smoke.ps1

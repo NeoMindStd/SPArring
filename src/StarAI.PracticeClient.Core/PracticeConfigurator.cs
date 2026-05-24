@@ -44,10 +44,10 @@ public sealed class PracticeConfigurator
             issues.Add(new ValidationIssue($"Bot DLL not found: {botDll}", true));
         }
 
-        if (IsKnownUnstableBot(settings.Bot))
+        if (PracticeCatalog.IsKnownUnstableBot(settings.Bot))
         {
             issues.Add(new ValidationIssue(
-                $"{settings.Bot.Name} is currently blocked because it has produced StarCraft access-violation crashes in local smoke/error logs.",
+                $"{settings.Bot.Name}는 이 PC의 StarCraft 오류 로그에서 액세스 위반 크래시가 확인되어 현재 차단되어 있습니다.",
                 true));
         }
 
@@ -417,10 +417,6 @@ public sealed class PracticeConfigurator
         WriteIndented = true,
         TypeInfoResolver = new DefaultJsonTypeInfoResolver()
     };
-
-    private static bool IsKnownUnstableBot(BotProfile bot) =>
-        bot.Id.Equals("xiaoyicog2019", StringComparison.OrdinalIgnoreCase) ||
-        bot.Id.Equals("stone", StringComparison.OrdinalIgnoreCase);
 
     private static IReadOnlyList<string> GetMatchups(Race botRace, Race playerRace)
     {

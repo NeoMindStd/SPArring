@@ -34,7 +34,9 @@ public static class StarCraftRuntimeRoot
         var normalized = relativePath.Replace('\\', '/');
         return normalized.EndsWith(".rep", StringComparison.OrdinalIgnoreCase)
             || normalized.Contains("/write/", StringComparison.OrdinalIgnoreCase)
-            || normalized.Contains("/logs/", StringComparison.OrdinalIgnoreCase);
+            || normalized.Contains("/logs/", StringComparison.OrdinalIgnoreCase)
+            || normalized.Contains("/errors/", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith("errors/", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void CopyIfDifferent(string sourcePath, string targetPath)

@@ -205,7 +205,26 @@ public class PracticeConfiguratorTests
 
         var issues = new PracticeConfigurator().Validate(settings);
 
-        Assert.Contains(issues, issue => issue.IsError && issue.Message.Contains("blocked", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(issues, issue => issue.IsError && issue.Message.Contains("차단", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void GetAvailableBots_ExcludesKnownAccessViolationBots()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var sampleIds = new[] { "xiaoyicog2019", "stone", "nitekatt" };
+        foreach (var bot in PracticeCatalog.GetDefaultBots().Where(bot => sampleIds.Contains(bot.Id)))
+        {
+            var dllPath = bot.DllPath(root);
+            Directory.CreateDirectory(Path.GetDirectoryName(dllPath)!);
+            File.WriteAllText(dllPath, "");
+        }
+
+        var available = PracticeCatalog.GetAvailableBots(root);
+
+        Assert.DoesNotContain(available, bot => bot.Id.Equals("xiaoyicog2019", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(available, bot => bot.Id.Equals("stone", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(available, bot => bot.Id.Equals("nitekatt", StringComparison.OrdinalIgnoreCase));
     }
 
 
@@ -303,6 +322,8 @@ public class PracticeConfiguratorTests
         var root = CreateFakeStarCraftRoot();
         File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "map");
         File.WriteAllText(Path.Combine(root, "patch_rt.mpq"), "patch");
+        Directory.CreateDirectory(Path.Combine(root, "Errors"));
+        File.WriteAllText(Path.Combine(root, "Errors", "crash.ERR"), "local crash log");
 
         var aiRoot = StarCraftRuntimeRoot.EnsureAiRoot(root);
 
@@ -310,6 +331,43 @@ public class PracticeConfiguratorTests
         Assert.True(File.Exists(Path.Combine(aiRoot, "StarCraft.exe")));
         Assert.Equal("map", File.ReadAllText(Path.Combine(aiRoot, "maps", "(4)Fighting Spirit.scx")));
         Assert.Equal("patch", File.ReadAllText(Path.Combine(aiRoot, "patch_rt.mpq")));
+        Assert.False(File.Exists(Path.Combine(aiRoot, "Errors", "crash.ERR")));
+    }
+
+    [Fact]
+    public void SplitRuntimeFlow_KeepsPlayerAndBotIniSeparate()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
+        File.WriteAllText(bot.DllPath(root), "");
+        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
+        var coachDir = Path.Combine(root, "bwapi-data", "AI", "CoachAI");
+        Directory.CreateDirectory(coachDir);
+        var coachDll = Path.Combine(coachDir, "AnyRace_CoachAI.dll");
+        File.WriteAllText(coachDll, "");
+
+        var settings = CreateSettings(root, bot, buildOption: null) with
+        {
+            EnableCoachAi = true
+        };
+        var configurator = new PracticeConfigurator(Path.Combine(root, "replays"));
+        var aiRoot = StarCraftRuntimeRoot.EnsureAiRoot(root);
+
+        var playerIniPath = configurator.ApplyPlayerHost(settings, coachDll);
+        var botIniPath = configurator.ApplyBotJoin(settings with { StarCraftRoot = aiRoot, EnableCoachAi = false });
+        var playerIni = BwapiIni.Load(playerIniPath);
+        var botIni = BwapiIni.Load(botIniPath);
+
+        Assert.NotEqual(playerIniPath, botIniPath);
+        Assert.Equal("bwapi-data/AI/CoachAI/AnyRace_CoachAI.dll", playerIni.Get("ai", "ai"));
+        Assert.Equal("maps/(4)Fighting Spirit.scx", playerIni.Get("auto_menu", "map"));
+        Assert.Equal("Protoss", playerIni.Get("auto_menu", "race"));
+        Assert.Equal("ON", playerIni.Get("starcraft", "sound"));
+
+        Assert.Equal("bwapi-data/AI/TestBot.dll", botIni.Get("ai", "ai"));
+        Assert.Equal("", botIni.Get("auto_menu", "map"));
+        Assert.Equal("Terran", botIni.Get("auto_menu", "race"));
+        Assert.Equal("OFF", botIni.Get("starcraft", "sound"));
     }
 
     private static string CreateFakeStarCraftRoot()
