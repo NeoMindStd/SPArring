@@ -1,0 +1,39 @@
+# Build outputs
+bin/
+obj/
+artifacts/
+TestResults/
+.vs/
+.vscode/
+
+# Local runtime/game folders. Do not commit or release these.
+SC116AI/
+SC116AI_ai/
+downloads/
+_extract_test/
+SCHNAIL_HELPERS/
+
+# StarCraft/BWAPI/launcher binaries and data that must not be redistributed here.
+StarCraft.exe
+StarEdit.exe
+*.mpq
+BrooDat.mpq
+StarDat.mpq
+StarCraft.mpq
+patch_rt.mpq
+Chaoslauncher*.exe
+*ChaosLauncher*.exe
+BWAPI.dll
+
+# Local diagnostics/screenshots
+*.ERR
+*.rep
+app-check*.png
+app-printwindow.png
+
+# User/local config
+*.user
+*.suo
+*.rsuser
+secrets/
+*.local.json

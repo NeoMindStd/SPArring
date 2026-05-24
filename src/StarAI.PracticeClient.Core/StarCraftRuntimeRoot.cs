@@ -1,0 +1,55 @@
+namespace StarAI.PracticeClient.Core;
+
+public static class StarCraftRuntimeRoot
+{
+    public static string GetAiRoot(string playerRoot)
+    {
+        var normalized = Path.GetFullPath(playerRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        return normalized + "_ai";
+    }
+
+    public static string EnsureAiRoot(string playerRoot)
+    {
+        var sourceRoot = Path.GetFullPath(playerRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        var aiRoot = GetAiRoot(sourceRoot);
+        Directory.CreateDirectory(aiRoot);
+
+        foreach (var sourcePath in Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(sourceRoot, sourcePath);
+            if (ShouldSkip(relativePath))
+            {
+                continue;
+            }
+
+            var targetPath = Path.Combine(aiRoot, relativePath);
+            CopyIfDifferent(sourcePath, targetPath);
+        }
+
+        return aiRoot;
+    }
+
+    private static bool ShouldSkip(string relativePath)
+    {
+        var normalized = relativePath.Replace('\\', '/');
+        return normalized.EndsWith(".rep", StringComparison.OrdinalIgnoreCase)
+            || normalized.Contains("/write/", StringComparison.OrdinalIgnoreCase)
+            || normalized.Contains("/logs/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void CopyIfDifferent(string sourcePath, string targetPath)
+    {
+        var source = new FileInfo(sourcePath);
+        var target = new FileInfo(targetPath);
+        if (target.Exists &&
+            target.Length == source.Length &&
+            target.LastWriteTimeUtc >= source.LastWriteTimeUtc)
+        {
+            return;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+        File.Copy(sourcePath, targetPath, overwrite: true);
+        File.SetLastWriteTimeUtc(targetPath, source.LastWriteTimeUtc);
+    }
+}
