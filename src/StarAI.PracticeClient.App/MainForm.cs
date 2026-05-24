@@ -353,17 +353,7 @@ public sealed class MainForm : Form
 
         if (_mapBox.Items.Count > 0)
         {
-            var selectedIndex = 0;
-            if (keepSelection && currentMap is not null)
-            {
-                selectedIndex = _allMaps.ToList().FindIndex(map => string.Equals(map.RelativePath, currentMap, StringComparison.OrdinalIgnoreCase));
-            }
-
-            if (selectedIndex < 0)
-            {
-                selectedIndex = _allMaps.ToList().FindIndex(map => map.Name.Contains("Fighting Spirit", StringComparison.OrdinalIgnoreCase));
-            }
-
+            var selectedIndex = PracticeSelection.FindMapIndex(_allMaps, currentMap);
             _mapBox.SelectedIndex = Math.Max(0, selectedIndex);
         }
 
