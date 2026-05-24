@@ -10,7 +10,7 @@ SCHNAIL, BWAPI Revamped packages, or third-party bot binaries.
 
 ## Current version
 
-`0.1.3`
+`0.1.4`
 
 Semantic versioning is used:
 

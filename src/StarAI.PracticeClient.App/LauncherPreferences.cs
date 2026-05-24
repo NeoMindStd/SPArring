@@ -21,7 +21,7 @@ internal sealed record LauncherPreferences
     public bool WindowedMode { get; init; } = true;
     public bool CoachAi { get; init; } = true;
     public string CoachBuildId { get; init; } = "auto";
-    public bool ConfineMouse { get; init; } = true;
+    public bool ConfineMouse { get; init; } = false;
 
     public static LauncherPreferences Load()
     {

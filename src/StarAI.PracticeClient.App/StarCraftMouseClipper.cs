@@ -7,6 +7,7 @@ internal sealed class StarCraftMouseClipper : IDisposable
 {
     private readonly System.Windows.Forms.Timer _timer;
     private readonly Func<bool> _enabled;
+    private IntPtr _lastClippedWindow = IntPtr.Zero;
 
     public StarCraftMouseClipper(Func<bool> enabled)
     {
@@ -19,6 +20,11 @@ internal sealed class StarCraftMouseClipper : IDisposable
     public void Dispose()
     {
         _timer.Stop();
+        ReleaseClip();
+    }
+
+    public static void ReleaseClip()
+    {
         ClipCursor(IntPtr.Zero);
     }
 
@@ -26,14 +32,16 @@ internal sealed class StarCraftMouseClipper : IDisposable
     {
         if (!_enabled())
         {
-            ClipCursor(IntPtr.Zero);
+            _lastClippedWindow = IntPtr.Zero;
+            ReleaseClip();
             return;
         }
 
         var foreground = GetForegroundWindow();
         if (foreground == IntPtr.Zero)
         {
-            ClipCursor(IntPtr.Zero);
+            _lastClippedWindow = IntPtr.Zero;
+            ReleaseClip();
             return;
         }
 
@@ -44,32 +52,62 @@ internal sealed class StarCraftMouseClipper : IDisposable
             if (!process.ProcessName.Equals("StarCraft", StringComparison.OrdinalIgnoreCase) &&
                 !process.ProcessName.Equals("Brood War", StringComparison.OrdinalIgnoreCase))
             {
-                ClipCursor(IntPtr.Zero);
+                _lastClippedWindow = IntPtr.Zero;
+                ReleaseClip();
                 return;
             }
         }
         catch
         {
-            ClipCursor(IntPtr.Zero);
+            _lastClippedWindow = IntPtr.Zero;
+            ReleaseClip();
             return;
         }
 
-        if (GetClientRect(foreground, out var rect))
+        if (!GetCursorPos(out var cursor) || !GetClientRect(foreground, out var rect))
         {
-            var topLeft = new Point { X = rect.Left, Y = rect.Top };
-            var bottomRight = new Point { X = rect.Right, Y = rect.Bottom };
-            ClientToScreen(foreground, ref topLeft);
-            ClientToScreen(foreground, ref bottomRight);
-            var screenRect = new Rect
-            {
-                Left = topLeft.X,
-                Top = topLeft.Y,
-                Right = bottomRight.X,
-                Bottom = bottomRight.Y
-            };
-            ClipCursor(ref screenRect);
+            _lastClippedWindow = IntPtr.Zero;
+            ReleaseClip();
+            return;
         }
+
+        var clientCursor = cursor;
+        ScreenToClient(foreground, ref clientCursor);
+        var cursorInsideClient =
+            clientCursor.X >= rect.Left &&
+            clientCursor.X < rect.Right &&
+            clientCursor.Y >= rect.Top &&
+            clientCursor.Y < rect.Bottom;
+
+        if (!cursorInsideClient)
+        {
+            _lastClippedWindow = IntPtr.Zero;
+            ReleaseClip();
+            return;
+        }
+
+        if ((GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0 && _lastClippedWindow != foreground)
+        {
+            ReleaseClip();
+            return;
+        }
+
+        var topLeft = new Point { X = rect.Left, Y = rect.Top };
+        var bottomRight = new Point { X = rect.Right, Y = rect.Bottom };
+        ClientToScreen(foreground, ref topLeft);
+        ClientToScreen(foreground, ref bottomRight);
+        var screenRect = new Rect
+        {
+            Left = topLeft.X,
+            Top = topLeft.Y,
+            Right = bottomRight.X,
+            Bottom = bottomRight.Y
+        };
+        ClipCursor(ref screenRect);
+        _lastClippedWindow = foreground;
     }
+
+    private const int VK_LBUTTON = 0x01;
 
     [DllImport("user32.dll")]
     private static extern IntPtr GetForegroundWindow();
@@ -82,6 +120,15 @@ internal sealed class StarCraftMouseClipper : IDisposable
 
     [DllImport("user32.dll")]
     private static extern bool ClientToScreen(IntPtr handle, ref Point point);
+
+    [DllImport("user32.dll")]
+    private static extern bool ScreenToClient(IntPtr handle, ref Point point);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetCursorPos(out Point point);
+
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int key);
 
     [DllImport("user32.dll")]
     private static extern bool ClipCursor(ref Rect rect);

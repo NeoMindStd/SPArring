@@ -279,8 +279,16 @@ public sealed class MainForm : Form
         _coachBox.CheckedChanged += (_, _) => SavePreferences();
         panel.Controls.Add(_coachBox);
 
-        _confineMouseBox = Check("스타 마우스 가두기", true);
-        _confineMouseBox.CheckedChanged += (_, _) => SavePreferences();
+        _confineMouseBox = Check("스타 마우스 가두기", false);
+        _confineMouseBox.CheckedChanged += (_, _) =>
+        {
+            if (!_confineMouseBox.Checked)
+            {
+                StarCraftMouseClipper.ReleaseClip();
+            }
+
+            SavePreferences();
+        };
         panel.Controls.Add(_confineMouseBox);
 
         panel.Controls.Add(Label("CoachAI 빌드표"));
@@ -573,6 +581,11 @@ public sealed class MainForm : Form
         {
             var settings = CurrentSettings();
             SavePreferences();
+            if (!_confineMouseBox.Checked)
+            {
+                StarCraftMouseClipper.ReleaseClip();
+            }
+
             var hotkeys = HotkeyImporter.ImportBestAvailable(settings.StarCraftRoot);
             Log(hotkeys.Message);
 
@@ -622,10 +635,10 @@ public sealed class MainForm : Form
             _launcher.ClickStart(playerLauncherTask.Result, TimeSpan.FromSeconds(20));
             Log("내 클라이언트를 시작했습니다. 자동으로 Local PC 방 생성을 시도합니다.");
 
-            await Task.Delay(TimeSpan.FromSeconds(8));
+            await Task.Delay(TimeSpan.FromSeconds(1));
 
             _launcher.ClickStart(botLauncherTask.Result, TimeSpan.FromSeconds(20));
-            Log("AI 클라이언트를 시작했습니다. 같은 방에 자동 참가를 시도합니다.");
+            Log("AI 클라이언트를 바로 시작했습니다. 같은 방에 자동 참가를 시도합니다.");
 
             _history.Add(settings.StarCraftRoot, new MatchRecord(
                 DateTime.Now,

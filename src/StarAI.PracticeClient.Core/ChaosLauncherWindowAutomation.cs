@@ -42,9 +42,10 @@ internal static class ChaosLauncherWindowAutomation
     private static IEnumerable<IntPtr> CandidateWindows(Process process)
     {
         process.Refresh();
-        if (process.MainWindowHandle != IntPtr.Zero)
+        var processWindows = new List<IntPtr>();
+        if (process.MainWindowHandle != IntPtr.Zero && IsWindowVisible(process.MainWindowHandle))
         {
-            yield return process.MainWindowHandle;
+            processWindows.Add(process.MainWindowHandle);
         }
 
         foreach (var window in TopLevelWindows())
@@ -52,18 +53,33 @@ internal static class ChaosLauncherWindowAutomation
             GetWindowThreadProcessId(window, out var pid);
             if (pid == process.Id)
             {
-                yield return window;
+                processWindows.Add(window);
             }
         }
 
-        foreach (var window in TopLevelWindows())
+        foreach (var window in processWindows.Distinct())
         {
-            var title = GetWindowText(window);
-            if (title.Contains("Chaoslauncher", StringComparison.OrdinalIgnoreCase) ||
-                title.Contains("ChaosLauncher", StringComparison.OrdinalIgnoreCase))
+            yield return window;
+        }
+
+        if (processWindows.Count > 0)
+        {
+            yield break;
+        }
+
+        var chaosWindows = TopLevelWindows()
+            .Where(window =>
             {
-                yield return window;
-            }
+                var title = GetWindowText(window);
+                return title.Contains("Chaoslauncher", StringComparison.OrdinalIgnoreCase) ||
+                       title.Contains("ChaosLauncher", StringComparison.OrdinalIgnoreCase);
+            })
+            .Distinct()
+            .ToArray();
+
+        if (chaosWindows.Length == 1)
+        {
+            yield return chaosWindows[0];
         }
     }
 
