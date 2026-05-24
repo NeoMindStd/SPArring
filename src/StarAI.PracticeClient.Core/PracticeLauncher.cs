@@ -49,7 +49,19 @@ public sealed class PracticeLauncher
     [SupportedOSPlatform("windows")]
     public void ClickStart(Process process, TimeSpan timeout)
     {
-        if (!ChaosLauncherWindowAutomation.ClickStart(process, timeout))
+        var starCraftRoot = process.StartInfo.WorkingDirectory;
+        if (string.IsNullOrWhiteSpace(starCraftRoot))
+        {
+            starCraftRoot = Path.GetDirectoryName(process.StartInfo.FileName) ?? "";
+        }
+
+        ClickStart(process, starCraftRoot, timeout);
+    }
+
+    [SupportedOSPlatform("windows")]
+    public void ClickStart(Process process, string starCraftRoot, TimeSpan timeout)
+    {
+        if (!ChaosLauncherWindowAutomation.ClickStart(process, starCraftRoot, timeout))
         {
             throw new InvalidOperationException("ChaosLauncher Start button could not be clicked automatically.");
         }

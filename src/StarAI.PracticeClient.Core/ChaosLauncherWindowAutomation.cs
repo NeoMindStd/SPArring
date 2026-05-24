@@ -9,27 +9,35 @@ namespace StarAI.PracticeClient.Core;
 internal static class ChaosLauncherWindowAutomation
 {
     private const int BM_CLICK = 0x00F5;
+    private const int WM_LBUTTONDOWN = 0x0201;
+    private const int WM_LBUTTONUP = 0x0202;
+    private const int MK_LBUTTON = 0x0001;
     private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
     private const uint MOUSEEVENTF_LEFTUP = 0x0004;
+    private static readonly object PhysicalClickLock = new();
 
-    public static bool ClickStart(Process process, TimeSpan timeout)
+    public static bool ClickStart(Process process, string starCraftRoot, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
         while (DateTime.UtcNow < deadline)
         {
-            foreach (var window in CandidateWindows(process))
+            foreach (var window in CandidateWindows(process, starCraftRoot))
             {
                 var button = FindChildByText(window, "Start");
                 if (button != IntPtr.Zero)
                 {
                     SetForegroundWindow(window);
-                    if (ClickCenter(button))
+                    if (ClickButtonByMessage(button))
                     {
                         return true;
                     }
 
                     SendMessage(button, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
-                    return true;
+                    Thread.Sleep(150);
+                    if (ClickCenter(button))
+                    {
+                        return true;
+                    }
                 }
 
                 if (ClickApproximateStart(window))
@@ -44,7 +52,7 @@ internal static class ChaosLauncherWindowAutomation
         return false;
     }
 
-    private static IEnumerable<IntPtr> CandidateWindows(Process process)
+    private static IEnumerable<IntPtr> CandidateWindows(Process process, string starCraftRoot)
     {
         process.Refresh();
         var processWindows = new List<IntPtr>();
@@ -72,6 +80,32 @@ internal static class ChaosLauncherWindowAutomation
             yield break;
         }
 
+        var launcherPath = Path.GetFullPath(Path.Combine(starCraftRoot, "Chaoslauncher - MultiInstance.exe"));
+        foreach (var launcherProcess in Process.GetProcessesByName("Chaoslauncher - MultiInstance"))
+        {
+            using (launcherProcess)
+            {
+                if (!IsProcessExecutable(launcherProcess, launcherPath))
+                {
+                    continue;
+                }
+
+                foreach (var window in TopLevelWindows())
+                {
+                    GetWindowThreadProcessId(window, out var pid);
+                    if (pid == launcherProcess.Id)
+                    {
+                        yield return window;
+                    }
+                }
+            }
+        }
+
+        if (processWindows.Count > 0)
+        {
+            yield break;
+        }
+
         var chaosWindows = TopLevelWindows()
             .Where(window =>
             {
@@ -85,6 +119,18 @@ internal static class ChaosLauncherWindowAutomation
         if (chaosWindows.Length == 1)
         {
             yield return chaosWindows[0];
+        }
+    }
+
+    private static bool IsProcessExecutable(Process process, string expectedPath)
+    {
+        try
+        {
+            return string.Equals(Path.GetFullPath(process.MainModule?.FileName ?? ""), expectedPath, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -128,10 +174,35 @@ internal static class ChaosLauncherWindowAutomation
         }
 
         SetForegroundWindow(window);
-        Thread.Sleep(80);
-        SetCursorPos(rect.Left + 45, rect.Bottom - 24);
-        mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
-        mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
+        lock (PhysicalClickLock)
+        {
+            Thread.Sleep(80);
+            SetCursorPos(rect.Left + 45, rect.Bottom - 24);
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
+        }
+
+        return true;
+    }
+
+    private static bool ClickButtonByMessage(IntPtr button)
+    {
+        if (!GetClientRect(button, out var rect))
+        {
+            return false;
+        }
+
+        var width = rect.Right - rect.Left;
+        var height = rect.Bottom - rect.Top;
+        if (width <= 0 || height <= 0)
+        {
+            return false;
+        }
+
+        var lParam = MakeLParam(width / 2, height / 2);
+        SendMessage(button, WM_LBUTTONDOWN, (IntPtr)MK_LBUTTON, lParam);
+        SendMessage(button, WM_LBUTTONUP, IntPtr.Zero, lParam);
+        Thread.Sleep(150);
         return true;
     }
 
@@ -149,12 +220,18 @@ internal static class ChaosLauncherWindowAutomation
             return false;
         }
 
-        SetCursorPos(rect.Left + width / 2, rect.Top + height / 2);
-        Thread.Sleep(80);
-        mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
-        mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
+        lock (PhysicalClickLock)
+        {
+            SetCursorPos(rect.Left + width / 2, rect.Top + height / 2);
+            Thread.Sleep(80);
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
+        }
+
         return true;
     }
+
+    private static IntPtr MakeLParam(int x, int y) => (IntPtr)((y << 16) | (x & 0xFFFF));
 
     private static IReadOnlyList<IntPtr> TopLevelWindows()
     {
@@ -212,6 +289,9 @@ internal static class ChaosLauncherWindowAutomation
 
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(IntPtr handle, out Rect rect);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetClientRect(IntPtr handle, out Rect rect);
 
     [DllImport("user32.dll")]
     private static extern bool SetCursorPos(int x, int y);
