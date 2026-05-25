@@ -148,8 +148,12 @@ if ($mainFormSource -notmatch "StarCraftRuntimeRoot\.EnsureAiRoot" -or $mainForm
     throw "The bot client must use a separate AI runtime root so the player client never reads the bot DLL from shared bwapi.ini."
 }
 
-if ($mainFormSource -notmatch "PlayerFullscreen" -or $mainFormSource -notmatch "WindowedMode = true" -or $mainFormSource -notmatch "enableApmAlert: false") {
-    throw "The launch flow must keep the player fullscreen preference separate from the always-windowed AI runtime."
+if ($mainFormSource -notmatch "StarCraftBorderlessWindow" -or $mainFormSource -notmatch "WindowedMode = true" -or $mainFormSource -notmatch "enableWMode: true" -or $mainFormSource -notmatch "enableApmAlert: false") {
+    throw "The launch flow must keep StarCraft in W-MODE, apply borderless behavior separately, and keep the AI runtime windowed."
+}
+
+if ($mainFormSource -notmatch "CrashLogInspector\.HasRecentApmAlertCrash") {
+    throw "The launch flow must disable APMAlert when recent APMAlert crash logs are present."
 }
 
 if ($mainFormSource -match $removedSharedIniFlowName) {

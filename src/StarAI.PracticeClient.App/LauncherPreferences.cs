@@ -21,7 +21,7 @@ internal sealed record LauncherPreferences
     public bool PlayerFullscreen { get; init; } = true;
     public bool WindowedMode { get; init; } = true;
     public bool ConfineMouse { get; init; } = false;
-    public bool ShowApmAlert { get; init; } = true;
+    public bool ShowApmAlert { get; init; } = false;
 
     public static LauncherPreferences Load()
     {

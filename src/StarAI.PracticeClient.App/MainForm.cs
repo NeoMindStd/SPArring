@@ -270,7 +270,7 @@ public sealed class MainForm : Form
         _speedBox.SelectedIndexChanged += (_, _) => SavePreferences();
         panel.Controls.Add(_speedBox);
 
-        _windowedBox = Check("내 클라이언트 전체화면", true);
+        _windowedBox = Check("테두리 없는 전체 창모드", true);
         _windowedBox.CheckedChanged += (_, _) => SavePreferences();
         panel.Controls.Add(_windowedBox);
 
@@ -286,7 +286,7 @@ public sealed class MainForm : Form
         };
         panel.Controls.Add(_confineMouseBox);
 
-        _apmAlertBox = Check("APM / 게임 시간 표시", true);
+        _apmAlertBox = Check("APM / 게임 시간 표시 (실험적)", false);
         _apmAlertBox.CheckedChanged += (_, _) => SavePreferences();
         panel.Controls.Add(_apmAlertBox);
 
@@ -551,7 +551,7 @@ public sealed class MainForm : Form
             map,
             playerRace,
             gameName,
-            !_windowedBox.Checked,
+            WindowedMode: true,
             (_speedBox.SelectedItem as SpeedChoice)?.SpeedOverrideMs,
             SelectedBuild());
     }
@@ -565,7 +565,14 @@ public sealed class MainForm : Form
         try
         {
             var settings = CurrentSettings();
+            var useBorderlessWindow = _windowedBox.Checked;
             var showApmAlert = _apmAlertBox.Checked;
+            if (showApmAlert && CrashLogInspector.HasRecentApmAlertCrash(settings.StarCraftRoot, TimeSpan.FromDays(14)))
+            {
+                showApmAlert = false;
+                _apmAlertBox.Checked = false;
+                Log("최근 APMAlert 크래시가 감지되어 이번 실행에서는 APM / 게임 시간 표시를 끕니다.");
+            }
             settingsForCleanup = settings;
             SavePreferences();
             if (!_confineMouseBox.Checked)
@@ -611,7 +618,7 @@ public sealed class MainForm : Form
                 throw new InvalidOperationException(string.Join(Environment.NewLine, botErrors.Select(issue => issue.Message)));
             }
 
-            WModeConfigurator.Apply(settings.StarCraftRoot, settings.WindowedMode, _confineMouseBox.Checked);
+            WModeConfigurator.Apply(settings.StarCraftRoot, windowedMode: true, clipCursor: _confineMouseBox.Checked);
             WModeConfigurator.Apply(botSettings.StarCraftRoot, botSettings.WindowedMode, clipCursor: false);
 
             var playerIni = _configurator.ApplyPlayerHost(settings);
@@ -623,8 +630,17 @@ public sealed class MainForm : Form
                 _launcher.OpenChaosAndStartStarCraft(
                     settings.StarCraftRoot,
                     ChaosLaunchMode.Bot,
-                    enableWMode: settings.WindowedMode,
+                    enableWMode: true,
                     enableApmAlert: showApmAlert));
+            if (useBorderlessWindow)
+            {
+                var targetBounds = Screen.FromControl(this).Bounds;
+                var applied = await Task.Run(() =>
+                    StarCraftBorderlessWindow.ApplyWhenReady(settings.StarCraftRoot, targetBounds, TimeSpan.FromSeconds(8)));
+                Log(applied
+                    ? "내 클라이언트를 해상도 변경 없는 테두리 없는 창모드로 맞췄습니다."
+                    : "참고: 내 클라이언트 창을 찾지 못해 테두리 없는 창모드 적용을 건너뛰었습니다.");
+            }
             _launcher.DisableStartupLaunch(settings.StarCraftRoot);
             await Task.Run(() => _launcher.CloseChaosLauncher(launcherProcess));
 
@@ -728,7 +744,8 @@ public sealed class MainForm : Form
         _searchBox.Text = _preferences.Search ?? string.Empty;
         _windowedBox.Checked = _preferences.PlayerFullscreen;
         _confineMouseBox.Checked = _preferences.ConfineMouse;
-        _apmAlertBox.Checked = _preferences.ShowApmAlert;
+        _apmAlertBox.Checked = _preferences.ShowApmAlert &&
+                               !CrashLogInspector.HasRecentApmAlertCrash(_rootBox.Text, TimeSpan.FromDays(14));
         SelectSpeed(_preferences.SpeedOverrideMs);
     }
 
@@ -769,7 +786,7 @@ public sealed class MainForm : Form
             GameName = string.IsNullOrWhiteSpace(_gameNameBox.Text) ? "AIPractice" : _gameNameBox.Text.Trim(),
             SpeedOverrideMs = (_speedBox.SelectedItem as SpeedChoice)?.SpeedOverrideMs,
             PlayerFullscreen = _windowedBox.Checked,
-            WindowedMode = !_windowedBox.Checked,
+            WindowedMode = true,
             ConfineMouse = _confineMouseBox.Checked,
             ShowApmAlert = _apmAlertBox.Checked
         }.Save();

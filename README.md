@@ -89,9 +89,11 @@ crashes in this environment.
 - Bot pool with race, difficulty tier, ELO metadata, tags, and Korean notes
 - Build/opening filters where a bot exposes configurable strategy files
 - Map selection from the selected StarCraft folder
-- Player fullscreen by default, with the bot client kept windowed and muted
+- Player borderless window mode by default, with the bot client kept windowed
+  and muted
 - Optional StarCraft mouse confinement
-- Optional player-only APM/game-time display through the local APMAlert plugin
+- Optional player-only APM/game-time display through the local APMAlert plugin;
+  it is disabled automatically when recent APMAlert crash logs are detected
 - Hotkey import/editor support
 - Replay auto-save path under `D:\OneDrive\Documents\StarCraft\Maps\Replays\ai`
 - Match history and replay browser
@@ -106,7 +108,9 @@ launcher UI stores the last selected values only as the next startup defaults;
 when `스파링 시작` is clicked, the current visible UI values drive the launch.
 This is required because BWAPI can read `bwapi.ini` when the game begins, not
 only when the process starts. Keeping the files separate prevents the human
-client from loading the bot AI. ChaosLauncher windows are not kept open
+client from loading the bot AI. The player client still uses W-MODE even when
+the UI says borderless/fullscreen, so old DirectDraw exclusive fullscreen does
+not change monitor resolution. ChaosLauncher windows are not kept open
 concurrently; each StarCraft instance is started with `RunScOnStartup`.
 
 ## Smoke test

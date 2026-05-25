@@ -284,6 +284,33 @@ public class PracticeConfiguratorTests
         Assert.Equal("1", ini.Get("W-MODE", "SaveClipCursor"));
     }
 
+    [Fact]
+    public void CrashLogInspector_DetectsRecentApmAlertCrash()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var errorDirectory = Path.Combine(root, "Errors");
+        Directory.CreateDirectory(errorDirectory);
+        File.WriteAllText(Path.Combine(errorDirectory, "test.ERR"), """
+            Call stack:
+            068751E3 C:\starai\SC116AI\Plugins\APMAlert.bwl
+            """);
+
+        Assert.True(CrashLogInspector.HasRecentApmAlertCrash(root, TimeSpan.FromDays(1)));
+    }
+
+    [Fact]
+    public void CrashLogInspector_IgnoresOldApmAlertCrash()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var errorDirectory = Path.Combine(root, "Errors");
+        Directory.CreateDirectory(errorDirectory);
+        var errorPath = Path.Combine(errorDirectory, "old.ERR");
+        File.WriteAllText(errorPath, "Plugins\\APMAlert.bwl");
+        File.SetLastWriteTime(errorPath, DateTime.Now.AddDays(-30));
+
+        Assert.False(CrashLogInspector.HasRecentApmAlertCrash(root, TimeSpan.FromDays(1)));
+    }
+
     private static string CreateFakeStarCraftRoot()
     {
         var root = Path.Combine(Path.GetTempPath(), "starai-tests", Guid.NewGuid().ToString("N"));
