@@ -555,6 +555,7 @@ public sealed class MainForm : Form
     {
         _startButton.Enabled = false;
         PracticeSettings? settingsForCleanup = null;
+        string? aiRootForCleanup = null;
 
         try
         {
@@ -590,9 +591,22 @@ public sealed class MainForm : Form
                 Log("참고: " + issue.Message);
             }
 
-            Log("SCHNAIL식으로 내 클라이언트와 AI 클라이언트를 역할별 설정으로 실행합니다.");
+            Log("SCHNAIL식으로 내 클라이언트와 AI 클라이언트를 분리된 설정 폴더로 실행합니다.");
+
+            var aiRoot = StarCraftRuntimeRoot.EnsureAiRoot(settings.StarCraftRoot);
+            aiRootForCleanup = aiRoot;
+            var botSettings = settings with { StarCraftRoot = aiRoot };
+            Log($"AI 전용 런타임 확인 완료: {aiRoot}");
+
+            var botIssues = _configurator.Validate(botSettings).ToArray();
+            var botErrors = botIssues.Where(issue => issue.IsError).ToArray();
+            if (botErrors.Length > 0)
+            {
+                throw new InvalidOperationException(string.Join(Environment.NewLine, botErrors.Select(issue => issue.Message)));
+            }
 
             WModeConfigurator.Apply(settings.StarCraftRoot, settings.WindowedMode, _confineMouseBox.Checked);
+            WModeConfigurator.Apply(botSettings.StarCraftRoot, settings.WindowedMode, clipCursor: false);
 
             var playerIni = _configurator.ApplyPlayerHost(settings);
             Log($"선택값 확인: 내 종족 {RaceKo(settings.PlayerRace)}, 상대 봇 {settings.Bot.Name}({RaceKo(settings.Bot.Race)}), 맵 {settings.Map.Name}");
@@ -606,13 +620,13 @@ public sealed class MainForm : Form
 
             await Task.Delay(TimeSpan.FromSeconds(5));
 
-            var botIni = _configurator.ApplyBotJoin(settings);
+            var botIni = _configurator.ApplyBotJoin(botSettings);
             Log($"AI 클라이언트 설정 완료: {settings.Bot.Name}({RaceKo(settings.Bot.Race)}) / 참가 전용 / 소리 OFF. INI: {botIni}");
 
             Log("AI 클라이언트를 새 ChaosLauncher 실행으로 시작합니다. Start 버튼 자동 클릭은 사용하지 않습니다.");
             var botLauncherProcess = await Task.Run(() =>
-                _launcher.OpenChaosAndStartStarCraft(settings.StarCraftRoot, ChaosLaunchMode.Bot, enableWMode: settings.WindowedMode));
-            _launcher.DisableStartupLaunch(settings.StarCraftRoot);
+                _launcher.OpenChaosAndStartStarCraft(botSettings.StarCraftRoot, ChaosLaunchMode.Bot, enableWMode: settings.WindowedMode));
+            _launcher.DisableStartupLaunch(botSettings.StarCraftRoot);
             await Task.Run(() => _launcher.CloseChaosLauncher(botLauncherProcess));
             Log("내 클라이언트와 AI 클라이언트 StarCraft 시작을 모두 확인했습니다. AI는 기존 Local PC 방 참가 설정으로 실행되었습니다.");
 
@@ -639,6 +653,10 @@ public sealed class MainForm : Form
                 try
                 {
                     _launcher.DisableStartupLaunch(settingsForCleanup.StarCraftRoot);
+                    if (!string.IsNullOrWhiteSpace(aiRootForCleanup))
+                    {
+                        _launcher.DisableStartupLaunch(aiRootForCleanup);
+                    }
                 }
                 catch
                 {

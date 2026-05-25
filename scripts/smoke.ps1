@@ -140,8 +140,8 @@ foreach ($sourceFile in Get-ChildItem -LiteralPath (Join-Path $RepoRoot "src") -
     }
 }
 
-if ($mainFormSource -match "OpenChaosAndStartStarCraft\(botSettings\.StarCraftRoot") {
-    throw "The AI client must not be launched as a second ChaosLauncher process; ChaosLauncher refuses with 'Already running'."
+if ($mainFormSource -notmatch "StarCraftRuntimeRoot\.EnsureAiRoot" -or $mainFormSource -notmatch "settings with \{ StarCraftRoot = aiRoot \}") {
+    throw "The bot client must use a separate AI runtime root so the player client never reads the bot DLL from shared bwapi.ini."
 }
 
 if ($mainFormSource -match $removedSharedIniFlowName) {

@@ -21,8 +21,11 @@ $enabledKey = "HKCU:\Software\Chaoslauncher\PluginsEnabled"
 $runIncompatibleKey = "HKCU:\Software\Chaoslauncher\PluginsRunIncompatible"
 $bwapiPlugin = "BWAPI 4.4.0 Injector [RELEASE]"
 $wmodePlugin = "W-MODE 1.02"
+$AiRoot = "${Root}_ai"
 $ini = Join-Path $Root "bwapi-data\bwapi.ini"
+$aiIni = Join-Path $AiRoot "bwapi-data\bwapi.ini"
 $iniBackup = "$ini.starai-live-smoke.bak"
+$aiIniBackup = "$aiIni.starai-live-smoke.bak"
 $botAi = "bwapi-data/AI/practice-bots/NiteKatT/ExampleAIModule.dll"
 $map = "maps/(4)Fighting Spirit.scx"
 
@@ -69,6 +72,32 @@ function Wait-CompletedStarts {
     throw "Timed out waiting for $Count completed StarCraft starts in $LogPath"
 }
 
+function Sync-AiRuntime {
+    New-Item -ItemType Directory -Path $AiRoot -Force | Out-Null
+    foreach ($source in Get-ChildItem -LiteralPath $Root -Recurse -File) {
+        $relative = [System.IO.Path]::GetRelativePath($Root, $source.FullName)
+        $normalized = $relative.Replace('\', '/')
+        if ($normalized.EndsWith(".rep", [StringComparison]::OrdinalIgnoreCase) -or
+            $normalized.Contains("/write/", [StringComparison]::OrdinalIgnoreCase) -or
+            $normalized.Contains("/logs/", [StringComparison]::OrdinalIgnoreCase) -or
+            $normalized.Contains("/errors/", [StringComparison]::OrdinalIgnoreCase) -or
+            $normalized.StartsWith("errors/", [StringComparison]::OrdinalIgnoreCase)) {
+            continue
+        }
+
+        $target = Join-Path $AiRoot $relative
+        New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
+        if ((Test-Path -LiteralPath $target) -and
+            ((Get-Item -LiteralPath $target).Length -eq $source.Length) -and
+            ((Get-Item -LiteralPath $target).LastWriteTimeUtc -ge $source.LastWriteTimeUtc)) {
+            continue
+        }
+
+        Copy-Item -LiteralPath $source.FullName -Destination $target -Force
+        (Get-Item -LiteralPath $target).LastWriteTimeUtc = $source.LastWriteTimeUtc
+    }
+}
+
 function Set-SmokeBwapiIni {
     param(
         [ValidateSet("PlayerHost", "BotJoin")]
@@ -92,6 +121,8 @@ function Set-SmokeBwapiIni {
         $sound = "OFF"
     }
 
+    $targetIni = if ($Role -eq "PlayerHost") { $ini } else { $aiIni }
+    New-Item -ItemType Directory -Path (Split-Path $targetIni -Parent) -Force | Out-Null
     @"
 [ai]
 ai = $ai
@@ -134,7 +165,7 @@ sound = $sound
 screenshots = gif
 drop_players = ON
 speed_override = 42
-"@ | Set-Content -LiteralPath $ini -Encoding ASCII
+"@ | Set-Content -LiteralPath $targetIni -Encoding ASCII
 }
 
 function Stop-LocalStarCraft {
@@ -147,16 +178,25 @@ function Stop-LocalStarCraft {
 }
 
 $launcher = Join-Path $Root "Chaoslauncher - MultiInstance.exe"
+$aiLauncher = Join-Path $AiRoot "Chaoslauncher - MultiInstance.exe"
 $log = Join-Path $Root "Chaoslauncher - MultiInstance.log"
+$aiLog = Join-Path $AiRoot "Chaoslauncher - MultiInstance.log"
 
 try {
     if (-not (Test-Path $launcher)) {
         throw "ChaosLauncher not found: $launcher"
     }
 
+    Sync-AiRuntime
+    if (-not (Test-Path $aiLauncher)) {
+        throw "AI ChaosLauncher not found after sync: $aiLauncher"
+    }
+
     foreach ($required in @(
         (Join-Path $Root $botAi.Replace("/", "\")),
-        (Join-Path $Root $map.Replace("/", "\"))
+        (Join-Path $Root $map.Replace("/", "\")),
+        (Join-Path $AiRoot $botAi.Replace("/", "\")),
+        (Join-Path $AiRoot $map.Replace("/", "\"))
     )) {
         if (-not (Test-Path $required)) {
             throw "Required live-smoke file not found: $required"
@@ -164,8 +204,12 @@ try {
     }
 
     Copy-Item -LiteralPath $ini -Destination $iniBackup -Force
+    Copy-Item -LiteralPath $aiIni -Destination $aiIniBackup -Force
     if (Test-Path $log) {
         Remove-Item -LiteralPath $log -Force
+    }
+    if (Test-Path $aiLog) {
+        Remove-Item -LiteralPath $aiLog -Force
     }
 
     Write-Host "[live-smoke] Launching player-host StarCraft through RunScOnStartup"
@@ -184,10 +228,10 @@ try {
     }
 
     Set-SmokeBwapiIni -Role BotJoin
-    Set-ChaosForRoot -StarCraftRoot $Root -RunOnStartup $true
-    Write-Host "[live-smoke] Reopening ChaosLauncher with RunScOnStartup for bot-join StarCraft"
-    $botLauncherProcess = Start-Process -FilePath $launcher -WorkingDirectory $Root -PassThru
-    Wait-CompletedStarts -LogPath $log -Count 2
+    Set-ChaosForRoot -StarCraftRoot $AiRoot -RunOnStartup $true
+    Write-Host "[live-smoke] Reopening AI ChaosLauncher with RunScOnStartup for bot-join StarCraft"
+    $botLauncherProcess = Start-Process -FilePath $aiLauncher -WorkingDirectory $AiRoot -PassThru
+    Wait-CompletedStarts -LogPath $aiLog -Count 1
 
     if (-not $botLauncherProcess.HasExited) {
         $botLauncherProcess.CloseMainWindow() | Out-Null
@@ -206,14 +250,19 @@ try {
         throw "Expected two local StarCraft instances, found $starCraftCount."
     }
 
-    Write-Host "[live-smoke] OK: one ChaosLauncher started two StarCraft instances."
+    Write-Host "[live-smoke] OK: player root hosted and AI root started bot-join StarCraft."
 }
 finally {
     if (Test-Path $iniBackup) {
         Copy-Item -LiteralPath $iniBackup -Destination $ini -Force
         Remove-Item -LiteralPath $iniBackup -Force
     }
+    if (Test-Path $aiIniBackup) {
+        Copy-Item -LiteralPath $aiIniBackup -Destination $aiIni -Force
+        Remove-Item -LiteralPath $aiIniBackup -Force
+    }
 
     Set-ChaosForRoot -StarCraftRoot $Root -RunOnStartup $false
+    Set-ChaosForRoot -StarCraftRoot $AiRoot -RunOnStartup $false
     Stop-LocalStarCraft
 }

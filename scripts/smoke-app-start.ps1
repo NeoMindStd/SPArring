@@ -11,8 +11,11 @@ $Version = (Get-Content -LiteralPath (Join-Path $RepoRoot "VERSION") -Raw).Trim(
 $AppDir = Join-Path $RepoRoot "artifacts\run\AIStarClient-$Version"
 $BuildDir = Join-Path $RepoRoot "artifacts\run-build\AIStarClient-$Version"
 $App = Join-Path $AppDir "StarAI.PracticeClient.App.exe"
+$AiRoot = "${Root}_ai"
 $Log = Join-Path $Root "Chaoslauncher - MultiInstance.log"
+$AiLog = Join-Path $AiRoot "Chaoslauncher - MultiInstance.log"
 $Ini = Join-Path $Root "bwapi-data\bwapi.ini"
+$AiIni = Join-Path $AiRoot "bwapi-data\bwapi.ini"
 $Preferences = Join-Path $env:APPDATA "AIStarClient\preferences.json"
 $PreferencesBackup = "$Preferences.starai-smoke.bak"
 $SafeBot = "bwapi-data\AI\practice-bots\NiteKatT\ExampleAIModule.dll"
@@ -51,19 +54,42 @@ function Get-CompletedStartCount {
     return @((Get-Content -LiteralPath $Log) | Where-Object { $_ -like "*Starting Starcraft completed*" }).Count
 }
 
-function Wait-CompletedStarts {
-    param([int]$Count)
+function Wait-CompletedStart {
+    param([string]$Path)
 
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     do {
-        if ((Get-CompletedStartCount) -ge $Count) {
+        if (Test-Path -LiteralPath $Path) {
+            $count = @((Get-Content -LiteralPath $Path) | Where-Object { $_ -like "*Starting Starcraft completed*" }).Count
+            if ($count -ge 1) {
+                return
+            }
+        }
+
+        Start-Sleep -Milliseconds 500
+    } while ((Get-Date) -lt $deadline)
+
+    throw "Timed out waiting for completed StarCraft start in $Path."
+}
+
+function Wait-BothCompletedStarts {
+    Wait-CompletedStart -Path $Log
+    Wait-CompletedStart -Path $AiLog
+}
+
+function Wait-File {
+    param([string]$Path)
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    do {
+        if (Test-Path -LiteralPath $Path) {
             return
         }
 
         Start-Sleep -Milliseconds 500
     } while ((Get-Date) -lt $deadline)
 
-    throw "Timed out waiting for $Count completed StarCraft starts. Actual: $(Get-CompletedStartCount)."
+    throw "Timed out waiting for file: $Path"
 }
 
 function Add-UiClickTypes {
@@ -158,25 +184,31 @@ function Restore-Preferences {
     }
 }
 
-function Assert-FinalBotJoinIni {
-    $lines = Get-Content -LiteralPath $Ini | Select-String -Pattern "ai =|map =|game =|race =|enemy_race =|character_name|sound ="
-    $text = ($lines | ForEach-Object { $_.Line }) -join "`n"
+function Assert-FinalRoleInis {
+    Wait-File -Path $AiIni
+    $hostText = ((Get-Content -LiteralPath $Ini | Select-String -Pattern "ai =|map =|game =|race =|enemy_race =|character_name|sound =") | ForEach-Object { $_.Line }) -join "`n"
+    $botText = ((Get-Content -LiteralPath $AiIni | Select-String -Pattern "ai =|map =|game =|race =|enemy_race =|character_name|sound =") | ForEach-Object { $_.Line }) -join "`n"
 
-    if ($text -notmatch "ai = bwapi-data/AI/practice-bots/NiteKatT/ExampleAIModule.dll") {
-        throw "Final bwapi.ini is not the smoke bot AI join config:`n$text"
+    if ($hostText -notmatch "ai =\s*(\n|$)" -or
+        $hostText -notmatch "character_name = StarAIHuman" -or
+        $hostText -notmatch "map = maps/\(4\)Fighting Spirit\.scx" -or
+        $hostText -notmatch "race = Protoss" -or
+        $hostText -notmatch "enemy_race = Terran" -or
+        $hostText -notmatch "sound = ON") {
+        throw "Player bwapi.ini is not a human-host role config:`n$hostText"
     }
 
-    if ($text -notmatch "character_name = StarAIBot" -or
-        $text -notmatch "map =\s*(\n|$)" -or
-        $text -notmatch "game = StarAIAppSmoke" -or
-        $text -notmatch "race = Terran" -or
-        $text -notmatch "enemy_race = Protoss" -or
-        $text -notmatch "sound = OFF") {
-        throw "Final bwapi.ini is not a bot-join role config:`n$text"
+    if ($botText -notmatch "ai = bwapi-data/AI/practice-bots/NiteKatT/ExampleAIModule.dll" -or
+        $botText -notmatch "character_name = StarAIBot" -or
+        $botText -notmatch "map =\s*(\n|$)" -or
+        $botText -notmatch "game = StarAIAppSmoke" -or
+        $botText -notmatch "race = Terran" -or
+        $botText -notmatch "enemy_race = Protoss" -or
+        $botText -notmatch "sound = OFF") {
+        throw "AI bwapi.ini is not a bot-join role config:`n$botText"
     }
 
-    Write-Host "[app-smoke] Final bwapi.ini is bot-join:"
-    Write-Host $text
+    Write-Host "[app-smoke] Player bwapi.ini is human-host and AI bwapi.ini is bot-join."
 }
 
 try {
@@ -207,6 +239,9 @@ try {
     if (Test-Path -LiteralPath $Log) {
         Remove-Item -LiteralPath $Log -Force
     }
+    if (Test-Path -LiteralPath $AiLog) {
+        Remove-Item -LiteralPath $AiLog -Force
+    }
 
     Add-UiClickTypes
     Write-Host "[app-smoke] Launching app and clicking Sparring Start"
@@ -214,8 +249,8 @@ try {
     Start-Sleep -Seconds 2
     Invoke-SparringStartButton -ProcessId $appProcess.Id
 
-    Wait-CompletedStarts -Count 2
-    Assert-FinalBotJoinIni
+    Wait-BothCompletedStarts
+    Assert-FinalRoleInis
 
     Write-Host "[app-smoke] OK: app button launched player-host then bot-join StarCraft instances."
 }

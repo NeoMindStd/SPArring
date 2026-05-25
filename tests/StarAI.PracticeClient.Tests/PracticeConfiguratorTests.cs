@@ -76,13 +76,15 @@ public class PracticeConfiguratorTests
     }
 
     [Fact]
-    public void SharedRuntimeRoleFlow_SwitchesFromHumanHostToBotJoin()
+    public void SeparateRuntimeRoleFlow_KeepsHumanHostIniUnchangedWhenBotJoinIsApplied()
     {
         var root = CreateFakeStarCraftRoot();
         var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
         File.WriteAllText(bot.DllPath(root), "");
         File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
         var settings = CreateSettings(root, bot, buildOption: null);
+        var aiRoot = StarCraftRuntimeRoot.EnsureAiRoot(root);
+        var botSettings = settings with { StarCraftRoot = aiRoot };
         var configurator = new PracticeConfigurator(Path.Combine(root, "replays"));
 
         var hostPath = configurator.ApplyPlayerHost(settings);
@@ -91,10 +93,13 @@ public class PracticeConfiguratorTests
         Assert.Equal("", hostIni.Get("ai", "ai"));
         Assert.Equal("StarAIHuman", hostIni.Get("auto_menu", "character_name"));
 
-        var botPath = configurator.ApplyBotJoin(settings);
+        var botPath = configurator.ApplyBotJoin(botSettings);
         var botIni = BwapiIni.Load(botPath);
 
-        Assert.Equal(hostPath, botPath);
+        hostIni = BwapiIni.Load(hostPath);
+        Assert.NotEqual(hostPath, botPath);
+        Assert.Equal("", hostIni.Get("ai", "ai"));
+        Assert.Equal("StarAIHuman", hostIni.Get("auto_menu", "character_name"));
         Assert.Equal("bwapi-data/AI/TestBot.dll", botIni.Get("ai", "ai"));
         Assert.Equal("StarAIBot", botIni.Get("auto_menu", "character_name"));
         Assert.Equal("", botIni.Get("auto_menu", "map"));
@@ -252,7 +257,7 @@ public class PracticeConfiguratorTests
 
         Assert.Equal("0", ini.Get("W-MODE", "Windowed"));
         Assert.Equal("0", ini.Get("W-MODE", "ClipCursor"));
-        Assert.Equal("0", ini.Get("W-MODE", "SaveClipCursor"));
+        Assert.Equal("1", ini.Get("W-MODE", "SaveClipCursor"));
         Assert.Equal("1", ini.Get("W-MODE", "EnableWindowMove"));
         Assert.Equal("0", ini.Get("W-MODE", "AlwaysOnTop"));
         Assert.Equal("0", ini.Get("W-MODE", "DisableControls"));
@@ -269,12 +274,14 @@ public class PracticeConfiguratorTests
 
         Assert.Equal("1", ini.Get("W-MODE", "Windowed"));
         Assert.Equal("0", ini.Get("W-MODE", "ClipCursor"));
+        Assert.Equal("1", ini.Get("W-MODE", "SaveClipCursor"));
 
         WModeConfigurator.Apply(root, windowedMode: true, clipCursor: true);
         ini = BwapiIni.Load(path);
 
         Assert.Equal("1", ini.Get("W-MODE", "Windowed"));
         Assert.Equal("1", ini.Get("W-MODE", "ClipCursor"));
+        Assert.Equal("1", ini.Get("W-MODE", "SaveClipCursor"));
     }
 
     private static string CreateFakeStarCraftRoot()

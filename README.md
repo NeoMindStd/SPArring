@@ -33,6 +33,7 @@ Recommended local layout while developing:
 C:\starai\
   StarAI.PracticeClient\   # this repository
   SC116AI\                 # local runtime folder, not committed
+  SC116AI_ai\              # generated bot runtime folder, not committed
 ```
 
 ## Run locally
@@ -57,10 +58,10 @@ That command rebuilds the local run folder and starts the app.
 2. Select your race, opponent race, difficulty, bot, map, and bot build.
 3. Choose windowed/W-MODE or fullscreen behavior.
 4. Click `스파링 시작`.
-5. AIStarClient writes a human-host `bwapi.ini`, starts the first StarCraft
-   client, waits for the Local PC room, then rewrites `bwapi.ini` as bot-join
-   and starts the second StarCraft client by reopening ChaosLauncher with
-   `RunScOnStartup`.
+5. AIStarClient writes a human-host `bwapi.ini` in the selected StarCraft
+   folder, syncs a separate `<StarCraft folder>_ai` runtime for the bot, starts
+   the first StarCraft client, waits for the Local PC room, then starts the bot
+   client from the AI runtime with its own bot-join `bwapi.ini`.
 
 The player host role writes:
 
@@ -95,11 +96,13 @@ crashes in this environment.
 
 ## Stability model
 
-AIStarClient uses one StarCraft 1.16.1 folder. It does not keep two
-ChaosLauncher processes open at the same time. Instead it starts the player
-client, closes the launcher window, rewrites `bwapi.ini`, and reopens the same
-launcher executable to start the bot client. This avoids the old split-runtime
-model and avoids relying on fragile Start-button UI automation.
+AIStarClient uses two local runtime folders: the selected player folder and a
+generated sibling folder named `<StarCraft folder>_ai`. The player folder always
+keeps `ai =` empty, while the AI folder receives the selected bot DLL. This is
+required because BWAPI can read `bwapi.ini` when the game begins, not only when
+the process starts. Keeping the files separate prevents the human client from
+loading the bot AI. ChaosLauncher windows are not kept open concurrently; each
+StarCraft instance is started with `RunScOnStartup`.
 
 ## Smoke test
 

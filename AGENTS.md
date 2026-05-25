@@ -19,15 +19,15 @@
 
 ## StarCraft / ChaosLauncher 흐름
 
-- 실제 스파링 root는 기본적으로 `C:\starai\SC116AI` 하나만 씁니다.
-- `C:\starai\SC116AI_ai` 같은 과거 분리 런타임을 활성 흐름으로 되살리지 않습니다.
+- 실제 사람 클라이언트 root는 기본적으로 `C:\starai\SC116AI`를 씁니다.
+- 봇 클라이언트는 `StarCraftRuntimeRoot.EnsureAiRoot`로 만든 `C:\starai\SC116AI_ai`를 씁니다. 사람 클라가 봇 DLL을 읽지 않게 하려면 두 `bwapi.ini`가 물리적으로 분리되어야 합니다.
 - Program Files의 StarCraft Remastered 프로세스는 종료하지 않습니다.
 - 스파링 시작 전 로컬 `C:\starai` 아래의 1.16.1 `StarCraft.exe`와 `Chaoslauncher - MultiInstance.exe`만 정리합니다.
 - ChaosLauncher는 동시에 두 개를 띄우지 않습니다. 첫 StarCraft 시작 후 런처 창만 닫고, 같은 런처를 다시 열어 두 번째 StarCraft를 `RunScOnStartup`으로 시작합니다.
 
 정상 스파링 순서:
 
-1. `PracticeConfigurator.ApplyPlayerHost`가 사람 클라이언트용 INI를 씁니다.
+1. `PracticeConfigurator.ApplyPlayerHost`가 사람 클라이언트용 INI를 `C:\starai\SC116AI`에 씁니다.
    - `ai =` 빈 값
    - `map = <선택 맵>`
    - `race = <내 종족>`
@@ -35,7 +35,7 @@
    - `character_name = StarAIHuman`
    - sound ON
 2. ChaosLauncher `RunScOnStartup`으로 첫 번째 StarCraft를 시작해 Local PC 방을 만듭니다.
-3. 방 생성 대기 뒤 `PracticeConfigurator.ApplyBotJoin`이 같은 `bwapi.ini`를 봇 참가용으로 바꿉니다.
+3. 방 생성 대기 뒤 `PracticeConfigurator.ApplyBotJoin`이 `C:\starai\SC116AI_ai`의 `bwapi.ini`를 봇 참가용으로 씁니다.
    - `ai = <선택 봇 DLL>`
    - `map =` 빈 값
    - `game = <방 이름>`
@@ -43,7 +43,7 @@
    - `enemy_race = <내 종족>`
    - `character_name = StarAIBot`
    - sound OFF
-4. 첫 런처 창을 닫고 같은 런처를 다시 열어 두 번째 StarCraft를 시작합니다. Start 버튼 자동 클릭은 핵심 경로에서 쓰지 않습니다.
+4. 첫 런처 창을 닫고 AI runtime의 런처를 열어 두 번째 StarCraft를 시작합니다. Start 버튼 자동 클릭은 핵심 경로에서 쓰지 않습니다.
 
 ## 마우스/화면 규칙
 

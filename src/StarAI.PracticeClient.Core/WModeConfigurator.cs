@@ -9,7 +9,7 @@ public static class WModeConfigurator
             ? BwapiIni.Load(path)
             : BwapiIni.Parse("[W-MODE]" + Environment.NewLine);
 
-        ini.Set("W-MODE", "SaveClipCursor", "0");
+        ini.Set("W-MODE", "SaveClipCursor", "1");
         ini.Set("W-MODE", "ClipCursor", windowedMode && clipCursor ? "1" : "0");
         ini.Set("W-MODE", "SaveWindowed", "1");
         ini.Set("W-MODE", "Windowed", windowedMode ? "1" : "0");

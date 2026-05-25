@@ -23,8 +23,11 @@ public sealed class PracticeLauncher
     {
         var stopped = 0;
         var root = Path.GetFullPath(starCraftRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var aiRoot = StarCraftRuntimeRoot.GetAiRoot(root);
         var launcherPath = Path.GetFullPath(Path.Combine(root, "Chaoslauncher - MultiInstance.exe"));
+        var aiLauncherPath = Path.GetFullPath(Path.Combine(aiRoot, "Chaoslauncher - MultiInstance.exe"));
         var starCraftPath = Path.GetFullPath(Path.Combine(root, "StarCraft.exe"));
+        var aiStarCraftPath = Path.GetFullPath(Path.Combine(aiRoot, "StarCraft.exe"));
 
         StopLocalRuntimeViaPowerShell(root);
 
@@ -37,7 +40,9 @@ public sealed class PracticeLauncher
                 using (process)
                 {
                     if (IsMatchingProcess(process, "Chaoslauncher - MultiInstance", launcherPath) ||
-                        IsMatchingProcess(process, "StarCraft", starCraftPath, allowUnknownPath: true))
+                        IsMatchingProcess(process, "Chaoslauncher - MultiInstance", aiLauncherPath) ||
+                        IsMatchingProcess(process, "StarCraft", starCraftPath, allowUnknownPath: true) ||
+                        IsMatchingProcess(process, "StarCraft", aiStarCraftPath, allowUnknownPath: false))
                     {
                         matchedThisPass++;
                         if (StopProcess(process))
@@ -191,9 +196,11 @@ public sealed class PracticeLauncher
         var escapedRoot = starCraftRoot.Replace("'", "''", StringComparison.Ordinal);
         var script = $$"""
             $root = '{{escapedRoot}}'
+            $aiRoot = "${root}_ai"
             $launcher = Join-Path $root 'Chaoslauncher - MultiInstance.exe'
+            $aiLauncher = Join-Path $aiRoot 'Chaoslauncher - MultiInstance.exe'
             Get-CimInstance Win32_Process | Where-Object {
-                ($_.Name -eq 'Chaoslauncher - MultiInstance.exe' -and $_.ExecutablePath -eq $launcher) -or
+                ($_.Name -eq 'Chaoslauncher - MultiInstance.exe' -and ($_.ExecutablePath -eq $launcher -or $_.ExecutablePath -eq $aiLauncher)) -or
                 ($_.Name -eq 'StarCraft.exe' -and ($_.ExecutablePath -like "$root*" -or [string]::IsNullOrWhiteSpace($_.ExecutablePath)))
             } | ForEach-Object {
                 Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
