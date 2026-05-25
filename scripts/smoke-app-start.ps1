@@ -171,8 +171,10 @@ function Set-SmokePreferences {
   "BotBuildId": "default",
   "GameName": "StarAIAppSmoke",
   "SpeedOverrideMs": 42,
+  "PlayerFullscreen": false,
   "WindowedMode": true,
-  "ConfineMouse": false
+  "ConfineMouse": false,
+  "ShowApmAlert": false
 }
 "@ | Set-Content -LiteralPath $Preferences -Encoding UTF8
 }
@@ -186,14 +188,15 @@ function Restore-Preferences {
 
 function Assert-FinalRoleInis {
     Wait-File -Path $AiIni
-    $hostText = ((Get-Content -LiteralPath $Ini | Select-String -Pattern "ai =|map =|game =|race =|enemy_race =|character_name|sound =") | ForEach-Object { $_.Line }) -join "`n"
-    $botText = ((Get-Content -LiteralPath $AiIni | Select-String -Pattern "ai =|map =|game =|race =|enemy_race =|character_name|sound =") | ForEach-Object { $_.Line }) -join "`n"
+    $hostText = ((Get-Content -LiteralPath $Ini | Select-String -Pattern "ai =|map =|game =|race =|enemy_race =|character_name|sound =|windowed =") | ForEach-Object { $_.Line }) -join "`n"
+    $botText = ((Get-Content -LiteralPath $AiIni | Select-String -Pattern "ai =|map =|game =|race =|enemy_race =|character_name|sound =|windowed =") | ForEach-Object { $_.Line }) -join "`n"
 
     if ($hostText -notmatch "ai =\s*(\n|$)" -or
         $hostText -notmatch "character_name = StarAIHuman" -or
         $hostText -notmatch "map = maps/\(4\)Fighting Spirit\.scx" -or
         $hostText -notmatch "race = Protoss" -or
         $hostText -notmatch "enemy_race = Terran" -or
+        $hostText -notmatch "windowed = ON" -or
         $hostText -notmatch "sound = ON") {
         throw "Player bwapi.ini is not a human-host role config:`n$hostText"
     }
@@ -204,6 +207,7 @@ function Assert-FinalRoleInis {
         $botText -notmatch "game = StarAIAppSmoke" -or
         $botText -notmatch "race = Terran" -or
         $botText -notmatch "enemy_race = Protoss" -or
+        $botText -notmatch "windowed = ON" -or
         $botText -notmatch "sound = OFF") {
         throw "AI bwapi.ini is not a bot-join role config:`n$botText"
     }

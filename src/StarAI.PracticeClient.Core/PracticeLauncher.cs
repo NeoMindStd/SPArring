@@ -13,9 +13,15 @@ public sealed class PracticeLauncher
     public Process LaunchChaos(
         string starCraftRoot,
         ChaosLaunchMode mode,
-        bool enableWMode = true)
+        bool enableWMode = true,
+        bool enableApmAlert = false)
     {
-        return OpenChaos(starCraftRoot, mode, runStarCraftOnStartup: false, enableWMode);
+        return OpenChaos(
+            starCraftRoot,
+            mode,
+            runStarCraftOnStartup: false,
+            enableWMode: enableWMode,
+            enableApmAlert: enableApmAlert);
     }
 
     [SupportedOSPlatform("windows")]
@@ -70,11 +76,17 @@ public sealed class PracticeLauncher
         string starCraftRoot,
         ChaosLaunchMode mode,
         bool runStarCraftOnStartup = false,
-        bool enableWMode = true)
+        bool enableWMode = true,
+        bool enableApmAlert = false)
     {
         lock (ChaosStartupLock)
         {
-            _chaos.Apply(mode, starCraftRoot, runStarCraftOnStartup, enableWMode);
+            _chaos.Apply(
+                mode,
+                starCraftRoot,
+                runStarCraftOnStartup: runStarCraftOnStartup,
+                enableWMode: enableWMode,
+                enableApmAlert: enableApmAlert);
 
             var launcher = Path.Combine(starCraftRoot, "Chaoslauncher - MultiInstance.exe");
             if (!File.Exists(launcher))
@@ -97,11 +109,20 @@ public sealed class PracticeLauncher
     }
 
     [SupportedOSPlatform("windows")]
-    public Process OpenChaosAndStartStarCraft(string starCraftRoot, ChaosLaunchMode mode, bool enableWMode = true)
+    public Process OpenChaosAndStartStarCraft(
+        string starCraftRoot,
+        ChaosLaunchMode mode,
+        bool enableWMode = true,
+        bool enableApmAlert = false)
     {
         var before = CountCompletedStarts(starCraftRoot);
         var requestedAt = DateTime.UtcNow;
-        var process = OpenChaos(starCraftRoot, mode, runStarCraftOnStartup: true, enableWMode);
+        var process = OpenChaos(
+            starCraftRoot,
+            mode,
+            runStarCraftOnStartup: true,
+            enableWMode: enableWMode,
+            enableApmAlert: enableApmAlert);
         WaitForCompletedStart(starCraftRoot, before, TimeSpan.FromSeconds(20), requestedAt);
         return process;
     }

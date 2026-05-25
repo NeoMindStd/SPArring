@@ -18,8 +18,10 @@ internal sealed record LauncherPreferences
     public string? BotBuildId { get; init; }
     public string GameName { get; init; } = "AIPractice";
     public int? SpeedOverrideMs { get; init; } = 42;
+    public bool PlayerFullscreen { get; init; } = true;
     public bool WindowedMode { get; init; } = true;
     public bool ConfineMouse { get; init; } = false;
+    public bool ShowApmAlert { get; init; } = true;
 
     public static LauncherPreferences Load()
     {

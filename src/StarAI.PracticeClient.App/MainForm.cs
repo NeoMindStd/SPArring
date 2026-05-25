@@ -24,6 +24,7 @@ public sealed class MainForm : Form
     private TextBox _gameNameBox = null!;
     private CheckBox _windowedBox = null!;
     private CheckBox _confineMouseBox = null!;
+    private CheckBox _apmAlertBox = null!;
     private Button _startButton = null!;
     private TextBox _detailsBox = null!;
     private TextBox _statusBox = null!;
@@ -269,7 +270,7 @@ public sealed class MainForm : Form
         _speedBox.SelectedIndexChanged += (_, _) => SavePreferences();
         panel.Controls.Add(_speedBox);
 
-        _windowedBox = Check("창모드 / W-MODE (끄면 전체화면)", true);
+        _windowedBox = Check("내 클라이언트 전체화면", true);
         _windowedBox.CheckedChanged += (_, _) => SavePreferences();
         panel.Controls.Add(_windowedBox);
 
@@ -284,6 +285,10 @@ public sealed class MainForm : Form
             SavePreferences();
         };
         panel.Controls.Add(_confineMouseBox);
+
+        _apmAlertBox = Check("APM / 게임 시간 표시", true);
+        _apmAlertBox.CheckedChanged += (_, _) => SavePreferences();
+        panel.Controls.Add(_apmAlertBox);
 
         _startButton = Button("스파링 시작", async (_, _) => await StartSparringAsync());
         panel.Controls.Add(_startButton);
@@ -546,7 +551,7 @@ public sealed class MainForm : Form
             map,
             playerRace,
             gameName,
-            _windowedBox.Checked,
+            !_windowedBox.Checked,
             (_speedBox.SelectedItem as SpeedChoice)?.SpeedOverrideMs,
             SelectedBuild());
     }
@@ -560,6 +565,7 @@ public sealed class MainForm : Form
         try
         {
             var settings = CurrentSettings();
+            var showApmAlert = _apmAlertBox.Checked;
             settingsForCleanup = settings;
             SavePreferences();
             if (!_confineMouseBox.Checked)
@@ -595,7 +601,7 @@ public sealed class MainForm : Form
 
             var aiRoot = StarCraftRuntimeRoot.EnsureAiRoot(settings.StarCraftRoot);
             aiRootForCleanup = aiRoot;
-            var botSettings = settings with { StarCraftRoot = aiRoot };
+            var botSettings = settings with { StarCraftRoot = aiRoot, WindowedMode = true };
             Log($"AI 전용 런타임 확인 완료: {aiRoot}");
 
             var botIssues = _configurator.Validate(botSettings).ToArray();
@@ -606,7 +612,7 @@ public sealed class MainForm : Form
             }
 
             WModeConfigurator.Apply(settings.StarCraftRoot, settings.WindowedMode, _confineMouseBox.Checked);
-            WModeConfigurator.Apply(botSettings.StarCraftRoot, settings.WindowedMode, clipCursor: false);
+            WModeConfigurator.Apply(botSettings.StarCraftRoot, botSettings.WindowedMode, clipCursor: false);
 
             var playerIni = _configurator.ApplyPlayerHost(settings);
             Log($"선택값 확인: 내 종족 {RaceKo(settings.PlayerRace)}, 상대 봇 {settings.Bot.Name}({RaceKo(settings.Bot.Race)}), 맵 {settings.Map.Name}");
@@ -614,7 +620,11 @@ public sealed class MainForm : Form
 
             Log("내 클라이언트를 먼저 시작합니다. BWAPI auto_menu가 Local PC 방을 만듭니다.");
             var launcherProcess = await Task.Run(() =>
-                _launcher.OpenChaosAndStartStarCraft(settings.StarCraftRoot, ChaosLaunchMode.Bot, enableWMode: settings.WindowedMode));
+                _launcher.OpenChaosAndStartStarCraft(
+                    settings.StarCraftRoot,
+                    ChaosLaunchMode.Bot,
+                    enableWMode: settings.WindowedMode,
+                    enableApmAlert: showApmAlert));
             _launcher.DisableStartupLaunch(settings.StarCraftRoot);
             await Task.Run(() => _launcher.CloseChaosLauncher(launcherProcess));
 
@@ -625,7 +635,11 @@ public sealed class MainForm : Form
 
             Log("AI 클라이언트를 새 ChaosLauncher 실행으로 시작합니다. Start 버튼 자동 클릭은 사용하지 않습니다.");
             var botLauncherProcess = await Task.Run(() =>
-                _launcher.OpenChaosAndStartStarCraft(botSettings.StarCraftRoot, ChaosLaunchMode.Bot, enableWMode: settings.WindowedMode));
+                _launcher.OpenChaosAndStartStarCraft(
+                    botSettings.StarCraftRoot,
+                    ChaosLaunchMode.Bot,
+                    enableWMode: botSettings.WindowedMode,
+                    enableApmAlert: false));
             _launcher.DisableStartupLaunch(botSettings.StarCraftRoot);
             await Task.Run(() => _launcher.CloseChaosLauncher(botLauncherProcess));
             Log("내 클라이언트와 AI 클라이언트 StarCraft 시작을 모두 확인했습니다. AI는 기존 Local PC 방 참가 설정으로 실행되었습니다.");
@@ -712,8 +726,9 @@ public sealed class MainForm : Form
         _rootBox.Text = _preferences.StarCraftRoot ?? PracticeCatalog.DefaultRoot;
         _gameNameBox.Text = string.IsNullOrWhiteSpace(_preferences.GameName) ? "AIPractice" : _preferences.GameName;
         _searchBox.Text = _preferences.Search ?? string.Empty;
-        _windowedBox.Checked = _preferences.WindowedMode;
+        _windowedBox.Checked = _preferences.PlayerFullscreen;
         _confineMouseBox.Checked = _preferences.ConfineMouse;
+        _apmAlertBox.Checked = _preferences.ShowApmAlert;
         SelectSpeed(_preferences.SpeedOverrideMs);
     }
 
@@ -733,7 +748,8 @@ public sealed class MainForm : Form
             _speedBox is null ||
             _gameNameBox is null ||
             _windowedBox is null ||
-            _confineMouseBox is null)
+            _confineMouseBox is null ||
+            _apmAlertBox is null)
         {
             return;
         }
@@ -752,8 +768,10 @@ public sealed class MainForm : Form
             BotBuildId = SelectedBuild()?.Id,
             GameName = string.IsNullOrWhiteSpace(_gameNameBox.Text) ? "AIPractice" : _gameNameBox.Text.Trim(),
             SpeedOverrideMs = (_speedBox.SelectedItem as SpeedChoice)?.SpeedOverrideMs,
-            WindowedMode = _windowedBox.Checked,
-            ConfineMouse = _confineMouseBox.Checked
+            PlayerFullscreen = _windowedBox.Checked,
+            WindowedMode = !_windowedBox.Checked,
+            ConfineMouse = _confineMouseBox.Checked,
+            ShowApmAlert = _apmAlertBox.Checked
         }.Save();
     }
 

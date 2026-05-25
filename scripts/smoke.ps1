@@ -105,6 +105,10 @@ if ($chaosConfiguratorSource -notmatch "RunScOnStartup") {
     throw "ChaosLauncher startup must use RunScOnStartup instead of relying only on UI button clicks."
 }
 
+if ($chaosConfiguratorSource -notmatch "APMAlert \(1\.16\.1\)" -or $chaosConfiguratorSource -notmatch "enableApmAlert") {
+    throw "ChaosLauncher configuration must be able to enable APMAlert for the player client only."
+}
+
 if ($chaosConfiguratorSource -notmatch "WOW6432Node\\Blizzard Entertainment\\StarCraft") {
     throw "ChaosLauncher startup must set the 1.16.1 StarCraft install path before each launch."
 }
@@ -140,8 +144,12 @@ foreach ($sourceFile in Get-ChildItem -LiteralPath (Join-Path $RepoRoot "src") -
     }
 }
 
-if ($mainFormSource -notmatch "StarCraftRuntimeRoot\.EnsureAiRoot" -or $mainFormSource -notmatch "settings with \{ StarCraftRoot = aiRoot \}") {
+if ($mainFormSource -notmatch "StarCraftRuntimeRoot\.EnsureAiRoot" -or $mainFormSource -notmatch "settings with \{ StarCraftRoot = aiRoot, WindowedMode = true \}") {
     throw "The bot client must use a separate AI runtime root so the player client never reads the bot DLL from shared bwapi.ini."
+}
+
+if ($mainFormSource -notmatch "PlayerFullscreen" -or $mainFormSource -notmatch "WindowedMode = true" -or $mainFormSource -notmatch "enableApmAlert: false") {
+    throw "The launch flow must keep the player fullscreen preference separate from the always-windowed AI runtime."
 }
 
 if ($mainFormSource -match $removedSharedIniFlowName) {

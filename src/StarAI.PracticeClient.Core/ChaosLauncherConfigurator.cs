@@ -17,13 +17,15 @@ public sealed class ChaosLauncherConfigurator
     private const string StarCraftInstallKey = @"SOFTWARE\WOW6432Node\Blizzard Entertainment\StarCraft";
     private const string BwapiPlugin = "BWAPI 4.4.0 Injector [RELEASE]";
     private const string WModePlugin = "W-MODE 1.02";
+    private const string ApmAlertPlugin = "APMAlert (1.16.1)";
 
     [SupportedOSPlatform("windows")]
     public void Apply(
         ChaosLaunchMode mode,
         string starCraftRoot,
         bool runStarCraftOnStartup = false,
-        bool enableWMode = true)
+        bool enableWMode = true,
+        bool enableApmAlert = false)
     {
         using var launcher = Registry.CurrentUser.CreateSubKey(LauncherKey, true);
         using var enabled = Registry.CurrentUser.CreateSubKey(EnabledKey, true);
@@ -40,8 +42,10 @@ public sealed class ChaosLauncherConfigurator
 
         enabled.SetValue(WModePlugin, enableWMode ? 1 : 0, RegistryValueKind.DWord);
         enabled.SetValue(BwapiPlugin, mode == ChaosLaunchMode.Bot ? 1 : 0, RegistryValueKind.DWord);
+        enabled.SetValue(ApmAlertPlugin, enableApmAlert ? 1 : 0, RegistryValueKind.DWord);
         incompatible.SetValue(WModePlugin, 0, RegistryValueKind.DWord);
         incompatible.SetValue(BwapiPlugin, 0, RegistryValueKind.DWord);
+        incompatible.SetValue(ApmAlertPlugin, 0, RegistryValueKind.DWord);
     }
 
     [SupportedOSPlatform("windows")]

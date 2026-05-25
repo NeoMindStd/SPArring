@@ -56,7 +56,8 @@ That command rebuilds the local run folder and starts the app.
 
 1. Select your StarCraft 1.16.1 folder.
 2. Select your race, opponent race, difficulty, bot, map, and bot build.
-3. Choose windowed/W-MODE or fullscreen behavior.
+3. Choose player fullscreen/W-MODE behavior, mouse confinement, and APM/game
+   time display.
 4. Click `스파링 시작`.
 5. AIStarClient writes a human-host `bwapi.ini` in the selected StarCraft
    folder, syncs a separate `<StarCraft folder>_ai` runtime for the bot, starts
@@ -88,7 +89,9 @@ crashes in this environment.
 - Bot pool with race, difficulty tier, ELO metadata, tags, and Korean notes
 - Build/opening filters where a bot exposes configurable strategy files
 - Map selection from the selected StarCraft folder
-- Windowed/W-MODE toggle and optional StarCraft mouse confinement
+- Player fullscreen by default, with the bot client kept windowed and muted
+- Optional StarCraft mouse confinement
+- Optional player-only APM/game-time display through the local APMAlert plugin
 - Hotkey import/editor support
 - Replay auto-save path under `D:\OneDrive\Documents\StarCraft\Maps\Replays\ai`
 - Match history and replay browser
@@ -98,11 +101,13 @@ crashes in this environment.
 
 AIStarClient uses two local runtime folders: the selected player folder and a
 generated sibling folder named `<StarCraft folder>_ai`. The player folder always
-keeps `ai =` empty, while the AI folder receives the selected bot DLL. This is
-required because BWAPI can read `bwapi.ini` when the game begins, not only when
-the process starts. Keeping the files separate prevents the human client from
-loading the bot AI. ChaosLauncher windows are not kept open concurrently; each
-StarCraft instance is started with `RunScOnStartup`.
+keeps `ai =` empty, while the AI folder receives the selected bot DLL. The
+launcher UI stores the last selected values only as the next startup defaults;
+when `스파링 시작` is clicked, the current visible UI values drive the launch.
+This is required because BWAPI can read `bwapi.ini` when the game begins, not
+only when the process starts. Keeping the files separate prevents the human
+client from loading the bot AI. ChaosLauncher windows are not kept open
+concurrently; each StarCraft instance is started with `RunScOnStartup`.
 
 ## Smoke test
 
