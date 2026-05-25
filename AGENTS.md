@@ -20,6 +20,7 @@
 ## StarCraft / ChaosLauncher 규칙
 
 - 실제 스파링 실행 root는 `C:\starai\SC116AI` 하나만 사용합니다.
+- `스파링 시작`은 이전 실패로 남은 로컬 `C:\starai` 1.16.1 `StarCraft.exe` / `Chaoslauncher - MultiInstance.exe`를 먼저 정리해야 합니다. 깨끗한 상태에서만 검증하면 실제 사용자 재시도 상황을 놓칩니다.
 - `C:\starai\SC116AI_ai`는 과거 분리 런타임 참고 폴더입니다. 실제 두 번째 ChaosLauncher 실행 대상으로 쓰면 `Already running`으로 막힙니다.
 - ChaosLauncher는 두 개를 동시에 띄우지 않습니다. 하나의 `Chaoslauncher - MultiInstance.exe`에서 StarCraft를 두 번 시작합니다.
 - `bwapi.ini`는 첫 StarCraft 실행 후 AI용으로 덮어쓰지 않습니다.

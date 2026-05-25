@@ -578,6 +578,13 @@ public sealed class MainForm : Form
                 StarCraftMouseClipper.ReleaseClip();
             }
 
+            var stoppedProcesses = await Task.Run(() => _launcher.StopExistingLocalRuntime(settings.StarCraftRoot));
+            if (stoppedProcesses > 0)
+            {
+                Log($"이전 로컬 StarCraft/ChaosLauncher 잔여 프로세스 {stoppedProcesses}개를 정리했습니다.");
+                await Task.Delay(500);
+            }
+
             var hotkeys = HotkeyImporter.ImportBestAvailable(settings.StarCraftRoot);
             Log(hotkeys.Message);
 

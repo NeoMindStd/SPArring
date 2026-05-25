@@ -117,6 +117,10 @@ if ($practiceLauncherSource -notmatch "ChaosStartupLock") {
     throw "ChaosLauncher startup must guard the global StarCraft install path while launching multiple clients."
 }
 
+if ($practiceLauncherSource -notmatch "StopExistingLocalRuntime") {
+    throw "Practice launcher must clean stale local StarCraft/ChaosLauncher processes before a new sparring launch."
+}
+
 if ($practiceLauncherSource -notmatch "StartAdditionalStarCraft") {
     throw "Practice launcher must support starting the second StarCraft instance."
 }
@@ -145,6 +149,10 @@ if ($mainFormSource -match "ApplyBotJoin\(botSettings") {
 
 if ($mainFormSource -notmatch "ApplyMultiInstanceSparring" -or $mainFormSource -notmatch "StartAdditionalStarCraft") {
     throw "The active sparring flow must configure BWAPI multi-instance AI/race values before starting the second StarCraft instance."
+}
+
+if ($mainFormSource -notmatch "StopExistingLocalRuntime") {
+    throw "The app start flow must clean stale local StarCraft/ChaosLauncher processes before configuring a new match."
 }
 
 $practiceConfiguratorSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\PracticeConfigurator.cs") -Raw
