@@ -476,6 +476,11 @@ public sealed class MainForm : Form
         }
 
         var index = selected is null ? -1 : _buildFilterBox.Items.IndexOf(selected);
+        if (index < 0)
+        {
+            index = _buildFilterBox.Items.IndexOf("전체");
+        }
+
         _buildFilterBox.SelectedIndex = index >= 0 ? index : 0;
     }
 
@@ -611,25 +616,27 @@ public sealed class MainForm : Form
                 PracticeConfigurator.ApplyCoachAiBuildPreset(settings.StarCraftRoot, SelectedCoachBuildPreset(settings.PlayerRace));
             }
 
-            Log("같은 StarCraft 폴더에서 두 클라이언트를 실행합니다. BWAPI 다중 인스턴스 설정으로 1번은 플레이어, 2번은 상대 봇을 사용합니다.");
+            Log("같은 StarCraft 폴더에서 내 클라이언트와 AI 클라이언트를 역할별 설정으로 실행합니다.");
 
             WModeConfigurator.Apply(settings.StarCraftRoot, _confineMouseBox.Checked);
 
-            var playerIni = _configurator.ApplyMultiInstanceSparring(settings, coachDll);
+            var playerIni = _configurator.ApplyPlayerHost(settings, coachDll);
             Log($"선택값 확인: 내 종족 {RaceKo(settings.PlayerRace)}, 상대 봇 {settings.Bot.Name}({RaceKo(settings.Bot.Race)}), 맵 {settings.Map.Name}");
-            Log($"다중 인스턴스 설정 완료: 1번 {RaceKo(settings.PlayerRace)}, 2번 {settings.Bot.Name}({RaceKo(settings.Bot.Race)}), 맵 {settings.Map.Name}. INI: {playerIni}");
+            Log($"내 클라이언트 설정 완료: {RaceKo(settings.PlayerRace)} / {settings.Map.Name} / {settings.GameName}. INI: {playerIni}");
 
-            Log("플레이어 클라이언트를 먼저 시작합니다. 방 생성은 BWAPI auto_menu가 처리합니다.");
+            Log("내 클라이언트를 먼저 시작합니다. BWAPI auto_menu가 Local PC 방을 만듭니다.");
             var launcherProcess = await Task.Run(() => _launcher.OpenChaosAndStartStarCraft(settings.StarCraftRoot, ChaosLaunchMode.Bot));
             _launcher.DisableStartupLaunch(settings.StarCraftRoot);
 
-            PracticeConfigurator.SetStarCraftSound(settings.StarCraftRoot, soundOn: false);
-            Log("두 번째 StarCraft 인스턴스용으로 게임 소리를 OFF로 전환했습니다. 다중 인스턴스 AI/종족 설정은 유지됩니다.");
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            var botIni = _configurator.ApplyBotJoin(settings);
+            Log($"AI 클라이언트 설정 완료: {settings.Bot.Name}({RaceKo(settings.Bot.Race)}) / 참가 전용 / 소리 OFF. INI: {botIni}");
 
             Log("같은 ChaosLauncher에서 AI 클라이언트를 두 번째 StarCraft 인스턴스로 시작합니다.");
             await Task.Run(() => _launcher.StartAdditionalStarCraft(launcherProcess, settings.StarCraftRoot, TimeSpan.FromSeconds(30)));
             _launcher.DisableStartupLaunch(settings.StarCraftRoot);
-            Log("내 클라이언트와 AI 클라이언트 StarCraft 시작을 모두 확인했습니다. 방 생성/참가는 BWAPI auto_menu가 이어서 처리합니다.");
+            Log("내 클라이언트와 AI 클라이언트 StarCraft 시작을 모두 확인했습니다. AI는 기존 Local PC 방 참가 설정으로 실행되었습니다.");
 
             _history.Add(settings.StarCraftRoot, new MatchRecord(
                 DateTime.Now,

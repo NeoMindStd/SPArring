@@ -338,6 +338,47 @@ public class PracticeConfiguratorTests
     }
 
     [Fact]
+    public void SharedRuntimeRoleFlow_SwitchesFromPlayerHostToBotJoin()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var coachDir = Path.Combine(root, "bwapi-data", "AI", "CoachAI");
+        Directory.CreateDirectory(coachDir);
+        var coachDll = Path.Combine(coachDir, "AnyRace_CoachAI.dll");
+        File.WriteAllText(coachDll, "");
+        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
+        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "TestBot.dll"), "");
+        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
+
+        var settings = CreateSettings(root, bot, buildOption: null) with
+        {
+            EnableCoachAi = true
+        };
+        var configurator = new PracticeConfigurator(Path.Combine(root, "replays"));
+
+        var hostPath = configurator.ApplyPlayerHost(settings, coachDll);
+        var hostIni = BwapiIni.Load(hostPath);
+
+        Assert.Equal("bwapi-data/AI/CoachAI/AnyRace_CoachAI.dll", hostIni.Get("ai", "ai"));
+        Assert.Equal("StarAIHuman", hostIni.Get("auto_menu", "character_name"));
+        Assert.Equal("maps/(4)Fighting Spirit.scx", hostIni.Get("auto_menu", "map"));
+        Assert.Equal("Protoss", hostIni.Get("auto_menu", "race"));
+        Assert.Equal("Terran", hostIni.Get("auto_menu", "enemy_race"));
+        Assert.Equal("ON", hostIni.Get("starcraft", "sound"));
+
+        var botPath = configurator.ApplyBotJoin(settings);
+        var botIni = BwapiIni.Load(botPath);
+
+        Assert.Equal(hostPath, botPath);
+        Assert.Equal("bwapi-data/AI/TestBot.dll", botIni.Get("ai", "ai"));
+        Assert.Equal("StarAIBot", botIni.Get("auto_menu", "character_name"));
+        Assert.Equal("", botIni.Get("auto_menu", "map"));
+        Assert.Equal("AIPractice", botIni.Get("auto_menu", "game"));
+        Assert.Equal("Terran", botIni.Get("auto_menu", "race"));
+        Assert.Equal("Protoss", botIni.Get("auto_menu", "enemy_race"));
+        Assert.Equal("OFF", botIni.Get("starcraft", "sound"));
+    }
+
+    [Fact]
     public void ApplyBotJoin_CopiesSteamhammerConfigToRuntimeLocation()
     {
         var root = CreateFakeStarCraftRoot();

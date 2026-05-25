@@ -66,6 +66,11 @@ foreach ($launcher in @($repoLauncher, $rootLauncher)) {
     }
 }
 
+$appStartSmoke = Join-Path $RepoRoot "scripts\smoke-app-start.ps1"
+if (-not (Test-Path -LiteralPath $appStartSmoke)) {
+    throw "App start smoke script is missing: $appStartSmoke"
+}
+
 Write-Host "[smoke] Checking taskbar shortcut entrypoint"
 $taskbarShortcut = Join-Path $env:APPDATA "Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\StarAI.PracticeClient.lnk"
 if (-not (Test-Path $taskbarShortcut)) {
@@ -143,12 +148,12 @@ if ($mainFormSource -match "OpenChaosAndStartStarCraft\(botSettings\.StarCraftRo
     throw "The AI client must not be launched as a second ChaosLauncher process; ChaosLauncher refuses with 'Already running'."
 }
 
-if ($mainFormSource -match "ApplyBotJoin\(botSettings") {
-    throw "The active sparring flow must not overwrite bwapi.ini after the player StarCraft starts."
+if ($mainFormSource -match "ApplyMultiInstanceSparring") {
+    throw "The active sparring flow must not use one shared multi-instance bwapi.ini; it causes both clients to create/host instead of host/join."
 }
 
-if ($mainFormSource -notmatch "ApplyMultiInstanceSparring" -or $mainFormSource -notmatch "StartAdditionalStarCraft") {
-    throw "The active sparring flow must configure BWAPI multi-instance AI/race values before starting the second StarCraft instance."
+if ($mainFormSource -notmatch "ApplyPlayerHost" -or $mainFormSource -notmatch "ApplyBotJoin" -or $mainFormSource -notmatch "StartAdditionalStarCraft") {
+    throw "The active sparring flow must configure player host first, then bot join before starting the second StarCraft instance."
 }
 
 if ($mainFormSource -notmatch "StopExistingLocalRuntime") {
@@ -156,8 +161,8 @@ if ($mainFormSource -notmatch "StopExistingLocalRuntime") {
 }
 
 $practiceConfiguratorSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\PracticeConfigurator.cs") -Raw
-if ($practiceConfiguratorSource -notmatch "ApplyMultiInstanceSparring" -or $practiceConfiguratorSource -notmatch "\{settings\.PlayerRace\},\{settings\.Bot\.Race\}") {
-    throw "PracticeConfigurator must write comma-separated BWAPI races for player and bot instances."
+if ($practiceConfiguratorSource -notmatch "ApplyPlayerHost" -or $practiceConfiguratorSource -notmatch "ApplyBotJoin") {
+    throw "PracticeConfigurator must keep explicit player-host and bot-join role configuration methods."
 }
 
 $runtimeSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\StarCraftRuntimeRoot.cs") -Raw

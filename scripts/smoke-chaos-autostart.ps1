@@ -71,25 +71,44 @@ function Wait-CompletedStarts {
 }
 
 function Set-SmokeBwapiIni {
-    param([bool]$SoundOn)
+    param(
+        [ValidateSet("PlayerHost", "BotJoin")]
+        [string]$Role
+    )
 
-    $sound = if ($SoundOn) { "ON" } else { "OFF" }
+    if ($Role -eq "PlayerHost") {
+        $ai = $coachAi
+        $characterName = "StarAIHuman"
+        $mapValue = $map
+        $race = "Protoss"
+        $enemyRace = "Terran"
+        $sound = "ON"
+    }
+    else {
+        $ai = $botAi
+        $characterName = "StarAIBot"
+        $mapValue = ""
+        $race = "Terran"
+        $enemyRace = "Protoss"
+        $sound = "OFF"
+    }
+
     @"
 [ai]
-ai = $coachAi,$botAi
+ai = $ai
 
 [auto_menu]
 auto_menu = LAN
-character_name = StarAIHuman
+character_name = $characterName
 pause_dbg = OFF
 lan_mode = Local PC
 auto_restart = OFF
-map = $map
+map = $mapValue
 game = StarAILiveSmoke
 mapiteration = RANDOM
-race = Protoss,Terran
+race = $race
 enemy_count = 1
-enemy_race = Terran
+enemy_race = $enemyRace
 enemy_race_1 = Default
 enemy_race_2 = Default
 enemy_race_3 = Default
@@ -208,15 +227,17 @@ try {
         Remove-Item -LiteralPath $log -Force
     }
 
-    Write-Host "[live-smoke] Launching first StarCraft through RunScOnStartup"
-    Set-SmokeBwapiIni -SoundOn $true
+    Write-Host "[live-smoke] Launching player-host StarCraft through RunScOnStartup"
+    Set-SmokeBwapiIni -Role PlayerHost
     Set-ChaosForRoot -StarCraftRoot $Root -RunOnStartup $true
     $launcherProcess = Start-Process -FilePath $launcher -WorkingDirectory $Root -PassThru
     Wait-CompletedStarts -LogPath $log -Count 1
 
-    Write-Host "[live-smoke] Clicking the existing ChaosLauncher Start button for second StarCraft"
-    Set-SmokeBwapiIni -SoundOn $false
+    Write-Host "[live-smoke] Waiting for the player-host room, then switching bwapi.ini to bot-join"
+    Start-Sleep -Seconds 5
+    Set-SmokeBwapiIni -Role BotJoin
     Set-ChaosForRoot -StarCraftRoot $Root -RunOnStartup $false
+    Write-Host "[live-smoke] Clicking the existing ChaosLauncher Start button for bot-join StarCraft"
     Invoke-StartButton -ProcessId $launcherProcess.Id
     Wait-CompletedStarts -LogPath $log -Count 2
 
