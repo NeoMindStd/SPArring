@@ -19,7 +19,11 @@ public sealed class ChaosLauncherConfigurator
     private const string WModePlugin = "W-MODE 1.02";
 
     [SupportedOSPlatform("windows")]
-    public void Apply(ChaosLaunchMode mode, string starCraftRoot, bool runStarCraftOnStartup = false)
+    public void Apply(
+        ChaosLaunchMode mode,
+        string starCraftRoot,
+        bool runStarCraftOnStartup = false,
+        bool enableWMode = true)
     {
         using var launcher = Registry.CurrentUser.CreateSubKey(LauncherKey, true);
         using var enabled = Registry.CurrentUser.CreateSubKey(EnabledKey, true);
@@ -34,7 +38,7 @@ public sealed class ChaosLauncherConfigurator
         launcher.SetValue("StartMinimized", 0, RegistryValueKind.DWord);
         launcher.SetValue("RunScOnStartup", runStarCraftOnStartup ? 1 : 0, RegistryValueKind.DWord);
 
-        enabled.SetValue(WModePlugin, 1, RegistryValueKind.DWord);
+        enabled.SetValue(WModePlugin, enableWMode ? 1 : 0, RegistryValueKind.DWord);
         enabled.SetValue(BwapiPlugin, mode == ChaosLaunchMode.Bot ? 1 : 0, RegistryValueKind.DWord);
         incompatible.SetValue(WModePlugin, 0, RegistryValueKind.DWord);
         incompatible.SetValue(BwapiPlugin, 0, RegistryValueKind.DWord);

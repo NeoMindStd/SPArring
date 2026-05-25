@@ -146,8 +146,6 @@ function Set-SmokePreferences {
   "GameName": "StarAIAppSmoke",
   "SpeedOverrideMs": 42,
   "WindowedMode": true,
-  "CoachAi": true,
-  "CoachBuildId": "auto",
   "ConfineMouse": false
 }
 "@ | Set-Content -LiteralPath $Preferences -Encoding UTF8

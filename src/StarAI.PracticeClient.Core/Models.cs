@@ -73,7 +73,6 @@ public sealed record PracticeSettings(
     string GameName,
     bool WindowedMode,
     int? SpeedOverrideMs,
-    BuildOption? BuildOption,
-    bool EnableCoachAi);
+    BuildOption? BuildOption);
 
 public sealed record ValidationIssue(string Message, bool IsError);

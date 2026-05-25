@@ -1,12 +1,13 @@
 # AIStarClient
 
 AIStarClient is a Windows practice launcher for local StarCraft: Brood War
-1.16.1 + BWAPI sparring. It helps select a bot, map, race, game speed, CoachAI
-build overlay, hotkeys, and replay/history paths from one launcher UI.
+1.16.1 + BWAPI sparring. It focuses on a SCHNAIL-like one-click practice flow:
+pick your race, opponent race, bot, map, difficulty, and bot build, then launch
+a local human-vs-bot game.
 
 This repository contains only the AIStarClient application. It intentionally
-does not redistribute StarCraft, ChaosLauncher, BWAPI runtime binaries, CoachAI,
-SCHNAIL, BWAPI Revamped packages, or third-party bot binaries.
+does not redistribute StarCraft, ChaosLauncher, BWAPI runtime binaries, SCHNAIL,
+BWAPI Revamped packages, or third-party bot binaries.
 
 ## Current version
 
@@ -21,10 +22,10 @@ Semantic versioning is used:
 ## Requirements
 
 - Windows 10/11
-- .NET 8 Desktop Runtime, or the self-contained release package when available
+- .NET 8 Desktop Runtime, or a self-contained package when available
 - A user-owned StarCraft: Brood War 1.16.1 folder
-- A compatible BWAPI/ChaosLauncher setup in that StarCraft folder
-- Optional: CoachAI installed under the selected StarCraft folder
+- A compatible BWAPI + ChaosLauncher setup in that StarCraft folder
+- Local bot DLLs installed under the selected StarCraft folder
 
 Recommended local layout while developing:
 
@@ -42,81 +43,101 @@ From this repository:
 dotnet run --project .\src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj
 ```
 
-Or build Release and run:
+The taskbar entry used on this machine points to:
 
-```powershell
-dotnet build .\src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj -c Release
-.\src\StarAI.PracticeClient.App\bin\Release\net8.0-windows\StarAI.PracticeClient.App.exe
+```text
+C:\starai\Start-StarAI-PracticeClient.cmd
 ```
+
+That command rebuilds the local run folder and starts the app.
 
 ## Practice flow
 
 1. Select your StarCraft 1.16.1 folder.
 2. Select your race, opponent race, difficulty, bot, map, and bot build.
-3. Optionally enable CoachAI and choose a build overlay.
+3. Choose windowed/W-MODE or fullscreen behavior.
 4. Click `스파링 시작`.
-5. The launcher opens both ChaosLauncher instances first, starts the player
-   client to create the Local PC room, then starts the AI client with sound
-   disabled after a short join delay.
+5. AIStarClient writes a human-host `bwapi.ini`, starts the first StarCraft
+   client, waits for the Local PC room, then rewrites `bwapi.ini` as bot-join
+   and starts the second StarCraft client by reopening ChaosLauncher with
+   `RunScOnStartup`.
 
-When AIStarClient writes CoachAI config, it keeps CoachAI in advice-only mode:
-no auto-mining, no worker auto-training, no automatic supply building, no
-production queue cancellation, no opponent-state overlay, and repeated warning
-intervals default to 60 seconds. Build-order and rally-point overlays remain
-enabled.
+The player host role writes:
+
+- `ai =` empty
+- selected map and player race
+- `character_name = StarAIHuman`
+- sound ON
+
+The bot join role writes:
+
+- selected bot DLL as `ai`
+- empty map so it joins the existing Local PC game
+- bot race and selected game name
+- `character_name = StarAIBot`
+- sound OFF
 
 Known-crashing local bots are excluded from the selectable bot list when crash
 evidence is known from local StarCraft error logs. At the moment
 `XIAOYICOG2019` and `Stone` are hidden because they produced access-violation
 crashes in this environment.
 
+## Features
+
+- Bot pool with race, difficulty tier, ELO metadata, tags, and Korean notes
+- Build/opening filters where a bot exposes configurable strategy files
+- Map selection from the selected StarCraft folder
+- Windowed/W-MODE toggle and optional StarCraft mouse confinement
+- Hotkey import/editor support
+- Replay auto-save path under `D:\OneDrive\Documents\StarCraft\Maps\Replays\ai`
+- Match history and replay browser
+- Last selected map, bot, build, filters, speed, and window options are saved
+
 ## Stability model
 
-AIStarClient launches two local StarCraft instances. The player client uses the
-selected StarCraft folder. The AI client uses a local sibling runtime copy named
-`<StarCraft folder>_ai`. This avoids a race where both clients read and rewrite
-the same `bwapi-data\bwapi.ini` while one client is still creating or joining a
-Local PC game.
+AIStarClient uses one StarCraft 1.16.1 folder. It does not keep two
+ChaosLauncher processes open at the same time. Instead it starts the player
+client, closes the launcher window, rewrites `bwapi.ini`, and reopens the same
+launcher executable to start the bot client. This avoids the old split-runtime
+model and avoids relying on fragile Start-button UI automation.
 
 ## Smoke test
 
-The smoke test is intentionally non-invasive: it does not start StarCraft,
-ChaosLauncher, or any bot. It builds, runs unit tests, verifies known-crashing
-bots are not selectable, publishes the client, and checks that release output
-does not contain common forbidden runtime/game files.
+The default smoke test is intentionally non-invasive: it does not start
+StarCraft, ChaosLauncher, or any bot. It builds, runs unit tests, verifies
+source-level regression guards, publishes the client to a temporary smoke
+folder, and checks that output does not contain common forbidden runtime/game
+files.
 
 ```powershell
 .\scripts\smoke.ps1
 ```
 
+For launch-flow changes, run the live smoke scripts on the local machine:
+
+```powershell
+.\scripts\smoke-chaos-autostart.ps1
+.\scripts\smoke-app-start.ps1
+```
+
+These scripts stop only local `C:\starai` StarCraft/ChaosLauncher processes and
+restore preferences/INI files after the check.
+
 ## Build a release package
+
+Only build release artifacts when explicitly requested:
 
 ```powershell
 .\scripts\build-release.ps1
 ```
 
-This creates:
-
-- `artifacts\AIStarClient-<version>-win-x64.zip`
-- `artifacts\installer\AIStarClient-<version>-Setup.exe` if Inno Setup is installed
-
 The installer installs AIStarClient only. The user still selects their existing
 StarCraft/BWAPI/ChaosLauncher folder from the app.
 
-## Release policy
-
-Git tags use semantic versioning:
-
-```powershell
-git tag v0.1.0
-git push origin main --tags
-```
-
-The GitHub Actions release workflow builds a zip and installer from tagged
-commits. Release artifacts must not contain:
+Release artifacts must not contain:
 
 - `StarCraft.exe`, `StarEdit.exe`, or MPQ files
-- ChaosLauncher executables
+- ChaosLauncher executables unless redistribution terms are verified first
 - `BWAPI.dll`
 - replays, error dumps, local screenshots, or local runtime folders
 
@@ -130,8 +151,8 @@ Important summary:
   are not distributed here.
 - BWAPI is referenced as a separate user-installed runtime. GitHub identifies
   `bwapi/bwapi` as LGPL-3.0 plus an additional unknown license file.
-- CoachAI and BWAPI Revamped did not expose a detectable GitHub license at the
-  time this notice was written, so they are not redistributed here.
+- BWAPI Revamped did not expose a detectable GitHub license at the time this
+  notice was written, so it is not redistributed here.
 - ChaosLauncher and SCHNAIL redistribution terms are not verified here, so they
   are not redistributed here.
 

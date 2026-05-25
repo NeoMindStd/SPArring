@@ -23,9 +23,7 @@ public sealed class MainForm : Form
     private ComboBox _speedBox = null!;
     private TextBox _gameNameBox = null!;
     private CheckBox _windowedBox = null!;
-    private CheckBox _coachBox = null!;
     private CheckBox _confineMouseBox = null!;
-    private ComboBox _coachBuildBox = null!;
     private Button _startButton = null!;
     private TextBox _detailsBox = null!;
     private TextBox _statusBox = null!;
@@ -271,13 +269,9 @@ public sealed class MainForm : Form
         _speedBox.SelectedIndexChanged += (_, _) => SavePreferences();
         panel.Controls.Add(_speedBox);
 
-        _windowedBox = Check("창모드 / W-MODE", true);
+        _windowedBox = Check("창모드 / W-MODE (끄면 전체화면)", true);
         _windowedBox.CheckedChanged += (_, _) => SavePreferences();
         panel.Controls.Add(_windowedBox);
-
-        _coachBox = Check("CoachAI 오버레이", true);
-        _coachBox.CheckedChanged += (_, _) => SavePreferences();
-        panel.Controls.Add(_coachBox);
 
         _confineMouseBox = Check("스타 마우스 가두기", false);
         _confineMouseBox.CheckedChanged += (_, _) =>
@@ -290,15 +284,6 @@ public sealed class MainForm : Form
             SavePreferences();
         };
         panel.Controls.Add(_confineMouseBox);
-
-        panel.Controls.Add(Label("CoachAI 빌드표"));
-        _coachBuildBox = Combo(new object[]
-        {
-            new CoachBuildChoice("내 종족 기본", "auto"),
-            new CoachBuildChoice(CoachAiBuildPresets.KeepExisting.Name, CoachAiBuildPresets.KeepExisting.Id)
-        }.Concat(CoachAiBuildPresets.All.Select(preset => new CoachBuildChoice(preset.Name, preset.Id))));
-        _coachBuildBox.SelectedIndexChanged += (_, _) => SavePreferences();
-        panel.Controls.Add(_coachBuildBox);
 
         _startButton = Button("스파링 시작", async (_, _) => await StartSparringAsync());
         panel.Controls.Add(_startButton);
@@ -371,7 +356,6 @@ public sealed class MainForm : Form
         {
             _loadedInitialData = true;
         }
-        UpdateCoachStatus();
         Log($"{starCraftRoot}에서 사용 가능한 봇 {_allBots.Count}개, 맵 {_allMaps.Count}개를 불러왔습니다.");
     }
 
@@ -564,8 +548,7 @@ public sealed class MainForm : Form
             gameName,
             _windowedBox.Checked,
             (_speedBox.SelectedItem as SpeedChoice)?.SpeedOverrideMs,
-            SelectedBuild(),
-            _coachBox.Checked);
+            SelectedBuild());
     }
 
     private async Task StartSparringAsync()
@@ -607,35 +590,30 @@ public sealed class MainForm : Form
                 Log("참고: " + issue.Message);
             }
 
-            var coachDll = settings.EnableCoachAi
-                ? CoachAiLocator.FindCoachAiDll(settings.StarCraftRoot) ?? throw new InvalidOperationException("CoachAI DLL을 찾지 못했습니다.")
-                : null;
+            Log("SCHNAIL식으로 내 클라이언트와 AI 클라이언트를 역할별 설정으로 실행합니다.");
 
-            if (settings.EnableCoachAi)
-            {
-                PracticeConfigurator.ApplyCoachAiBuildPreset(settings.StarCraftRoot, SelectedCoachBuildPreset(settings.PlayerRace));
-            }
+            WModeConfigurator.Apply(settings.StarCraftRoot, settings.WindowedMode, _confineMouseBox.Checked);
 
-            Log("같은 StarCraft 폴더에서 내 클라이언트와 AI 클라이언트를 역할별 설정으로 실행합니다.");
-
-            WModeConfigurator.Apply(settings.StarCraftRoot, _confineMouseBox.Checked);
-
-            var playerIni = _configurator.ApplyPlayerHost(settings, coachDll);
+            var playerIni = _configurator.ApplyPlayerHost(settings);
             Log($"선택값 확인: 내 종족 {RaceKo(settings.PlayerRace)}, 상대 봇 {settings.Bot.Name}({RaceKo(settings.Bot.Race)}), 맵 {settings.Map.Name}");
             Log($"내 클라이언트 설정 완료: {RaceKo(settings.PlayerRace)} / {settings.Map.Name} / {settings.GameName}. INI: {playerIni}");
 
             Log("내 클라이언트를 먼저 시작합니다. BWAPI auto_menu가 Local PC 방을 만듭니다.");
-            var launcherProcess = await Task.Run(() => _launcher.OpenChaosAndStartStarCraft(settings.StarCraftRoot, ChaosLaunchMode.Bot));
+            var launcherProcess = await Task.Run(() =>
+                _launcher.OpenChaosAndStartStarCraft(settings.StarCraftRoot, ChaosLaunchMode.Bot, enableWMode: settings.WindowedMode));
             _launcher.DisableStartupLaunch(settings.StarCraftRoot);
+            await Task.Run(() => _launcher.CloseChaosLauncher(launcherProcess));
 
             await Task.Delay(TimeSpan.FromSeconds(5));
 
             var botIni = _configurator.ApplyBotJoin(settings);
             Log($"AI 클라이언트 설정 완료: {settings.Bot.Name}({RaceKo(settings.Bot.Race)}) / 참가 전용 / 소리 OFF. INI: {botIni}");
 
-            Log("같은 ChaosLauncher에서 AI 클라이언트를 두 번째 StarCraft 인스턴스로 시작합니다.");
-            await Task.Run(() => _launcher.StartAdditionalStarCraft(launcherProcess, settings.StarCraftRoot, TimeSpan.FromSeconds(30)));
+            Log("AI 클라이언트를 새 ChaosLauncher 실행으로 시작합니다. Start 버튼 자동 클릭은 사용하지 않습니다.");
+            var botLauncherProcess = await Task.Run(() =>
+                _launcher.OpenChaosAndStartStarCraft(settings.StarCraftRoot, ChaosLaunchMode.Bot, enableWMode: settings.WindowedMode));
             _launcher.DisableStartupLaunch(settings.StarCraftRoot);
+            await Task.Run(() => _launcher.CloseChaosLauncher(botLauncherProcess));
             Log("내 클라이언트와 AI 클라이언트 StarCraft 시작을 모두 확인했습니다. AI는 기존 Local PC 방 참가 설정으로 실행되었습니다.");
 
             _history.Add(settings.StarCraftRoot, new MatchRecord(
@@ -711,40 +689,14 @@ public sealed class MainForm : Form
         Process.Start(new ProcessStartInfo { FileName = root, UseShellExecute = true });
     }
 
-    private void UpdateCoachStatus()
-    {
-        if (_coachBox is null || _rootBox is null)
-        {
-            return;
-        }
-
-        var hasCoach = CoachAiLocator.FindCoachAiDll(_rootBox.Text.Trim()) is not null;
-        _coachBox.Enabled = hasCoach;
-        if (!hasCoach)
-        {
-            _coachBox.Checked = false;
-        }
-        else if (_suppressPreferenceSave)
-        {
-            _coachBox.Checked = _preferences.CoachAi;
-        }
-        _coachBox.ForeColor = hasCoach ? UiPalette.Text : UiPalette.Dim;
-        if (_coachBuildBox is not null)
-        {
-            _coachBuildBox.Enabled = hasCoach;
-        }
-    }
-
     private void ApplyInitialPreferences()
     {
         _rootBox.Text = _preferences.StarCraftRoot ?? PracticeCatalog.DefaultRoot;
         _gameNameBox.Text = string.IsNullOrWhiteSpace(_preferences.GameName) ? "AIPractice" : _preferences.GameName;
         _searchBox.Text = _preferences.Search ?? string.Empty;
         _windowedBox.Checked = _preferences.WindowedMode;
-        _coachBox.Checked = _preferences.CoachAi;
         _confineMouseBox.Checked = _preferences.ConfineMouse;
         SelectSpeed(_preferences.SpeedOverrideMs);
-        SelectCoachBuild(_preferences.CoachBuildId);
     }
 
     private void SavePreferences()
@@ -763,9 +715,7 @@ public sealed class MainForm : Form
             _speedBox is null ||
             _gameNameBox is null ||
             _windowedBox is null ||
-            _coachBox is null ||
-            _confineMouseBox is null ||
-            _coachBuildBox is null)
+            _confineMouseBox is null)
         {
             return;
         }
@@ -785,8 +735,6 @@ public sealed class MainForm : Form
             GameName = string.IsNullOrWhiteSpace(_gameNameBox.Text) ? "AIPractice" : _gameNameBox.Text.Trim(),
             SpeedOverrideMs = (_speedBox.SelectedItem as SpeedChoice)?.SpeedOverrideMs,
             WindowedMode = _windowedBox.Checked,
-            CoachAi = _coachBox.Checked,
-            CoachBuildId = (_coachBuildBox.SelectedItem as CoachBuildChoice)?.Id ?? "auto",
             ConfineMouse = _confineMouseBox.Checked
         }.Save();
     }
@@ -794,23 +742,6 @@ public sealed class MainForm : Form
     private BotProfile? SelectedBot() => (_botList.SelectedItem as BotListItem)?.Bot;
     private MapProfile? SelectedMap() => _mapBox.SelectedItem as MapProfile;
     private BuildOption? SelectedBuild() => (_buildBox.SelectedItem as BuildListItem)?.Build;
-
-    private CoachAiBuildPreset SelectedCoachBuildPreset(Race playerRace)
-    {
-        var choice = _coachBuildBox.SelectedItem as CoachBuildChoice;
-        if (choice is null || choice.Id == "auto")
-        {
-            return CoachAiBuildPresets.DefaultForRace(playerRace);
-        }
-
-        if (choice.Id == CoachAiBuildPresets.KeepExisting.Id)
-        {
-            return CoachAiBuildPresets.KeepExisting;
-        }
-
-        return CoachAiBuildPresets.All.FirstOrDefault(preset => preset.Id == choice.Id)
-            ?? CoachAiBuildPresets.DefaultForRace(playerRace);
-    }
 
     private Race SelectedPlayerRace()
     {
@@ -880,19 +811,6 @@ public sealed class MainForm : Form
             if (_speedBox.Items[i] is SpeedChoice choice && choice.SpeedOverrideMs == speedOverrideMs)
             {
                 _speedBox.SelectedIndex = i;
-                return;
-            }
-        }
-    }
-
-    private void SelectCoachBuild(string coachBuildId)
-    {
-        for (var i = 0; i < _coachBuildBox.Items.Count; i++)
-        {
-            if (_coachBuildBox.Items[i] is CoachBuildChoice choice &&
-                choice.Id.Equals(coachBuildId, StringComparison.OrdinalIgnoreCase))
-            {
-                _coachBuildBox.SelectedIndex = i;
                 return;
             }
         }
@@ -1231,11 +1149,6 @@ public sealed class MainForm : Form
     }
 
     private sealed record SpeedChoice(string Label, int? SpeedOverrideMs)
-    {
-        public override string ToString() => Label;
-    }
-
-    private sealed record CoachBuildChoice(string Label, string Id)
     {
         public override string ToString() => Label;
     }

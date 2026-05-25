@@ -1,8 +1,8 @@
 # Third-party notices
 
 AIStarClient is only the launcher/client code in this repository. It does not
-redistribute StarCraft, Brood War, ChaosLauncher, BWAPI runtime binaries, SCHNAIL,
-BWAPI Revamped, CoachAI, or third-party bot binaries.
+redistribute StarCraft, Brood War, ChaosLauncher, BWAPI runtime binaries,
+SCHNAIL, BWAPI Revamped, or third-party bot binaries.
 
 ## Runtime components the user may install separately
 
@@ -13,10 +13,6 @@ BWAPI Revamped, CoachAI, or third-party bot binaries.
 - BWAPI: https://github.com/bwapi/bwapi. GitHub identifies the BWAPI repository
   license as LGPL-3.0 plus an additional unknown license file. AIStarClient only
   edits `bwapi.ini` in a user-selected local installation.
-- CoachAI: https://github.com/captain-majid/CoachAI. GitHub did not report a
-  detectable open-source license at the time this notice was written, so this
-  repository does not redistribute CoachAI source or binaries. Users must install
-  it separately or provide their own build.
 - BWAPI Revamped: https://github.com/captain-majid/BWAPI-Revamped. GitHub did
   not report a detectable license at the time this notice was written, so this
   repository does not redistribute BWAPI Revamped packages.
@@ -29,5 +25,5 @@ BWAPI Revamped, CoachAI, or third-party bot binaries.
 ## Release rule
 
 Release artifacts produced from this repository should contain only AIStarClient
-application files and documentation. The smoke script checks the publish folder
-for common forbidden game/launcher files before packaging.
+application files and documentation. The smoke script checks publish output for
+common forbidden game/launcher files before packaging.

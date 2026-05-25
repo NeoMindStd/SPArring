@@ -19,8 +19,6 @@ internal sealed record LauncherPreferences
     public string GameName { get; init; } = "AIPractice";
     public int? SpeedOverrideMs { get; init; } = 42;
     public bool WindowedMode { get; init; } = true;
-    public bool CoachAi { get; init; } = true;
-    public string CoachBuildId { get; init; } = "auto";
     public bool ConfineMouse { get; init; } = false;
 
     public static LauncherPreferences Load()

@@ -5,32 +5,14 @@ namespace StarAI.PracticeClient.Tests;
 public class PracticeConfiguratorTests
 {
     [Fact]
-    public void Apply_WritesExpectedBwapiSettings()
+    public void Apply_WritesBotSettingsForSingleAiClient()
     {
         var root = CreateFakeStarCraftRoot();
-        var bot = new BotProfile(
-            "test",
-            "Test Bot",
-            Race.Terran,
-            DifficultyTier.Main,
-            "bwapi-data/AI/TestBot.dll",
-            "style",
-            "hints",
-            "risk",
-            Array.Empty<BuildOption>());
-        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "TestBot.dll"), "");
+        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
+        File.WriteAllText(bot.DllPath(root), "");
         File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
 
-        var settings = new PracticeSettings(
-            root,
-            bot,
-            new MapProfile("Fighting Spirit", "maps/(4)Fighting Spirit.scx", 4),
-            Race.Protoss,
-            "AIPractice",
-            WindowedMode: true,
-            SpeedOverrideMs: 24,
-            BuildOption: null,
-            EnableCoachAi: false);
+        var settings = CreateSettings(root, bot, buildOption: null);
 
         var path = new PracticeConfigurator(Path.Combine(root, "replays")).Apply(settings);
         var ini = BwapiIni.Load(path);
@@ -48,6 +30,77 @@ public class PracticeConfiguratorTests
     }
 
     [Fact]
+    public void ApplyPlayerHost_CreatesHumanRoomWithoutAiModule()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
+        File.WriteAllText(bot.DllPath(root), "");
+        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
+
+        var settings = CreateSettings(root, bot, buildOption: null);
+
+        var path = new PracticeConfigurator(Path.Combine(root, "replays")).ApplyPlayerHost(settings);
+        var ini = BwapiIni.Load(path);
+
+        Assert.Equal("", ini.Get("ai", "ai"));
+        Assert.Equal("StarAIHuman", ini.Get("auto_menu", "character_name"));
+        Assert.Equal("maps/(4)Fighting Spirit.scx", ini.Get("auto_menu", "map"));
+        Assert.Equal("Protoss", ini.Get("auto_menu", "race"));
+        Assert.Equal("Terran", ini.Get("auto_menu", "enemy_race"));
+        Assert.Equal("ON", ini.Get("starcraft", "sound"));
+        Assert.Equal("2", ini.Get("auto_menu", "wait_for_min_players"));
+        Assert.Equal("2", ini.Get("auto_menu", "wait_for_max_players"));
+        Assert.Equal("5000", ini.Get("auto_menu", "wait_for_time"));
+    }
+
+    [Fact]
+    public void ApplyBotJoin_JoinsExistingRoomWithOnlyBotAi()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
+        File.WriteAllText(bot.DllPath(root), "");
+        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
+
+        var settings = CreateSettings(root, bot, buildOption: null);
+
+        var path = new PracticeConfigurator(Path.Combine(root, "replays")).ApplyBotJoin(settings);
+        var ini = BwapiIni.Load(path);
+
+        Assert.Equal("bwapi-data/AI/TestBot.dll", ini.Get("ai", "ai"));
+        Assert.Equal("StarAIBot", ini.Get("auto_menu", "character_name"));
+        Assert.Equal("", ini.Get("auto_menu", "map"));
+        Assert.Equal("AIPractice", ini.Get("auto_menu", "game"));
+        Assert.Equal("Terran", ini.Get("auto_menu", "race"));
+        Assert.Equal("Protoss", ini.Get("auto_menu", "enemy_race"));
+        Assert.Equal("OFF", ini.Get("starcraft", "sound"));
+    }
+
+    [Fact]
+    public void SharedRuntimeRoleFlow_SwitchesFromHumanHostToBotJoin()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
+        File.WriteAllText(bot.DllPath(root), "");
+        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
+        var settings = CreateSettings(root, bot, buildOption: null);
+        var configurator = new PracticeConfigurator(Path.Combine(root, "replays"));
+
+        var hostPath = configurator.ApplyPlayerHost(settings);
+        var hostIni = BwapiIni.Load(hostPath);
+
+        Assert.Equal("", hostIni.Get("ai", "ai"));
+        Assert.Equal("StarAIHuman", hostIni.Get("auto_menu", "character_name"));
+
+        var botPath = configurator.ApplyBotJoin(settings);
+        var botIni = BwapiIni.Load(botPath);
+
+        Assert.Equal(hostPath, botPath);
+        Assert.Equal("bwapi-data/AI/TestBot.dll", botIni.Get("ai", "ai"));
+        Assert.Equal("StarAIBot", botIni.Get("auto_menu", "character_name"));
+        Assert.Equal("", botIni.Get("auto_menu", "map"));
+    }
+
+    [Fact]
     public void Apply_ForcesUAlbertaStrategyWhenBuildPatchIsSelected()
     {
         var root = CreateFakeStarCraftRoot();
@@ -62,7 +115,7 @@ public class PracticeConfiguratorTests
             """);
 
         var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Protoss);
-        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "TestBot.dll"), "");
+        File.WriteAllText(bot.DllPath(root), "");
         File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
 
         var settings = CreateSettings(root, bot, new BuildOption(
@@ -103,7 +156,7 @@ public class PracticeConfiguratorTests
             """);
 
         var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Zerg);
-        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "TestBot.dll"), "");
+        File.WriteAllText(bot.DllPath(root), "");
         File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
 
         var settings = CreateSettings(root, bot, new BuildOption(
@@ -119,263 +172,6 @@ public class PracticeConfiguratorTests
         Assert.Contains("\"Strategy\": \"3HatchHydraExpo\"", text);
         Assert.Contains("\"Weight\": 100", text);
         Assert.Contains("\"ZvT\"", text);
-    }
-
-    [Fact]
-    public void ApplyCoachClient_WritesCoachAiSettingsAndCreatesDefaultJson()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var coachDir = Path.Combine(root, "bwapi-data", "AI", "CoachAI");
-        Directory.CreateDirectory(coachDir);
-        var coachDll = Path.Combine(coachDir, "AnyRace_CoachAI.dll");
-        File.WriteAllText(coachDll, "");
-        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
-
-        var settings = CreateSettings(root, CreateFakeBot("bwapi-data/AI/MissingBot.dll", Race.Terran), buildOption: null) with
-        {
-            EnableCoachAi = true
-        };
-
-        var path = new PracticeConfigurator(Path.Combine(root, "replays")).ApplyCoachClient(settings, coachDll);
-        var ini = BwapiIni.Load(path);
-        var coachConfig = Path.Combine(root, "bwapi-data", "AnyRace_CoachAI.json");
-
-        Assert.Equal("bwapi-data/AI/CoachAI/AnyRace_CoachAI.dll", ini.Get("ai", "ai"));
-        Assert.Equal("", ini.Get("auto_menu", "map"));
-        Assert.Equal("Protoss", ini.Get("auto_menu", "race"));
-        Assert.Equal("Terran", ini.Get("auto_menu", "enemy_race"));
-        Assert.Equal("ON", ini.Get("starcraft", "sound"));
-        Assert.True(File.Exists(coachConfig));
-        Assert.Contains("\"autoTrainWorkers\": false", File.ReadAllText(coachConfig));
-        Assert.Contains("\"autoMine\": false", File.ReadAllText(coachConfig));
-        Assert.Contains("\"autoBuildSuppliesBeforeBlocked\": -200", File.ReadAllText(coachConfig));
-        Assert.Contains("\"maxProductionBuildingQueue\": 999999", File.ReadAllText(coachConfig));
-        Assert.Contains("\"workerCutWarningEvery\": 60", File.ReadAllText(coachConfig));
-        Assert.Contains("\"idleWorkerWarningEvery\": 60", File.ReadAllText(coachConfig));
-        Assert.Contains("\"idleProductionBuildingWarningEvery\": 60", File.ReadAllText(coachConfig));
-        Assert.Contains("\"idleFightingUnitWarningEvery\": 60", File.ReadAllText(coachConfig));
-        Assert.Contains("\"workersCutCalculationPeriod\": 600", File.ReadAllText(coachConfig));
-        Assert.Contains("\"TimedBo1\"", File.ReadAllText(coachConfig));
-    }
-
-    [Fact]
-    public void ApplyCoachAiBuildPreset_WritesTimedBoWithoutJsonOptionsError()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var preset = CoachAiBuildPresets.DefaultForRace(Race.Protoss);
-
-        PracticeConfigurator.ApplyCoachAiBuildPreset(root, preset);
-
-        var coachConfig = Path.Combine(root, "bwapi-data", "AnyRace_CoachAI.json");
-        var text = File.ReadAllText(coachConfig);
-        Assert.Contains(preset.TitleForOverlay, text);
-        Assert.Contains("autoTrainWorkers", text);
-        Assert.Contains("\"autoMine\": false", text);
-        Assert.Contains("\"maxProductionBuildingQueue\": 999999", text);
-    }
-
-    [Fact]
-    public void Validate_DoesNotWarnAboutCoachAiWhenDllExists()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var coachDir = Path.Combine(root, "bwapi-data", "AI", "CoachAI");
-        Directory.CreateDirectory(coachDir);
-        File.WriteAllText(Path.Combine(coachDir, "AnyRace_CoachAI.dll"), "");
-        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "TestBot.dll"), "");
-        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
-
-        var settings = CreateSettings(root, CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran), buildOption: null) with
-        {
-            EnableCoachAi = true
-        };
-
-        var issues = new PracticeConfigurator().Validate(settings);
-
-        Assert.DoesNotContain(issues, issue => issue.Message.Contains("CoachAI", StringComparison.OrdinalIgnoreCase));
-    }
-
-    [Fact]
-    public void Validate_BlocksKnownAccessViolationBots()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var bot = new BotProfile(
-            "xiaoyicog2019",
-            "XIAOYICOG2019",
-            Race.Terran,
-            DifficultyTier.Main,
-            "bwapi-data/AI/XIAOYI.dll",
-            "style",
-            "hints",
-            "risk",
-            Array.Empty<BuildOption>());
-        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "XIAOYI.dll"), "");
-        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
-
-        var settings = CreateSettings(root, bot, buildOption: null);
-
-        var issues = new PracticeConfigurator().Validate(settings);
-
-        Assert.Contains(issues, issue => issue.IsError && issue.Message.Contains("차단", StringComparison.OrdinalIgnoreCase));
-    }
-
-    [Fact]
-    public void GetAvailableBots_ExcludesKnownAccessViolationBots()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var sampleIds = new[] { "xiaoyicog2019", "stone", "nitekatt" };
-        foreach (var bot in PracticeCatalog.GetDefaultBots().Where(bot => sampleIds.Contains(bot.Id)))
-        {
-            var dllPath = bot.DllPath(root);
-            Directory.CreateDirectory(Path.GetDirectoryName(dllPath)!);
-            File.WriteAllText(dllPath, "");
-        }
-
-        var available = PracticeCatalog.GetAvailableBots(root);
-
-        Assert.DoesNotContain(available, bot => bot.Id.Equals("xiaoyicog2019", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(available, bot => bot.Id.Equals("stone", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(available, bot => bot.Id.Equals("nitekatt", StringComparison.OrdinalIgnoreCase));
-    }
-
-
-    [Fact]
-    public void ApplyPlayerHost_CreatesRoomWithPlayerRaceAndSelectedMap()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var coachDir = Path.Combine(root, "bwapi-data", "AI", "CoachAI");
-        Directory.CreateDirectory(coachDir);
-        var coachDll = Path.Combine(coachDir, "AnyRace_CoachAI.dll");
-        File.WriteAllText(coachDll, "");
-        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
-
-        var settings = CreateSettings(root, CreateFakeBot("bwapi-data/AI/MissingBot.dll", Race.Terran), buildOption: null) with
-        {
-            EnableCoachAi = true
-        };
-
-        var path = new PracticeConfigurator(Path.Combine(root, "replays")).ApplyPlayerHost(settings, coachDll);
-        var ini = BwapiIni.Load(path);
-
-        Assert.Equal("bwapi-data/AI/CoachAI/AnyRace_CoachAI.dll", ini.Get("ai", "ai"));
-        Assert.Equal("maps/(4)Fighting Spirit.scx", ini.Get("auto_menu", "map"));
-        Assert.Equal("Protoss", ini.Get("auto_menu", "race"));
-        Assert.Equal("Terran", ini.Get("auto_menu", "enemy_race"));
-        Assert.Equal("ON", ini.Get("starcraft", "sound"));
-        Assert.Equal("2", ini.Get("auto_menu", "wait_for_max_players"));
-        Assert.Equal("5000", ini.Get("auto_menu", "wait_for_time"));
-        Assert.Contains("StarAI_%BOTNAME6%_%MAP%_$H$M$S.rep", ini.Get("auto_menu", "save_replay"));
-    }
-
-    [Fact]
-    public void ApplyMultiInstanceSparring_WritesPlayerAndBotIntoSingleBwapiIni()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var coachDir = Path.Combine(root, "bwapi-data", "AI", "CoachAI");
-        Directory.CreateDirectory(coachDir);
-        var coachDll = Path.Combine(coachDir, "AnyRace_CoachAI.dll");
-        File.WriteAllText(coachDll, "");
-        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
-        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "TestBot.dll"), "");
-        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
-
-        var settings = CreateSettings(root, bot, buildOption: null) with
-        {
-            EnableCoachAi = true
-        };
-
-        var path = new PracticeConfigurator(Path.Combine(root, "replays")).ApplyMultiInstanceSparring(settings, coachDll);
-        var ini = BwapiIni.Load(path);
-
-        Assert.Equal("bwapi-data/AI/CoachAI/AnyRace_CoachAI.dll,bwapi-data/AI/TestBot.dll", ini.Get("ai", "ai"));
-        Assert.Equal("maps/(4)Fighting Spirit.scx", ini.Get("auto_menu", "map"));
-        Assert.Equal("AIPractice", ini.Get("auto_menu", "game"));
-        Assert.Equal("Protoss,Terran", ini.Get("auto_menu", "race"));
-        Assert.Equal("Terran", ini.Get("auto_menu", "enemy_race"));
-        Assert.Equal("ON", ini.Get("starcraft", "sound"));
-        Assert.Equal("2", ini.Get("auto_menu", "wait_for_max_players"));
-    }
-
-    [Fact]
-    public void ApplyBotJoin_WithFirstInstanceAiWritesOnlyBotForJoinClient()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var coachDir = Path.Combine(root, "bwapi-data", "AI", "CoachAI");
-        Directory.CreateDirectory(coachDir);
-        var coachDll = Path.Combine(coachDir, "AnyRace_CoachAI.dll");
-        File.WriteAllText(coachDll, "");
-        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
-        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "TestBot.dll"), "");
-        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
-
-        var settings = CreateSettings(root, bot, buildOption: null);
-
-        var path = new PracticeConfigurator(Path.Combine(root, "replays")).ApplyBotJoin(settings, coachDll);
-        var ini = BwapiIni.Load(path);
-
-        Assert.Equal("bwapi-data/AI/TestBot.dll", ini.Get("ai", "ai"));
-        Assert.Equal("Terran", ini.Get("auto_menu", "race"));
-        Assert.Equal("StarAIBot", ini.Get("auto_menu", "character_name"));
-    }
-
-    [Fact]
-    public void ApplyBotJoin_JoinsExistingRoomWithBotRace()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
-        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "TestBot.dll"), "");
-        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
-
-        var settings = CreateSettings(root, bot, buildOption: null);
-
-        var path = new PracticeConfigurator(Path.Combine(root, "replays")).ApplyBotJoin(settings);
-        var ini = BwapiIni.Load(path);
-
-        Assert.Equal("bwapi-data/AI/TestBot.dll", ini.Get("ai", "ai"));
-        Assert.Equal("", ini.Get("auto_menu", "map"));
-        Assert.Equal("Terran", ini.Get("auto_menu", "race"));
-        Assert.Equal("Protoss", ini.Get("auto_menu", "enemy_race"));
-        Assert.Equal("OFF", ini.Get("starcraft", "sound"));
-    }
-
-    [Fact]
-    public void SharedRuntimeRoleFlow_SwitchesFromPlayerHostToBotJoin()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var coachDir = Path.Combine(root, "bwapi-data", "AI", "CoachAI");
-        Directory.CreateDirectory(coachDir);
-        var coachDll = Path.Combine(coachDir, "AnyRace_CoachAI.dll");
-        File.WriteAllText(coachDll, "");
-        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
-        File.WriteAllText(Path.Combine(root, "bwapi-data", "AI", "TestBot.dll"), "");
-        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
-
-        var settings = CreateSettings(root, bot, buildOption: null) with
-        {
-            EnableCoachAi = true
-        };
-        var configurator = new PracticeConfigurator(Path.Combine(root, "replays"));
-
-        var hostPath = configurator.ApplyPlayerHost(settings, coachDll);
-        var hostIni = BwapiIni.Load(hostPath);
-
-        Assert.Equal("bwapi-data/AI/CoachAI/AnyRace_CoachAI.dll", hostIni.Get("ai", "ai"));
-        Assert.Equal("StarAIHuman", hostIni.Get("auto_menu", "character_name"));
-        Assert.Equal("maps/(4)Fighting Spirit.scx", hostIni.Get("auto_menu", "map"));
-        Assert.Equal("Protoss", hostIni.Get("auto_menu", "race"));
-        Assert.Equal("Terran", hostIni.Get("auto_menu", "enemy_race"));
-        Assert.Equal("ON", hostIni.Get("starcraft", "sound"));
-
-        var botPath = configurator.ApplyBotJoin(settings);
-        var botIni = BwapiIni.Load(botPath);
-
-        Assert.Equal(hostPath, botPath);
-        Assert.Equal("bwapi-data/AI/TestBot.dll", botIni.Get("ai", "ai"));
-        Assert.Equal("StarAIBot", botIni.Get("auto_menu", "character_name"));
-        Assert.Equal("", botIni.Get("auto_menu", "map"));
-        Assert.Equal("AIPractice", botIni.Get("auto_menu", "game"));
-        Assert.Equal("Terran", botIni.Get("auto_menu", "race"));
-        Assert.Equal("Protoss", botIni.Get("auto_menu", "enemy_race"));
-        Assert.Equal("OFF", botIni.Get("starcraft", "sound"));
     }
 
     [Fact]
@@ -397,79 +193,50 @@ public class PracticeConfiguratorTests
     }
 
     [Fact]
-    public void EnsureAiRoot_CopiesStarCraftRuntimeFilesToSeparateFolder()
+    public void Validate_BlocksKnownAccessViolationBots()
     {
         var root = CreateFakeStarCraftRoot();
-        File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "map");
-        File.WriteAllText(Path.Combine(root, "patch_rt.mpq"), "patch");
-        Directory.CreateDirectory(Path.Combine(root, "Errors"));
-        File.WriteAllText(Path.Combine(root, "Errors", "crash.ERR"), "local crash log");
-
-        var aiRoot = StarCraftRuntimeRoot.EnsureAiRoot(root);
-
-        Assert.NotEqual(root, aiRoot);
-        Assert.True(File.Exists(Path.Combine(aiRoot, "StarCraft.exe")));
-        Assert.Equal("map", File.ReadAllText(Path.Combine(aiRoot, "maps", "(4)Fighting Spirit.scx")));
-        Assert.Equal("patch", File.ReadAllText(Path.Combine(aiRoot, "patch_rt.mpq")));
-        Assert.False(File.Exists(Path.Combine(aiRoot, "Errors", "crash.ERR")));
-    }
-
-    [Fact]
-    public void EnsureAiRoot_SkipsLockedRuntimeFileWhenAiCopyAlreadyExists()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var patch = Path.Combine(root, "patch_rt.mpq");
-        File.WriteAllText(patch, "locked source");
-        var aiRoot = StarCraftRuntimeRoot.GetAiRoot(root);
-        Directory.CreateDirectory(aiRoot);
-        File.WriteAllText(Path.Combine(aiRoot, "patch_rt.mpq"), "existing ai copy");
-
-        using var lockedPatch = new FileStream(patch, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-
-        var result = StarCraftRuntimeRoot.EnsureAiRoot(root);
-
-        Assert.Equal(aiRoot, result);
-        Assert.Equal("existing ai copy", File.ReadAllText(Path.Combine(aiRoot, "patch_rt.mpq")));
-    }
-
-    [Fact]
-    public void SplitRuntimeFlow_KeepsPlayerAndBotIniSeparate()
-    {
-        var root = CreateFakeStarCraftRoot();
-        var bot = CreateFakeBot("bwapi-data/AI/TestBot.dll", Race.Terran);
+        var bot = new BotProfile(
+            "xiaoyicog2019",
+            "XIAOYICOG2019",
+            Race.Terran,
+            DifficultyTier.Main,
+            "bwapi-data/AI/XIAOYI.dll",
+            "style",
+            "hints",
+            "risk",
+            Array.Empty<BuildOption>());
         File.WriteAllText(bot.DllPath(root), "");
         File.WriteAllText(Path.Combine(root, "maps", "(4)Fighting Spirit.scx"), "");
-        var coachDir = Path.Combine(root, "bwapi-data", "AI", "CoachAI");
-        Directory.CreateDirectory(coachDir);
-        var coachDll = Path.Combine(coachDir, "AnyRace_CoachAI.dll");
-        File.WriteAllText(coachDll, "");
 
-        var settings = CreateSettings(root, bot, buildOption: null) with
-        {
-            EnableCoachAi = true
-        };
-        var configurator = new PracticeConfigurator(Path.Combine(root, "replays"));
-        var aiRoot = StarCraftRuntimeRoot.EnsureAiRoot(root);
+        var settings = CreateSettings(root, bot, buildOption: null);
 
-        var playerIniPath = configurator.ApplyPlayerHost(settings, coachDll);
-        var botIniPath = configurator.ApplyBotJoin(settings with { StarCraftRoot = aiRoot, EnableCoachAi = false });
-        var playerIni = BwapiIni.Load(playerIniPath);
-        var botIni = BwapiIni.Load(botIniPath);
+        var issues = new PracticeConfigurator().Validate(settings);
 
-        Assert.NotEqual(playerIniPath, botIniPath);
-        Assert.Equal("bwapi-data/AI/CoachAI/AnyRace_CoachAI.dll", playerIni.Get("ai", "ai"));
-        Assert.Equal("maps/(4)Fighting Spirit.scx", playerIni.Get("auto_menu", "map"));
-        Assert.Equal("Protoss", playerIni.Get("auto_menu", "race"));
-        Assert.Equal("ON", playerIni.Get("starcraft", "sound"));
-
-        Assert.Equal("bwapi-data/AI/TestBot.dll", botIni.Get("ai", "ai"));
-        Assert.Equal("", botIni.Get("auto_menu", "map"));
-        Assert.Equal("Terran", botIni.Get("auto_menu", "race"));
-        Assert.Equal("OFF", botIni.Get("starcraft", "sound"));
+        Assert.Contains(issues, issue => issue.IsError && issue.Message.Contains("access-violation", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public void WModeConfigurator_WritesCursorClipAndKeepsWindowMoveEnabled()
+    public void GetAvailableBots_ExcludesKnownAccessViolationBots()
+    {
+        var root = CreateFakeStarCraftRoot();
+        var sampleIds = new[] { "xiaoyicog2019", "stone", "nitekatt" };
+        foreach (var bot in PracticeCatalog.GetDefaultBots().Where(bot => sampleIds.Contains(bot.Id)))
+        {
+            var dllPath = bot.DllPath(root);
+            Directory.CreateDirectory(Path.GetDirectoryName(dllPath)!);
+            File.WriteAllText(dllPath, "");
+        }
+
+        var available = PracticeCatalog.GetAvailableBots(root);
+
+        Assert.DoesNotContain(available, bot => bot.Id.Equals("xiaoyicog2019", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(available, bot => bot.Id.Equals("stone", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(available, bot => bot.Id.Equals("nitekatt", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void WModeConfigurator_WritesFullscreenWithoutCursorClipWhenWindowedIsOff()
     {
         var root = CreateFakeStarCraftRoot();
         File.WriteAllText(Path.Combine(root, "wmode.ini"), """
@@ -480,15 +247,34 @@ public class PracticeConfiguratorTests
             EnableWindowMove=0
             """);
 
-        var path = WModeConfigurator.Apply(root, clipCursor: false);
+        var path = WModeConfigurator.Apply(root, windowedMode: false, clipCursor: true);
         var ini = BwapiIni.Load(path);
 
+        Assert.Equal("0", ini.Get("W-MODE", "Windowed"));
         Assert.Equal("0", ini.Get("W-MODE", "ClipCursor"));
         Assert.Equal("0", ini.Get("W-MODE", "SaveClipCursor"));
         Assert.Equal("1", ini.Get("W-MODE", "EnableWindowMove"));
         Assert.Equal("0", ini.Get("W-MODE", "AlwaysOnTop"));
         Assert.Equal("0", ini.Get("W-MODE", "DisableControls"));
         Assert.Equal("10", ini.Get("W-MODE", "WindowClientX"));
+    }
+
+    [Fact]
+    public void WModeConfigurator_WritesWindowedCursorClipOnlyWhenRequested()
+    {
+        var root = CreateFakeStarCraftRoot();
+
+        var path = WModeConfigurator.Apply(root, windowedMode: true, clipCursor: false);
+        var ini = BwapiIni.Load(path);
+
+        Assert.Equal("1", ini.Get("W-MODE", "Windowed"));
+        Assert.Equal("0", ini.Get("W-MODE", "ClipCursor"));
+
+        WModeConfigurator.Apply(root, windowedMode: true, clipCursor: true);
+        ini = BwapiIni.Load(path);
+
+        Assert.Equal("1", ini.Get("W-MODE", "Windowed"));
+        Assert.Equal("1", ini.Get("W-MODE", "ClipCursor"));
     }
 
     private static string CreateFakeStarCraftRoot()
@@ -534,7 +320,6 @@ public class PracticeConfiguratorTests
             "AIPractice",
             WindowedMode: true,
             SpeedOverrideMs: 24,
-            BuildOption: buildOption,
-            EnableCoachAi: false);
+            BuildOption: buildOption);
     }
 }

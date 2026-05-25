@@ -98,15 +98,7 @@ if (-not $shortcut.IconLocation.StartsWith($expectedIconPrefix, [StringCompariso
     throw "Taskbar shortcut icon should point at the current artifacts run exe. Expected prefix '$expectedIconPrefix', got '$($shortcut.IconLocation)'."
 }
 
-Write-Host "[smoke] Checking runtime split safety in source"
-$automationSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\ChaosLauncherWindowAutomation.cs") -Raw
-if ($automationSource -notmatch "PhysicalClickLock") {
-    throw "ChaosLauncher physical click fallback must be guarded by PhysicalClickLock."
-}
-
-if ($automationSource -notmatch "starCraftRoot") {
-    throw "ChaosLauncher window targeting must include the StarCraft root."
-}
+Write-Host "[smoke] Checking launch-flow safety in source"
 
 $chaosConfiguratorSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.Core\ChaosLauncherConfigurator.cs") -Raw
 if ($chaosConfiguratorSource -notmatch "RunScOnStartup") {
@@ -126,17 +118,8 @@ if ($practiceLauncherSource -notmatch "StopExistingLocalRuntime") {
     throw "Practice launcher must clean stale local StarCraft/ChaosLauncher processes before a new sparring launch."
 }
 
-if ($practiceLauncherSource -notmatch "StartAdditionalStarCraft") {
-    throw "Practice launcher must support starting the second StarCraft instance."
-}
-
-$startAdditionalMatch = [regex]::Match($practiceLauncherSource, "public void StartAdditionalStarCraft[\s\S]*?\n    \}")
-if (-not $startAdditionalMatch.Success) {
-    throw "Could not inspect StartAdditionalStarCraft implementation."
-}
-
-if ($startAdditionalMatch.Value -notmatch "ClickStart" -or $startAdditionalMatch.Value -notmatch "WaitForCompletedStart") {
-    throw "The active second StarCraft launch must request ChaosLauncher Start and verify that a second StarCraft start completed."
+if ($practiceLauncherSource -notmatch "CloseChaosLauncher") {
+    throw "Practice launcher must support closing ChaosLauncher between player-host and bot-join starts."
 }
 
 if ($practiceLauncherSource -notmatch "SetRunStarCraftOnStartup") {
@@ -144,16 +127,38 @@ if ($practiceLauncherSource -notmatch "SetRunStarCraftOnStartup") {
 }
 
 $mainFormSource = Get-Content (Join-Path $RepoRoot "src\StarAI.PracticeClient.App\MainForm.cs") -Raw
+$removedOverlayName = "Co" + "achAI"
+$removedOverlayAltName = "Co" + "achAi"
+$removedOverlayBuildName = "Co" + "achBuild"
+$removedOverlayEnabledName = "Enable" + "Co" + "achAi"
+$removedSharedIniFlowName = "ApplyMulti" + "InstanceSparring"
+$forbiddenRuntimePattern = "$removedOverlayName|$removedOverlayAltName|$removedOverlayBuildName|$removedOverlayEnabledName|$removedSharedIniFlowName"
+foreach ($sourceFile in Get-ChildItem -LiteralPath (Join-Path $RepoRoot "src") -Recurse -File -Filter "*.cs") {
+    $sourceText = Get-Content -LiteralPath $sourceFile.FullName -Raw
+    if ($sourceText -match $forbiddenRuntimePattern) {
+        throw "Removed overlay runtime code is forbidden in active source: $($sourceFile.FullName)"
+    }
+}
+
 if ($mainFormSource -match "OpenChaosAndStartStarCraft\(botSettings\.StarCraftRoot") {
     throw "The AI client must not be launched as a second ChaosLauncher process; ChaosLauncher refuses with 'Already running'."
 }
 
-if ($mainFormSource -match "ApplyMultiInstanceSparring") {
+if ($mainFormSource -match $removedSharedIniFlowName) {
     throw "The active sparring flow must not use one shared multi-instance bwapi.ini; it causes both clients to create/host instead of host/join."
 }
 
-if ($mainFormSource -notmatch "ApplyPlayerHost" -or $mainFormSource -notmatch "ApplyBotJoin" -or $mainFormSource -notmatch "StartAdditionalStarCraft") {
-    throw "The active sparring flow must configure player host first, then bot join before starting the second StarCraft instance."
+if ($mainFormSource -match "StartAdditionalStarCraft") {
+    throw "The active sparring flow must not rely on ChaosLauncher Start-button automation."
+}
+
+if ($mainFormSource -notmatch "ApplyPlayerHost" -or $mainFormSource -notmatch "ApplyBotJoin" -or $mainFormSource -notmatch "CloseChaosLauncher") {
+    throw "The active sparring flow must configure player host, close the launcher, then configure bot join and relaunch."
+}
+
+$openStartCount = [regex]::Matches($mainFormSource, "OpenChaosAndStartStarCraft").Count
+if ($openStartCount -lt 2) {
+    throw "The active sparring flow must start StarCraft once for player-host and once for bot-join."
 }
 
 if ($mainFormSource -notmatch "StopExistingLocalRuntime") {

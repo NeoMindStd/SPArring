@@ -10,21 +10,12 @@ public sealed class PracticeLauncher
     private readonly ChaosLauncherConfigurator _chaos = new();
 
     [SupportedOSPlatform("windows")]
-    public Process LaunchChaos(string starCraftRoot, ChaosLaunchMode mode, bool clickStart = false, bool closeLauncherAfterStart = false)
+    public Process LaunchChaos(
+        string starCraftRoot,
+        ChaosLaunchMode mode,
+        bool enableWMode = true)
     {
-        var process = OpenChaos(starCraftRoot, mode, runStarCraftOnStartup: false);
-
-        if (clickStart)
-        {
-            ClickStart(process, TimeSpan.FromSeconds(20));
-        }
-
-        if (clickStart && closeLauncherAfterStart)
-        {
-            CloseLauncherWindow(process);
-        }
-
-        return process;
+        return OpenChaos(starCraftRoot, mode, runStarCraftOnStartup: false, enableWMode);
     }
 
     [SupportedOSPlatform("windows")]
@@ -70,11 +61,15 @@ public sealed class PracticeLauncher
     }
 
     [SupportedOSPlatform("windows")]
-    public Process OpenChaos(string starCraftRoot, ChaosLaunchMode mode, bool runStarCraftOnStartup = false)
+    public Process OpenChaos(
+        string starCraftRoot,
+        ChaosLaunchMode mode,
+        bool runStarCraftOnStartup = false,
+        bool enableWMode = true)
     {
         lock (ChaosStartupLock)
         {
-            _chaos.Apply(mode, starCraftRoot, runStarCraftOnStartup);
+            _chaos.Apply(mode, starCraftRoot, runStarCraftOnStartup, enableWMode);
 
             var launcher = Path.Combine(starCraftRoot, "Chaoslauncher - MultiInstance.exe");
             if (!File.Exists(launcher))
@@ -97,11 +92,11 @@ public sealed class PracticeLauncher
     }
 
     [SupportedOSPlatform("windows")]
-    public Process OpenChaosAndStartStarCraft(string starCraftRoot, ChaosLaunchMode mode)
+    public Process OpenChaosAndStartStarCraft(string starCraftRoot, ChaosLaunchMode mode, bool enableWMode = true)
     {
         var before = CountCompletedStarts(starCraftRoot);
         var requestedAt = DateTime.UtcNow;
-        var process = OpenChaos(starCraftRoot, mode, runStarCraftOnStartup: true);
+        var process = OpenChaos(starCraftRoot, mode, runStarCraftOnStartup: true, enableWMode);
         WaitForCompletedStart(starCraftRoot, before, TimeSpan.FromSeconds(20), requestedAt);
         return process;
     }
@@ -113,34 +108,9 @@ public sealed class PracticeLauncher
     }
 
     [SupportedOSPlatform("windows")]
-    public void StartAdditionalStarCraft(Process process, string starCraftRoot, TimeSpan timeout)
+    public void CloseChaosLauncher(Process process)
     {
-        var before = CountCompletedStarts(starCraftRoot);
-        var requestedAt = DateTime.UtcNow;
-        _chaos.SetRunStarCraftOnStartup(starCraftRoot, enabled: false);
-        ClickStart(process, starCraftRoot, timeout);
-        WaitForCompletedStart(starCraftRoot, before, timeout, requestedAt);
-    }
-
-    [SupportedOSPlatform("windows")]
-    public void ClickStart(Process process, TimeSpan timeout)
-    {
-        var starCraftRoot = process.StartInfo.WorkingDirectory;
-        if (string.IsNullOrWhiteSpace(starCraftRoot))
-        {
-            starCraftRoot = Path.GetDirectoryName(process.StartInfo.FileName) ?? "";
-        }
-
-        ClickStart(process, starCraftRoot, timeout);
-    }
-
-    [SupportedOSPlatform("windows")]
-    public void ClickStart(Process process, string starCraftRoot, TimeSpan timeout)
-    {
-        if (!ChaosLauncherWindowAutomation.ClickStart(process, starCraftRoot, timeout))
-        {
-            throw new InvalidOperationException("ChaosLauncher Start button could not be clicked automatically.");
-        }
+        CloseLauncherWindow(process);
     }
 
     private static void CloseLauncherWindow(Process process)

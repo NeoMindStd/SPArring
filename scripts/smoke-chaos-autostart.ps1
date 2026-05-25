@@ -23,7 +23,6 @@ $bwapiPlugin = "BWAPI 4.4.0 Injector [RELEASE]"
 $wmodePlugin = "W-MODE 1.02"
 $ini = Join-Path $Root "bwapi-data\bwapi.ini"
 $iniBackup = "$ini.starai-live-smoke.bak"
-$coachAi = "bwapi-data/AI/CoachAI/AnyRace_CoachAI.dll"
 $botAi = "bwapi-data/AI/practice-bots/NiteKatT/ExampleAIModule.dll"
 $map = "maps/(4)Fighting Spirit.scx"
 
@@ -77,7 +76,7 @@ function Set-SmokeBwapiIni {
     )
 
     if ($Role -eq "PlayerHost") {
-        $ai = $coachAi
+        $ai = ""
         $characterName = "StarAIHuman"
         $mapValue = $map
         $race = "Protoss"
@@ -138,63 +137,6 @@ speed_override = 42
 "@ | Set-Content -LiteralPath $ini -Encoding ASCII
 }
 
-function Invoke-StartButton {
-    param([int]$ProcessId)
-
-    Add-Type -TypeDefinition @'
-using System;
-using System.Text;
-using System.Runtime.InteropServices;
-public static class StarAiSmokeWin32 {
- public delegate bool EnumProc(IntPtr h, IntPtr l);
- [DllImport("user32.dll")] public static extern bool EnumWindows(EnumProc cb, IntPtr l);
- [DllImport("user32.dll")] public static extern bool EnumChildWindows(IntPtr p, EnumProc cb, IntPtr l);
- [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out int processId);
- [DllImport("user32.dll", CharSet=CharSet.Auto)] public static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
- [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
- [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
- [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int n);
- [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
- public static string Txt(IntPtr h){ var sb=new StringBuilder(512); GetWindowText(h,sb,sb.Capacity); return sb.ToString(); }
-}
-'@ -ErrorAction SilentlyContinue
-
-    $windows = New-Object System.Collections.ArrayList
-    [StarAiSmokeWin32]::EnumWindows({
-        param($handle, $unused)
-        $candidatePid = 0
-        [StarAiSmokeWin32]::GetWindowThreadProcessId($handle, [ref]$candidatePid) | Out-Null
-        if ($candidatePid -eq $ProcessId -and [StarAiSmokeWin32]::IsWindowVisible($handle)) {
-            [void]$windows.Add($handle)
-        }
-
-        return $true
-    }, [IntPtr]::Zero) | Out-Null
-
-    foreach ($window in $windows) {
-        $script:button = [IntPtr]::Zero
-        [StarAiSmokeWin32]::EnumChildWindows($window, {
-            param($handle, $unused)
-            $text = [StarAiSmokeWin32]::Txt($handle).Replace("&", "")
-            if ($text -eq "Start") {
-                $script:button = $handle
-                return $false
-            }
-
-            return $true
-        }, [IntPtr]::Zero) | Out-Null
-
-        if ($script:button -ne [IntPtr]::Zero) {
-            [StarAiSmokeWin32]::ShowWindow($window, 9) | Out-Null
-            [StarAiSmokeWin32]::SetForegroundWindow($window) | Out-Null
-            [StarAiSmokeWin32]::SendMessage($script:button, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
-            return
-        }
-    }
-
-    throw "Could not find ChaosLauncher Start button."
-}
-
 function Stop-LocalStarCraft {
     Get-CimInstance Win32_Process | Where-Object {
         ($_.Name -eq "Chaoslauncher - MultiInstance.exe" -and $_.ExecutablePath -like "C:\starai\*") -or
@@ -213,7 +155,6 @@ try {
     }
 
     foreach ($required in @(
-        (Join-Path $Root $coachAi.Replace("/", "\")),
         (Join-Path $Root $botAi.Replace("/", "\")),
         (Join-Path $Root $map.Replace("/", "\"))
     )) {
@@ -235,11 +176,25 @@ try {
 
     Write-Host "[live-smoke] Waiting for the player-host room, then switching bwapi.ini to bot-join"
     Start-Sleep -Seconds 5
+    if (-not $launcherProcess.HasExited) {
+        $launcherProcess.CloseMainWindow() | Out-Null
+        if (-not $launcherProcess.WaitForExit(3000)) {
+            Stop-Process -Id $launcherProcess.Id -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     Set-SmokeBwapiIni -Role BotJoin
-    Set-ChaosForRoot -StarCraftRoot $Root -RunOnStartup $false
-    Write-Host "[live-smoke] Clicking the existing ChaosLauncher Start button for bot-join StarCraft"
-    Invoke-StartButton -ProcessId $launcherProcess.Id
+    Set-ChaosForRoot -StarCraftRoot $Root -RunOnStartup $true
+    Write-Host "[live-smoke] Reopening ChaosLauncher with RunScOnStartup for bot-join StarCraft"
+    $botLauncherProcess = Start-Process -FilePath $launcher -WorkingDirectory $Root -PassThru
     Wait-CompletedStarts -LogPath $log -Count 2
+
+    if (-not $botLauncherProcess.HasExited) {
+        $botLauncherProcess.CloseMainWindow() | Out-Null
+        if (-not $botLauncherProcess.WaitForExit(3000)) {
+            Stop-Process -Id $botLauncherProcess.Id -Force -ErrorAction SilentlyContinue
+        }
+    }
 
     $starCraftCount = @(
         Get-CimInstance Win32_Process | Where-Object {
