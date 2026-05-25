@@ -26,6 +26,7 @@ internal static class ChaosLauncherWindowAutomation
                 var button = FindChildByText(window, "Start");
                 if (button != IntPtr.Zero)
                 {
+                    ShowWindow(window, SW_RESTORE);
                     SetForegroundWindow(window);
                     if (ClickButtonByMessage(button))
                     {
@@ -120,6 +121,15 @@ internal static class ChaosLauncherWindowAutomation
         {
             yield return chaosWindows[0];
         }
+
+        foreach (var window in TopLevelWindows())
+        {
+            if (FindChildByText(window, "Start") != IntPtr.Zero &&
+                FindChildByText(window, "Starcraft 1.16.1") != IntPtr.Zero)
+            {
+                yield return window;
+            }
+        }
     }
 
     private static bool IsProcessExecutable(Process process, string expectedPath)
@@ -173,6 +183,7 @@ internal static class ChaosLauncherWindowAutomation
             return false;
         }
 
+        ShowWindow(window, SW_RESTORE);
         SetForegroundWindow(window);
         lock (PhysicalClickLock)
         {
@@ -233,6 +244,8 @@ internal static class ChaosLauncherWindowAutomation
 
     private static IntPtr MakeLParam(int x, int y) => (IntPtr)((y << 16) | (x & 0xFFFF));
 
+    private const int SW_RESTORE = 9;
+
     private static IReadOnlyList<IntPtr> TopLevelWindows()
     {
         var windows = new List<IntPtr>();
@@ -286,6 +299,9 @@ internal static class ChaosLauncherWindowAutomation
 
     [DllImport("user32.dll")]
     private static extern bool SetForegroundWindow(IntPtr handle);
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr handle, int command);
 
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(IntPtr handle, out Rect rect);

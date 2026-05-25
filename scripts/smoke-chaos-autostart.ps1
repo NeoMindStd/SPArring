@@ -132,43 +132,48 @@ public static class StarAiSmokeWin32 {
  [DllImport("user32.dll")] public static extern bool EnumChildWindows(IntPtr p, EnumProc cb, IntPtr l);
  [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out int processId);
  [DllImport("user32.dll", CharSet=CharSet.Auto)] public static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
- [DllImport("user32.dll")] public static extern int GetWindowTextLength(IntPtr h);
  [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
  [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
- public static string Txt(IntPtr h){ int len=GetWindowTextLength(h); var sb=new StringBuilder(Math.Max(len+1,256)); GetWindowText(h,sb,sb.Capacity); return sb.ToString(); }
+ [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int n);
+ [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+ public static string Txt(IntPtr h){ var sb=new StringBuilder(512); GetWindowText(h,sb,sb.Capacity); return sb.ToString(); }
 }
 '@ -ErrorAction SilentlyContinue
 
-    $script:window = [IntPtr]::Zero
+    $windows = New-Object System.Collections.ArrayList
     [StarAiSmokeWin32]::EnumWindows({
         param($handle, $unused)
         $candidatePid = 0
         [StarAiSmokeWin32]::GetWindowThreadProcessId($handle, [ref]$candidatePid) | Out-Null
-        if ($candidatePid -eq $ProcessId -and [StarAiSmokeWin32]::IsWindowVisible($handle) -and [StarAiSmokeWin32]::Txt($handle) -like "*Chaos*") {
-            $script:window = $handle
-            return $false
+        if ($candidatePid -eq $ProcessId -and [StarAiSmokeWin32]::IsWindowVisible($handle)) {
+            [void]$windows.Add($handle)
         }
 
         return $true
     }, [IntPtr]::Zero) | Out-Null
 
-    $script:button = [IntPtr]::Zero
-    [StarAiSmokeWin32]::EnumChildWindows($script:window, {
-        param($handle, $unused)
-        $text = [StarAiSmokeWin32]::Txt($handle).Replace("&", "")
-        if ($text -eq "Start") {
-            $script:button = $handle
-            return $false
+    foreach ($window in $windows) {
+        $script:button = [IntPtr]::Zero
+        [StarAiSmokeWin32]::EnumChildWindows($window, {
+            param($handle, $unused)
+            $text = [StarAiSmokeWin32]::Txt($handle).Replace("&", "")
+            if ($text -eq "Start") {
+                $script:button = $handle
+                return $false
+            }
+
+            return $true
+        }, [IntPtr]::Zero) | Out-Null
+
+        if ($script:button -ne [IntPtr]::Zero) {
+            [StarAiSmokeWin32]::ShowWindow($window, 9) | Out-Null
+            [StarAiSmokeWin32]::SetForegroundWindow($window) | Out-Null
+            [StarAiSmokeWin32]::SendMessage($script:button, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+            return
         }
-
-        return $true
-    }, [IntPtr]::Zero) | Out-Null
-
-    if ($script:button -eq [IntPtr]::Zero) {
-        throw "Could not find ChaosLauncher Start button."
     }
 
-    [StarAiSmokeWin32]::SendMessage($script:button, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+    throw "Could not find ChaosLauncher Start button."
 }
 
 function Stop-LocalStarCraft {
@@ -209,7 +214,7 @@ try {
     $launcherProcess = Start-Process -FilePath $launcher -WorkingDirectory $Root -PassThru
     Wait-CompletedStarts -LogPath $log -Count 1
 
-    Write-Host "[live-smoke] Starting second StarCraft through the same ChaosLauncher"
+    Write-Host "[live-smoke] Clicking the existing ChaosLauncher Start button for second StarCraft"
     Set-SmokeBwapiIni -SoundOn $false
     Set-ChaosForRoot -StarCraftRoot $Root -RunOnStartup $false
     Invoke-StartButton -ProcessId $launcherProcess.Id

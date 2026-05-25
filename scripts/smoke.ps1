@@ -118,7 +118,16 @@ if ($practiceLauncherSource -notmatch "ChaosStartupLock") {
 }
 
 if ($practiceLauncherSource -notmatch "StartAdditionalStarCraft") {
-    throw "Practice launcher must support starting the second StarCraft instance from the same ChaosLauncher."
+    throw "Practice launcher must support starting the second StarCraft instance."
+}
+
+$startAdditionalMatch = [regex]::Match($practiceLauncherSource, "public void StartAdditionalStarCraft[\s\S]*?\n    \}")
+if (-not $startAdditionalMatch.Success) {
+    throw "Could not inspect StartAdditionalStarCraft implementation."
+}
+
+if ($startAdditionalMatch.Value -notmatch "ClickStart" -or $startAdditionalMatch.Value -notmatch "WaitForCompletedStart") {
+    throw "The active second StarCraft launch must request ChaosLauncher Start and verify that a second StarCraft start completed."
 }
 
 if ($practiceLauncherSource -notmatch "SetRunStarCraftOnStartup") {

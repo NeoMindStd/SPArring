@@ -100,7 +100,7 @@ public sealed class PracticeLauncher
 
     private static void CloseLauncherWindow(Process process)
     {
-        Thread.Sleep(2000);
+        Thread.Sleep(300);
         try
         {
             process.Refresh();
@@ -114,7 +114,7 @@ public sealed class PracticeLauncher
                 return;
             }
 
-            process.Kill(entireProcessTree: true);
+            process.Kill(entireProcessTree: false);
         }
         catch
         {

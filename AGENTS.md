@@ -21,7 +21,7 @@
 
 - 실제 스파링 실행 root는 `C:\starai\SC116AI` 하나만 사용합니다.
 - `C:\starai\SC116AI_ai`는 과거 분리 런타임 참고 폴더입니다. 실제 두 번째 ChaosLauncher 실행 대상으로 쓰면 `Already running`으로 막힙니다.
-- ChaosLauncher는 두 개를 띄우지 않습니다. 하나의 `Chaoslauncher - MultiInstance.exe`에서 StarCraft를 두 번 시작합니다.
+- ChaosLauncher는 두 개를 동시에 띄우지 않습니다. 하나의 `Chaoslauncher - MultiInstance.exe`에서 StarCraft를 두 번 시작합니다.
 - `bwapi.ini`는 첫 StarCraft 실행 후 AI용으로 덮어쓰지 않습니다.
   - 활성 스파링 흐름은 `PracticeConfigurator.ApplyMultiInstanceSparring`으로 하나의 INI에 다중 인스턴스 설정을 씁니다.
   - `ai = <CoachAI>,<상대봇>` 형식이어야 합니다.
@@ -30,7 +30,7 @@
 - 두 번째 StarCraft 시작 전에는 소리만 `OFF`로 바꿀 수 있습니다. AI/race/map/game 설정은 유지해야 합니다.
 - `DisableStartupLaunch`는 `RunScOnStartup`만 꺼야 합니다. BWAPI Injector나 W-MODE 플러그인 상태를 바꾸면 두 번째 실행이 깨집니다.
 - ChaosLauncher는 실행 폴더보다 `HKLM\SOFTWARE\WOW6432Node\Blizzard Entertainment\StarCraft`의 `InstallPath`/`Program`을 봅니다. 실행 직전에 이 값을 `C:\starai\SC116AI`로 맞춰야 합니다.
-- Start 버튼 UI 자동 클릭은 취약합니다. 첫 실행은 `RunScOnStartup=1`, 두 번째 실행은 같은 ChaosLauncher의 Start 버튼으로만 처리합니다.
+- 첫 실행은 `RunScOnStartup=1`로 처리합니다. 두 번째 실행은 이미 열린 같은 ChaosLauncher의 Start를 호출하되, 반드시 로그에서 두 번째 `Starting Starcraft completed`가 증가했는지 확인해야 합니다.
 - W-MODE 마우스 가두기는 UI 체크박스와 `wmode.ini`의 `ClipCursor`가 반드시 일치해야 합니다.
 - StarCraft 실행 중 `patch_rt.mpq`가 잠길 수 있습니다. 잠긴 파일은 패치 실패가 아니라 갱신 skip으로 처리합니다.
 
