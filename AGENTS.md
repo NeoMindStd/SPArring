@@ -9,6 +9,7 @@
 3. StarCraft/ChaosLauncher 실제 실행 흐름을 건드렸으면 가능할 때 `scripts\smoke-chaos-autostart.ps1` 또는 `scripts\smoke-app-start.ps1`까지 확인합니다.
 4. 사용자는 `C:\starai\Start-StarAI-PracticeClient.cmd`를 작업표시줄에서 실행합니다. 이 경로와 동작을 깨뜨리면 안 됩니다.
 5. 배포 산출물은 사용자가 요청한 때에만 만들고, 임시 publish/smoke 산출물은 테스트 뒤 정리합니다.
+6. 새 스레드에서 이어받을 때는 먼저 `docs\THREAD_HANDOFF.md`를 읽고, 거기에 적힌 현재 상태/금지사항/검증 기준을 최신 기준으로 삼습니다.
 
 ## 현재 제품 방향
 
