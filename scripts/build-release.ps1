@@ -26,6 +26,8 @@ dotnet publish $appProject `
 Copy-Item -LiteralPath (Join-Path $publishDir 'StarAI.PracticeClient.App.exe') -Destination (Join-Path $setupStage 'StarAI.PracticeClient.App.exe') -Force
 Copy-Item -LiteralPath (Join-Path $repo 'VERSION') -Destination (Join-Path $setupStage 'VERSION') -Force
 Copy-Item -LiteralPath (Join-Path $repo 'README.md') -Destination (Join-Path $setupStage 'README.md') -Force
+$installGuideTemplate = Get-Content -LiteralPath (Join-Path $repo 'docs\INSTALL_GUIDE.md') -Raw -Encoding UTF8
+$readmeInstall = $installGuideTemplate.Replace('{{VERSION}}', $version)
 
 $installCmd = @'
 @echo off
@@ -74,30 +76,6 @@ if not exist "C:\starai\SC116AI\StarCraft.exe" (
 start "StarAI Practice Client" "%TARGET%\StarAI.PracticeClient.App.exe"
 pause
 '@
-
-$readmeInstall = @"
-StarAI Practice Client $version install guide
-
-1. Extract StarAI-PracticeClient-$version-win-x64.zip.
-2. Double-click install.cmd.
-3. Run the desktop shortcut named "StarAI Practice Client".
-4. Pick bot, map, and races, then press the sparring start button.
-
-Requirements:
-- Windows 10/11 64-bit
-- StarCraft 1.16.1 + BWAPI runtime: C:\starai\SC116AI
-- SCHNAIL Client default install folder: C:\Program Files (x86)\SCHNAIL Client
-
-Installed entry points:
-- C:\starai\Start-StarAI-PracticeClient.cmd
-- C:\starai\StarAI.PracticeClient\StarAI.PracticeClient.App.exe
-
-Notes:
-- Player runtime: C:\starai\SC116AI
-- AI runtime: C:\starai\SC116AI_ai
-- Original SCHNAIL files are not modified.
-- Applying hotkeys into the runtime MPQ may require Java 11+.
-"@
 
 Set-Content -LiteralPath (Join-Path $setupStage 'install.cmd') -Value $installCmd -Encoding Default
 Set-Content -LiteralPath (Join-Path $setupStage 'README-INSTALL.txt') -Value $readmeInstall -Encoding UTF8

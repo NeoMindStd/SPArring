@@ -4,6 +4,8 @@ StarAI Practice Client는 StarCraft 1.16.1 + BWAPI 기반의 로컬 AI 스파링
 
 ## 쉬운 설치
 
+아래 안내가 기본 설치 방법입니다. 영어 안내가 필요하면 바로 아래의 `English Install Guide`를 참고하세요.
+
 1. GitHub Releases에서 최신 `StarAI-PracticeClient-1.0.0-win-x64.zip`을 다운로드합니다.
 2. ZIP 파일의 압축을 풉니다.
 3. 압축을 푼 폴더 안의 `install.cmd`를 더블클릭합니다.
@@ -24,6 +26,20 @@ C:\starai\StarAI.PracticeClient\StarAI.PracticeClient.App.exe
 - SCHNAIL Client 기본 설치 위치: `C:\Program Files (x86)\SCHNAIL Client`
 
 SCHNAIL은 봇과 맵 목록을 읽는 기준 데이터로만 사용합니다. StarAI는 SCHNAIL 원본 설치 폴더를 수정하지 않습니다.
+
+## English Install Guide
+
+1. Download `StarAI-PracticeClient-1.0.0-win-x64.zip` from GitHub Releases.
+2. Extract the ZIP file.
+3. Double-click `install.cmd` in the extracted folder.
+4. Run the desktop shortcut named `StarAI Practice Client`.
+5. Pick bot, map, and races, then press the sparring start button.
+
+Requirements:
+
+- Windows 10/11 64-bit
+- StarCraft 1.16.1 + BWAPI runtime: `C:\starai\SC116AI`
+- SCHNAIL Client default folder: `C:\Program Files (x86)\SCHNAIL Client`
 
 ## 현재 기능
 
