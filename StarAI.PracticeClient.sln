@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{347C1481-07EB-4EE9-8F9E-7363E6E76432}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1C3C3176-996A-4D55-B53F-D60EA110692E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarAI.PracticeClient.Core", "src\StarAI.PracticeClient.Core\StarAI.PracticeClient.Core.csproj", "{1847AF7F-B8C1-4521-9FA4-7D726B6D9CC2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarAI.PracticeClient.Core", "src\StarAI.PracticeClient.Core\StarAI.PracticeClient.Core.csproj", "{6B98716E-EBB7-4E66-A556-2127B23BBF96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarAI.PracticeClient.App", "src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj", "{373C2ABB-D08B-4C7C-8980-4422F63A8CDE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{773A7928-010F-461C-8A7C-13723CEAFCF7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{4ECB1C97-BC00-45A6-A447-D1867E70642E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarAI.PracticeClient.Tests", "tests\StarAI.PracticeClient.Tests\StarAI.PracticeClient.Tests.csproj", "{90638BBE-7267-41BD-9119-724EC0144CA5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarAI.PracticeClient.Tests", "tests\StarAI.PracticeClient.Tests\StarAI.PracticeClient.Tests.csproj", "{66035E15-E9F2-43FE-BDD0-8F77FBAB02E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarAI.PracticeClient.App", "src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj", "{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,22 +22,22 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1847AF7F-B8C1-4521-9FA4-7D726B6D9CC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1847AF7F-B8C1-4521-9FA4-7D726B6D9CC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1847AF7F-B8C1-4521-9FA4-7D726B6D9CC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1847AF7F-B8C1-4521-9FA4-7D726B6D9CC2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{373C2ABB-D08B-4C7C-8980-4422F63A8CDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{373C2ABB-D08B-4C7C-8980-4422F63A8CDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{373C2ABB-D08B-4C7C-8980-4422F63A8CDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{373C2ABB-D08B-4C7C-8980-4422F63A8CDE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{66035E15-E9F2-43FE-BDD0-8F77FBAB02E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{66035E15-E9F2-43FE-BDD0-8F77FBAB02E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{66035E15-E9F2-43FE-BDD0-8F77FBAB02E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{66035E15-E9F2-43FE-BDD0-8F77FBAB02E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B98716E-EBB7-4E66-A556-2127B23BBF96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B98716E-EBB7-4E66-A556-2127B23BBF96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B98716E-EBB7-4E66-A556-2127B23BBF96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B98716E-EBB7-4E66-A556-2127B23BBF96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90638BBE-7267-41BD-9119-724EC0144CA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90638BBE-7267-41BD-9119-724EC0144CA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90638BBE-7267-41BD-9119-724EC0144CA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90638BBE-7267-41BD-9119-724EC0144CA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{1847AF7F-B8C1-4521-9FA4-7D726B6D9CC2} = {347C1481-07EB-4EE9-8F9E-7363E6E76432}
-		{373C2ABB-D08B-4C7C-8980-4422F63A8CDE} = {347C1481-07EB-4EE9-8F9E-7363E6E76432}
-		{66035E15-E9F2-43FE-BDD0-8F77FBAB02E4} = {4ECB1C97-BC00-45A6-A447-D1867E70642E}
+		{6B98716E-EBB7-4E66-A556-2127B23BBF96} = {1C3C3176-996A-4D55-B53F-D60EA110692E}
+		{90638BBE-7267-41BD-9119-724EC0144CA5} = {773A7928-010F-461C-8A7C-13723CEAFCF7}
+		{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69} = {1C3C3176-996A-4D55-B53F-D60EA110692E}
 	EndGlobalSection
 EndGlobal

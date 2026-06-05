@@ -2,46 +2,40 @@ using StarAI.PracticeClient.Core;
 
 namespace StarAI.PracticeClient.Tests;
 
-public class HotkeyCsvStoreTests
+public sealed class HotkeyCsvStoreTests
 {
     [Fact]
-    public void LoadAndSaveWorkingCopy_ParsesSchnailStyleCsv()
+    public void ParseLineUsesCustomOverrideColumnWhenPresent()
     {
-        var root = Path.Combine(Path.GetTempPath(), "starai-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(root);
-        var csv = Path.Combine(root, "sc_hotkeys.csv");
-        var messages = Path.Combine(root, "messages_en.properties");
-        File.WriteAllText(csv, "599,e<1>Build Probe(<3>E<1>)<0>,protoss_train_probe");
-        File.WriteAllText(messages, "hotkey_desc_protoss_train_probe=Build Probe");
+        var entry = HotkeyCsvStore.ParseLine(
+            "599,p<1>Build <3>P<1>robe<0>,protoss_train_probe,e<1>Build Probe(<3>E<1>)<0>");
 
-        var store = new HotkeyCsvStore();
-        var entries = store.Load(csv, messages);
-
-        Assert.Single(entries);
-        Assert.Equal("e", entries[0].Hotkey);
-        Assert.Equal("Build Probe", entries[0].Description);
-
-        foreach (var entry in entries)
-        {
-            entry.Hotkey = "p";
-        }
-        store.SaveWorkingCopy(root, entries);
-
-        var saved = File.ReadAllText(Path.Combine(root, "bwapi-data", "read", "sc_hotkeys.csv"));
-        Assert.Contains("p<1>Build Probe", saved);
+        Assert.NotNull(entry);
+        Assert.Equal(599, entry.StringId);
+        Assert.Equal("e", entry.Hotkey);
+        Assert.Equal("protoss_train_probe", entry.CommandId);
     }
 
     [Fact]
-    public void Load_UsesSchnailCustomOverrideColumnWhenPresent()
+    public void SaveWorkingCopyWritesFourColumnSchnailStyleCsv()
     {
         var root = Path.Combine(Path.GetTempPath(), "starai-tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
-        var csv = Path.Combine(root, "sc_hotkeys.csv");
-        File.WriteAllText(csv, "599,p<1>Build <3>P<1>robe<0>,protoss_train_probe,e<1>Build Probe(<3>E<1>)<0>");
+        var store = new HotkeyCsvStore();
+        var entry = new HotkeyEntry
+        {
+            StringId = 599,
+            CommandId = "protoss_train_probe",
+            Hotkey = "p",
+            Description = "Build Probe",
+            DefaultText = "e<1>Build Probe(<3>E<1>)<0>",
+            CurrentText = "e<1>Build Probe(<3>E<1>)<0>"
+        };
 
-        var entries = new HotkeyCsvStore().Load(csv, messagesPath: null);
+        var path = store.SaveWorkingCopy(root, [entry]);
 
-        Assert.Single(entries);
-        Assert.Equal("e", entries[0].Hotkey);
+        var saved = File.ReadAllText(path);
+        Assert.Contains("599,e<1>Build Probe", saved);
+        Assert.Contains("protoss_train_probe,p<1>Build Probe(<3>P<1>)<0>", saved);
     }
 }

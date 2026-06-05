@@ -1,130 +1,76 @@
-# AIStarClient Thread Handoff
+# StarAI Practice Client Thread Handoff
 
 Last updated: 2026-06-05
 
 ## Repository
 
 - Repo: `C:\starai\StarAI.PracticeClient`
-- Remote: `https://github.com/NeoMindStd/AIStarClient`
 - User taskbar entrypoint: `C:\starai\Start-StarAI-PracticeClient.cmd`
-- Current app version: `0.1.5`
-- Latest handoff commit: current `HEAD` with message `docs: add thread handoff context`
-- Last known good code commit: `b1abe4f fix: avoid exclusive fullscreen launch`
-- Current expected working tree at handoff: clean.
+- Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
+- Current version: `1.0.0`
+- Last verified implementation state: rebuilt .NET 8 WinForms/Core launcher with 44 passing tests and actual StarCraft start capture
 
-## User Preferences
+## Hard Rules
 
-- Answer in Korean 존댓말.
-- Be careful and test regressions; user is sensitive to repeated breakage.
-- Do not create release artifacts, GitHub releases, tags, pushes, or installer uploads unless explicitly requested.
-- The user launches from the Windows taskbar through `C:\starai\Start-StarAI-PracticeClient.cmd`; preserve that path and behavior.
-- If editing code, prefer TDD/regression tests and then smoke tests.
+- 답변과 보고는 한국어 존댓말로 한다.
+- release/tag/push/installer 배포는 사용자가 명시적으로 요청할 때만 한다.
+- SCHNAIL/Remastered 원본은 읽기 전용이다.
+- 사람 런타임: `C:\starai\SC116AI`
+- AI 런타임: `C:\starai\SC116AI_ai`
+- 사람 `bwapi.ini`의 `ai` 값은 비워야 한다.
+- AI 클라이언트는 창모드, 음소거, APMAlert OFF가 기본이다.
+- 독점 전체화면은 금지한다. 현재는 cnc-ddraw 기반 borderless/fullscreen 설정으로 해상도 강제변경을 피한다.
+- CoachAI 또는 플레이어 유닛 제어 오버레이는 되살리지 않는다.
+- MPQ 쓰기는 SCHNAIL과 같은 `SFmpq`/`org.jasperge.mpq.MPQEditor.addFile` 방식만 사용한다. `JMpqEditor` 직접 쓰기 모드는 listfile 누락 시 MPQ 손상 위험이 확인되어 금지한다.
 
-## Product Direction
+## Current State
 
-AIStarClient is now a SCHNAIL-like local StarCraft 1.16.1 + BWAPI sparring launcher, not a CoachAI overlay launcher.
-
-Keep these decisions:
-
-- CoachAI is removed from active flow. Do not reintroduce CoachAI or any overlay that can control the player's units.
-- Player client and AI client must use separate runtime folders:
-  - Player: `C:\starai\SC116AI`
-  - AI: `C:\starai\SC116AI_ai`
-- Player `bwapi.ini` must keep `ai =` empty.
-- AI `bwapi.ini` receives the selected bot DLL.
-- AI client is always windowed, sound OFF, APMAlert OFF.
-- Player client avoids old exclusive fullscreen. It should use W-MODE and optional borderless window placement.
-- Launcher saved preferences are only startup defaults. Once the app is open, current UI selections must drive `스파링 시작`.
-- APMAlert is optional and experimental. If recent StarCraft `.ERR` logs mention `APMAlert.bwl`, the app disables it.
-
-## Current Launch Flow
-
-Normal flow in `MainForm.StartSparringAsync`:
-
-1. Read current UI values with `CurrentSettings()`.
-2. Stop stale local `C:\starai` StarCraft/ChaosLauncher processes only.
-3. Import hotkeys from SCHNAIL/Remastered when available.
-4. Validate selected player runtime.
-5. Ensure AI runtime via `StarCraftRuntimeRoot.EnsureAiRoot`.
-6. Force AI settings with `StarCraftRoot = aiRoot` and `WindowedMode = true`.
-7. Apply W-MODE:
-   - Player: `windowedMode: true`, clip cursor only if UI says so.
-   - AI: `windowedMode: true`, `clipCursor: false`.
-8. Apply player-host `bwapi.ini` and launch player via ChaosLauncher `RunScOnStartup`.
-9. If borderless mode is checked, `StarCraftBorderlessWindow` removes frame and fits the StarCraft window to the current monitor.
-10. Close the launcher window.
-11. Apply bot-join `bwapi.ini` in AI runtime.
-12. Launch AI via ChaosLauncher `RunScOnStartup`.
-13. Close the launcher window.
-14. Record match history and rely on BWAPI replay autosave path.
-
-## SCHNAIL State
-
-SCHNAIL was accidentally modified earlier in the old thread and then restored.
-
-Current restored SCHNAIL expectations:
-
-- SCHNAIL install: `C:\Program Files (x86)\SCHNAIL Client`
-- `res\client.properties` should contain:
-  - `schnail_remote_url = https://app.schnail.com:8181/schnail-serv`
-  - `client_version=0.4.2.3`
-- `bots\bots.dat` should not contain `[StarAI]` notes.
-- Do not add helper `.cmd` files back into the SCHNAIL install folder.
-- Helper scripts remain outside the install under `C:\starai\SCHNAIL_HELPERS`.
-- The official SCHNAIL version endpoint was verified with HTTP 200:
-  - `https://app.schnail.com:8181/schnail-serv/rest/version/`
-
-If SCHNAIL login breaks again, first check `client.properties` for `127.0.0.1:18181`; that was the previous failure.
-
-## Important Files
-
-- App UI/flow: `src\StarAI.PracticeClient.App\MainForm.cs`
-- Borderless window placement: `src\StarAI.PracticeClient.App\StarCraftBorderlessWindow.cs`
-- Mouse clipping: `src\StarAI.PracticeClient.App\StarCraftMouseClipper.cs`
-- Preferences: `src\StarAI.PracticeClient.App\LauncherPreferences.cs`
-- BWAPI/player/bot INI config: `src\StarAI.PracticeClient.Core\PracticeConfigurator.cs`
-- ChaosLauncher registry setup: `src\StarAI.PracticeClient.Core\ChaosLauncherConfigurator.cs`
-- Launch/process cleanup: `src\StarAI.PracticeClient.Core\PracticeLauncher.cs`
-- AI runtime sync: `src\StarAI.PracticeClient.Core\StarCraftRuntimeRoot.cs`
-- Bot catalog/metadata: `src\StarAI.PracticeClient.Core\PracticeCatalog.cs`
-- APMAlert crash guard: `src\StarAI.PracticeClient.Core\CrashLogInspector.cs`
-- Regression tests: `tests\StarAI.PracticeClient.Tests\PracticeConfiguratorTests.cs`
-- Smoke tests:
+- Core:
+  - `PracticePaths` / `RuntimeWritePolicy`
+  - SCHNAIL `bots.dat` / `maps.dat` parser
+  - bot-map compatibility filter
+  - initial `PracticeLaunchPlanBuilder`
+  - hotkey CSV editor model, `stat_txt.txt` patcher, TBL compiler integration, SFmpq runtime MPQ insert helper
+  - SCHNAIL ELO -> SCR MMR/grade reference estimator
+  - runtime provisioning for SCHNAIL maps/bots into player/AI runtime folders
+  - user map catalog reader for `.scm`/`.scx`
+  - player/AI `bwapi.ini` and `wmode.ini` generation
+  - session history store for launch/APM records
+- App:
+  - SCHNAIL-inspired Korean WinForms UI with Game/Settings/Hotkeys/History tabs
+  - Hotkeys tab can import SCHNAIL CSV, save working CSV, and apply to `C:\starai\SC116AI\patch_rt.mpq`
+  - Settings tab stores replay root and user map folder under `%APPDATA%\StarAI.PracticeClient\settings.json`
+  - History tab reads `%APPDATA%\StarAI.PracticeClient\history.json`
+  - Launch flow starts player StarCraft with cnc-ddraw borderless/fullscreen settings and starts the AI client muted, then minimizes it after join/start timing
+  - Overlay shows timer/APM without enabling APMAlert
+  - `--smoke` entrypoint
+- Scripts:
   - `scripts\smoke.ps1`
   - `scripts\smoke-app-start.ps1`
-  - `scripts\smoke-chaos-autostart.ps1`
+- Decision log:
+  - `docs\TECH_DECISIONS.md`
+  - 기능별 후보/장단점/선택 이유를 먼저 기록하고 구현한다.
+- Added optional goal:
+  - 봇 난이도를 SCHNAIL ELO, 가능하면 한국 서버 래더 MMR/등급 기준으로 병행 표기한다.
+  - 사용자 맵, 리플레이 경로, 전적/APM 기록은 구현됨.
+  - 봇 빌드 선택과 Remastered 직접 실행은 보류. 봇별 설정 구조와 BWAPI/Remastered 호환성 조사가 필요하다.
 
-## Verification Policy
+## MPQ Recovery Note
 
-For code changes:
+During development, unsafe direct `JMpqEditor` write attempts damaged local `patch_rt.mpq` copies. The local runtime and SCHNAIL bundled copies were restored from the intact `starcraft_bundled_forAI\patch_rt.mpq` copy. The current code no longer uses that unsafe writer path. If exact original SCHNAIL bundled player MPQ fidelity matters later, reinstall or repair SCHNAIL from the official source before comparing hashes.
+
+## Verification
 
 ```powershell
 dotnet test .\StarAI.PracticeClient.sln -v:minimal
 .\scripts\smoke.ps1
-```
-
-If StarCraft/ChaosLauncher launch behavior changes, also run:
-
-```powershell
 .\scripts\smoke-app-start.ps1
 ```
 
-After smoke tests, clean temporary artifacts and leave only `artifacts\run` when possible. Do not delete the taskbar launcher or the run folder needed by the taskbar flow.
+Last known local verification:
 
-## Known Issues / Next Investigation Candidates
-
-- User reported previous issues now addressed in commit `b1abe4f`:
-  - Exclusive fullscreen broke all monitor resolutions and window positions.
-  - APMAlert appeared in a crash call stack.
-  - Mouse sensitivity felt abnormal, likely due to old fullscreen/low-resolution mode.
-- If mouse sensitivity is still abnormal after borderless W-MODE, inspect Chaosplugin mouse-speed settings or any StarCraft-specific registry/plugin setting before changing app logic.
-- APM/game-time display through APMAlert is risky in this setup. Prefer OFF unless a safer display method is implemented.
-- Avoid touching `C:\Program Files (x86)\SCHNAIL Client` except for read-only diagnostics or explicitly requested repair.
-
-## Recent Commits
-
-- `HEAD docs: add thread handoff context`
-- `b1abe4f fix: avoid exclusive fullscreen launch`
-- `9fbee6d fix: respect live launcher settings`
-- `25cc169 fix: isolate bot runtime from player client`
-- `e06bb54 refactor: remove CoachAI practice flow`
+- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 36 passed
+- `.\scripts\smoke.ps1`: Release build warning 0 / error 0
+  - `.\scripts\smoke-app-start.ps1`: passed after cnc-ddraw and delayed AI minimize implementation
+  - Actual launch evidence: player game started, AI client joined and was minimized after startup
+  - Launcher UI evidence: `artifacts\screenshots\starai-launcher-hotkeys-smoke.png`

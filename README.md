@@ -1,177 +1,71 @@
-# AIStarClient
+# StarAI Practice Client
 
-AIStarClient is a Windows practice launcher for local StarCraft: Brood War
-1.16.1 + BWAPI sparring. It focuses on a SCHNAIL-like one-click practice flow:
-pick your race, opponent race, bot, map, difficulty, and bot build, then launch
-a local human-vs-bot game.
+StarAI Practice Client는 StarCraft 1.16.1 + BWAPI 기반의 로컬 AI 스파링 런처입니다. SCHNAIL의 봇/맵 데이터를 읽기 전용으로 활용하고, 사람 클라이언트와 AI 클라이언트를 분리해서 `나 vs AI` 연습을 빠르게 시작합니다.
 
-This repository contains only the AIStarClient application. It intentionally
-does not redistribute StarCraft, ChaosLauncher, BWAPI runtime binaries, SCHNAIL,
-BWAPI Revamped packages, or third-party bot binaries.
+## 쉬운 설치
 
-## Current version
+1. GitHub Releases에서 최신 `StarAI-PracticeClient-1.0.0-win-x64.zip`을 다운로드합니다.
+2. ZIP 파일의 압축을 풉니다.
+3. 압축을 푼 폴더 안의 `install.cmd`를 더블클릭합니다.
+4. 설치가 끝나면 바탕화면의 `StarAI Practice Client` 바로가기를 실행합니다.
+5. 런처에서 봇, 맵, 종족을 고른 뒤 `스파링 시작`을 누릅니다.
 
-`0.1.5`
-
-Semantic versioning is used:
-
-- Patch: bug fixes, bot metadata corrections, smoke-test improvements.
-- Minor: new launcher features, installer/setup flow improvements.
-- Major: incompatible config/storage/runtime behavior changes.
-
-## Requirements
-
-- Windows 10/11
-- .NET 8 Desktop Runtime, or a self-contained package when available
-- A user-owned StarCraft: Brood War 1.16.1 folder
-- A compatible BWAPI + ChaosLauncher setup in that StarCraft folder
-- Local bot DLLs installed under the selected StarCraft folder
-
-Recommended local layout while developing:
-
-```text
-C:\starai\
-  StarAI.PracticeClient\   # this repository
-  SC116AI\                 # local runtime folder, not committed
-  SC116AI_ai\              # generated bot runtime folder, not committed
-```
-
-## Run locally
-
-From this repository:
-
-```powershell
-dotnet run --project .\src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj
-```
-
-The taskbar entry used on this machine points to:
+설치 후 실행 파일은 아래 위치에 만들어집니다.
 
 ```text
 C:\starai\Start-StarAI-PracticeClient.cmd
+C:\starai\StarAI.PracticeClient\StarAI.PracticeClient.App.exe
 ```
 
-That command rebuilds the local run folder and starts the app.
+## 설치 전 준비물
 
-## Practice flow
+- Windows 10/11 64비트
+- StarCraft 1.16.1 + BWAPI 런타임: `C:\starai\SC116AI`
+- SCHNAIL Client 기본 설치 위치: `C:\Program Files (x86)\SCHNAIL Client`
 
-1. Select your StarCraft 1.16.1 folder.
-2. Select your race, opponent race, difficulty, bot, map, and bot build.
-3. Choose player fullscreen/W-MODE behavior, mouse confinement, and APM/game
-   time display.
-4. Click `스파링 시작`.
-5. AIStarClient writes a human-host `bwapi.ini` in the selected StarCraft
-   folder, syncs a separate `<StarCraft folder>_ai` runtime for the bot, starts
-   the first StarCraft client, waits for the Local PC room, then starts the bot
-   client from the AI runtime with its own bot-join `bwapi.ini`.
+SCHNAIL은 봇과 맵 목록을 읽는 기준 데이터로만 사용합니다. StarAI는 SCHNAIL 원본 설치 폴더를 수정하지 않습니다.
 
-The player host role writes:
+## 현재 기능
 
-- `ai =` empty
-- selected map and player race
-- `character_name = StarAIHuman`
-- sound ON
+- SCHNAIL 봇/맵 카탈로그 읽기
+- 봇/맵/종족 선택과 호환성 필터
+- 스파링 모드와 래더 후보 선택 UI
+- 사람 런타임과 AI 런타임 분리
+- 사람 `bwapi.ini`는 `ai =` 빈 값 유지, AI 런타임에만 선택 봇 적용
+- cnc-ddraw 기반 사람 클라이언트 borderless/fullscreen 실행
+- AI 클라이언트 별도 실행, 음소거, 합류 후 최소화
+- SCHNAIL 핫키 CSV 가져오기/편집과 런타임 MPQ 반영
+- 타이머/APM 오버레이
+- 사용자 맵 폴더 `.scm/.scx` 추가
+- 리플레이 저장 루트 설정
+- 전적/APM 세션 기록
+- SCHNAIL ELO와 SCR 한국 서버 래더 MMR/등급 참고 표기
 
-The bot join role writes:
+## 핫키 반영 참고
 
-- selected bot DLL as `ai`
-- empty map so it joins the existing Local PC game
-- bot race and selected game name
-- `character_name = StarAIBot`
-- sound OFF
+핫키 탭에서 `CSV 저장`은 StarAI 작업 파일만 저장합니다. `런타임 반영`은 실제 사람 런타임의 `patch_rt.mpq`에 핫키를 반영합니다.
 
-Known-crashing local bots are excluded from the selectable bot list when crash
-evidence is known from local StarCraft error logs. At the moment
-`XIAOYICOG2019` and `Stone` are hidden because they produced access-violation
-crashes in this environment.
+`런타임 반영`에는 SCHNAIL에 포함된 TBL 컴파일러와 Java 11 이상이 필요할 수 있습니다. Java가 없다면 기본 스파링 실행은 가능하지만, 핫키 MPQ 반영은 실패할 수 있습니다.
 
-## Features
+## 고정 원칙
 
-- Bot pool with race, difficulty tier, ELO metadata, tags, and Korean notes
-- Build/opening filters where a bot exposes configurable strategy files
-- Map selection from the selected StarCraft folder
-- Player borderless window mode by default, with the bot client kept windowed
-  and muted
-- Optional StarCraft mouse confinement
-- Optional player-only APM/game-time display through the local APMAlert plugin;
-  it is disabled automatically when recent APMAlert crash logs are detected
-- Hotkey import/editor support
-- Replay auto-save path under `D:\OneDrive\Documents\StarCraft\Maps\Replays\ai`
-- Match history and replay browser
-- Last selected map, bot, build, filters, speed, and window options are saved
+- SCHNAIL 설치 폴더와 StarCraft Remastered 원본은 수정하지 않습니다.
+- 사람 런타임은 `C:\starai\SC116AI`, AI 런타임은 `C:\starai\SC116AI_ai`를 사용합니다.
+- 사람 `bwapi.ini`에는 봇 DLL을 넣지 않습니다.
+- 독점 전체화면 대신 해상도 강제변경 없는 borderless/fullscreen 계열 실행을 사용합니다.
+- 사용자 실행 진입점 `C:\starai\Start-StarAI-PracticeClient.cmd`를 유지합니다.
 
-## Stability model
+## 문제가 생겼을 때
 
-AIStarClient uses two local runtime folders: the selected player folder and a
-generated sibling folder named `<StarCraft folder>_ai`. The player folder always
-keeps `ai =` empty, while the AI folder receives the selected bot DLL. The
-launcher UI stores the last selected values only as the next startup defaults;
-when `스파링 시작` is clicked, the current visible UI values drive the launch.
-This is required because BWAPI can read `bwapi.ini` when the game begins, not
-only when the process starts. Keeping the files separate prevents the human
-client from loading the bot AI. The player client still uses W-MODE even when
-the UI says borderless/fullscreen, so old DirectDraw exclusive fullscreen does
-not change monitor resolution. ChaosLauncher windows are not kept open
-concurrently; each StarCraft instance is started with `RunScOnStartup`.
+- 설치 후 실행이 안 되면 `C:\starai\Start-StarAI-PracticeClient.cmd`를 다시 실행해 보세요.
+- 봇/맵 목록이 비어 있으면 SCHNAIL Client가 기본 위치에 설치되어 있는지 확인하세요.
+- 스파링 시작이 안 되면 `C:\starai\SC116AI\StarCraft.exe`가 존재하는지 확인하세요.
+- AI 창은 합류 후 자동 최소화됩니다. 작업 표시줄에서 `Brood War Instance 2`를 복원하면 AI 화면을 볼 수 있습니다.
 
-## Smoke test
-
-The default smoke test is intentionally non-invasive: it does not start
-StarCraft, ChaosLauncher, or any bot. It builds, runs unit tests, verifies
-source-level regression guards, publishes the client to a temporary smoke
-folder, and checks that output does not contain common forbidden runtime/game
-files.
+## 개발 검증
 
 ```powershell
+dotnet test .\StarAI.PracticeClient.sln -v:minimal
 .\scripts\smoke.ps1
-```
-
-For launch-flow changes, run the live smoke scripts on the local machine:
-
-```powershell
-.\scripts\smoke-chaos-autostart.ps1
 .\scripts\smoke-app-start.ps1
-```
-
-These scripts stop only local `C:\starai` StarCraft/ChaosLauncher processes and
-restore preferences/INI files after the check.
-
-## Build a release package
-
-Only build release artifacts when explicitly requested:
-
-```powershell
-.\scripts\build-release.ps1
-```
-
-The installer installs AIStarClient only. The user still selects their existing
-StarCraft/BWAPI/ChaosLauncher folder from the app.
-
-Release artifacts must not contain:
-
-- `StarCraft.exe`, `StarEdit.exe`, or MPQ files
-- ChaosLauncher executables unless redistribution terms are verified first
-- `BWAPI.dll`
-- replays, error dumps, local screenshots, or local runtime folders
-
-## Third-party and legal notes
-
-See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-Important summary:
-
-- StarCraft/Brood War assets are proprietary Blizzard Entertainment assets and
-  are not distributed here.
-- BWAPI is referenced as a separate user-installed runtime. GitHub identifies
-  `bwapi/bwapi` as LGPL-3.0 plus an additional unknown license file.
-- BWAPI Revamped did not expose a detectable GitHub license at the time this
-  notice was written, so it is not redistributed here.
-- ChaosLauncher and SCHNAIL redistribution terms are not verified here, so they
-  are not redistributed here.
-
-## Repository
-
-Remote:
-
-```text
-https://github.com/NeoMindStd/AIStarClient
 ```

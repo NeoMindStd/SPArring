@@ -1,78 +1,66 @@
 namespace StarAI.PracticeClient.Core;
 
-public enum Race
+public enum StarCraftRace
 {
-    Random,
     Terran,
     Protoss,
-    Zerg
+    Zerg,
+    Random,
+    Unknown
 }
 
-public enum DifficultyTier
+public enum BotExecutableKind
 {
-    Recovery,
-    Main,
-    Challenge,
-    Drill,
-    Experimental
+    Dll,
+    ClientExe,
+    ClientJar,
+    Unknown
 }
 
-public enum BuildPatchKind
-{
-    None,
-    UAlbertaRaceStrategy,
-    MatchupWeightedStrategy
-}
-
-public sealed record BuildPatch(BuildPatchKind Kind, string ConfigRelativePath, string StrategyId);
-
-public sealed record BuildOption(
-    string Id,
+public sealed record PracticeMap(
+    Guid Id,
     string Name,
-    string Description,
-    BuildPatch? Patch = null);
+    string FileName,
+    string? ImagePath,
+    bool Enabled,
+    string? SourcePath = null,
+    bool IsUserMap = false);
 
-public sealed record BotProfile(
-    string Id,
+public sealed record PracticeBot(
+    Guid Id,
     string Name,
-    Race Race,
-    DifficultyTier Tier,
-    string RelativeDllPath,
-    string Style,
-    string BuildHints,
-    string MicroRisk,
-    IReadOnlyList<BuildOption> BuildOptions,
-    int? Elo = null,
-    IReadOnlyList<string>? Tags = null)
+    StarCraftRace Race,
+    string ExecutableName,
+    BotExecutableKind ExecutableKind,
+    string BwapiVersion,
+    int? Elo,
+    bool PracticeOnly,
+    IReadOnlySet<Guid> SupportedMapIds,
+    string? Description,
+    string? Author,
+    string? SourceDirectory = null)
 {
-    public string TierLabel => Tier switch
+    public bool SupportsMap(Guid mapId)
     {
-        DifficultyTier.Recovery => "Recovery",
-        DifficultyTier.Main => "Main",
-        DifficultyTier.Challenge => "Challenge",
-        DifficultyTier.Drill => "Drill",
-        DifficultyTier.Experimental => "Experimental",
-        _ => Tier.ToString()
-    };
+        return SupportedMapIds.Count == 0 || SupportedMapIds.Contains(mapId);
+    }
 
-    public IReadOnlyList<string> SearchTags => Tags ?? Array.Empty<string>();
-
-    public string DllPath(string starCraftRoot) => Path.Combine(starCraftRoot, RelativeDllPath.Replace('/', Path.DirectorySeparatorChar));
+    public bool UsesBwapiIniAiModule => ExecutableKind == BotExecutableKind.Dll;
 }
 
-public sealed record MapProfile(string Name, string RelativePath, int? Players)
+public sealed record PracticeCatalog(
+    IReadOnlyList<PracticeBot> Bots,
+    IReadOnlyList<PracticeMap> Maps)
 {
-    public override string ToString() => Players is null ? Name : $"({Players}) {Name}";
+    public PracticeBot FindBot(Guid id)
+    {
+        return Bots.FirstOrDefault(bot => bot.Id == id)
+            ?? throw new InvalidOperationException($"Bot not found: {id}");
+    }
+
+    public PracticeMap FindMap(Guid id)
+    {
+        return Maps.FirstOrDefault(map => map.Id == id)
+            ?? throw new InvalidOperationException($"Map not found: {id}");
+    }
 }
-
-public sealed record PracticeSettings(
-    string StarCraftRoot,
-    BotProfile Bot,
-    MapProfile Map,
-    Race PlayerRace,
-    string GameName,
-    bool WindowedMode,
-    int? SpeedOverrideMs,
-    BuildOption? BuildOption);
-
-public sealed record ValidationIssue(string Message, bool IsError);

@@ -1,1222 +1,1441 @@
-using System.Diagnostics;
 using StarAI.PracticeClient.Core;
 
 namespace StarAI.PracticeClient.App;
 
 public sealed class MainForm : Form
 {
-    private readonly PracticeConfigurator _configurator = new();
-    private readonly PracticeLauncher _launcher = new();
-    private readonly MatchHistoryStore _history = new();
-    private readonly LauncherPreferences _preferences = LauncherPreferences.Load();
-
-    private TextBox _rootBox = null!;
-    private ComboBox _playerRaceBox = null!;
-    private ComboBox _enemyRaceBox = null!;
-    private ComboBox _tierBox = null!;
-    private ComboBox _sortBox = null!;
-    private ComboBox _buildFilterBox = null!;
-    private TextBox _searchBox = null!;
+    private readonly PracticePaths _paths = PracticePaths.Defaults();
+    private readonly PracticeClientSettingsStore _settingsStore = PracticeClientSettingsStore.Default();
+    private readonly PracticeSessionHistoryStore _historyStore = new(Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "StarAI.PracticeClient",
+        "history.json"));
+    private readonly Random _random = new();
+    private PracticeClientSettings _settings = PracticeClientSettings.Defaults();
+    private PracticeCatalog? _catalog;
     private ListBox _botList = null!;
-    private ComboBox _mapBox = null!;
-    private ComboBox _buildBox = null!;
-    private ComboBox _speedBox = null!;
-    private TextBox _gameNameBox = null!;
-    private CheckBox _windowedBox = null!;
-    private CheckBox _confineMouseBox = null!;
-    private CheckBox _apmAlertBox = null!;
-    private Button _startButton = null!;
-    private TextBox _detailsBox = null!;
-    private TextBox _statusBox = null!;
-    private StarCraftMouseClipper? _mouseClipper;
-
-    private IReadOnlyList<BotProfile> _allBots = Array.Empty<BotProfile>();
-    private IReadOnlyList<MapProfile> _allMaps = Array.Empty<MapProfile>();
-    private Race _selectedPlayerRace = Race.Protoss;
-    private bool _loadedInitialData;
-    private bool _suppressPreferenceSave = true;
+    private ListBox _mapList = null!;
+    private TextBox _searchBox = null!;
+    private ComboBox _modeCombo = null!;
+    private ComboBox _enemyRaceFilter = null!;
+    private ComboBox _sortCombo = null!;
+    private ComboBox _playerRaceCombo = null!;
+    private ComboBox _buildCombo = null!;
+    private Label _statusLabel = null!;
+    private TextBox _detailsText = null!;
+    private Label _difficultyLabel = null!;
+    private Label _botListLabel = null!;
+    private Button _launchButton = null!;
+    private readonly HotkeyCsvStore _hotkeyStore = new();
+    private readonly BindingSource _historySource = new();
+    private DataGridView _historyGrid = null!;
+    private ComboBox _hotkeyRaceFilter = null!;
+    private ComboBox _hotkeyCategoryFilter = null!;
+    private ListBox _hotkeyObjectList = null!;
+    private FlowLayoutPanel _hotkeyCommandPanel = null!;
+    private TextBox _hotkeySearch = null!;
+    private TextBox _hotkeyKeyText = null!;
+    private Label _hotkeyCommandTitle = null!;
+    private Label _hotkeyCommandMeta = null!;
+    private Label _hotkeyDefaultText = null!;
+    private Label _hotkeyCountLabel = null!;
+    private TextBox _replayRootText = null!;
+    private TextBox _userMapRootText = null!;
+    private readonly List<Button> _hotkeyRaceButtons = [];
+    private readonly List<Button> _hotkeyCategoryButtons = [];
+    private IReadOnlyList<HotkeyEntry> _hotkeyEntries = [];
+    private HotkeyEntry? _selectedHotkeyEntry;
+    private PracticeOverlayForm? _practiceOverlay;
+    private GlobalInputActionHook? _inputActionHook;
+    private StarCraftBorderlessKeeper? _borderlessKeeper;
+    private StarCraftWindowMinimizeKeeper? _aiMinimizeKeeper;
+    private System.Windows.Forms.Timer? _sessionHistoryTimer;
+    private PracticeSessionRecord? _activeSessionRecord;
+    private ActionRateCounter? _activeActionCounter;
+    private DateTime _activeSessionStartedAtUtc;
+    private bool _updatingSelections;
 
     public MainForm()
     {
-        Text = "StarAI 연습 클라이언트";
+        _settings = _settingsStore.Load();
+        Text = "StarAI Practice Client";
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(1180, 740);
-        Size = new Size(1260, 800);
-        BackColor = UiPalette.Background;
-        ForeColor = UiPalette.Text;
-        Font = new Font("Malgun Gothic", 10F);
+        MinimumSize = new Size(1180, 820);
+        BackColor = Color.FromArgb(5, 7, 5);
+        ForeColor = Color.FromArgb(128, 218, 93);
 
-        BuildUi();
-        _mouseClipper = new StarCraftMouseClipper(() => _confineMouseBox.Checked);
-        FormClosed += (_, _) =>
-        {
-            SavePreferences();
-            _mouseClipper?.Dispose();
-        };
-
-        ApplyInitialPreferences();
-        LoadData(_preferences.StarCraftRoot ?? PracticeCatalog.DefaultRoot);
-        _suppressPreferenceSave = false;
+        BuildLayout();
+        LoadCatalog();
     }
 
-    private void BuildUi()
+    private void BuildLayout()
     {
-        var root = new TableLayoutPanel
+        var title = new Label
         {
-            Dock = DockStyle.Fill,
-            BackColor = UiPalette.Background,
-            ColumnCount = 3,
-            RowCount = 2,
+            Text = "StarAI 연습 런처",
+            AutoSize = true,
+            Font = new Font(Font.FontFamily, 18, FontStyle.Bold),
+            ForeColor = Color.FromArgb(166, 255, 126),
+            Location = new Point(18, 18)
+        };
+
+        var subtitle = new Label
+        {
+            Text = "SCHNAIL 봇/맵을 읽어 로컬 1.16.1 + BWAPI 스파링을 준비합니다.",
+            AutoSize = true,
+            Font = new Font(Font.FontFamily, 10),
+            ForeColor = Color.FromArgb(128, 218, 93),
+            Location = new Point(20, 58)
+        };
+
+        var tabs = new TabControl
+        {
+            Location = new Point(12, 92),
+            Size = new Size(1128, 638),
+            Appearance = TabAppearance.Normal
+        };
+        tabs.TabPages.Add(BuildPracticeTab());
+        tabs.TabPages.Add(BuildSettingsTab());
+        tabs.TabPages.Add(BuildHotkeyTab());
+        tabs.TabPages.Add(BuildHistoryTab());
+
+        _statusLabel = new Label
+        {
+            AutoSize = true,
+            Location = new Point(18, 742),
+            ForeColor = Color.FromArgb(128, 218, 93)
+        };
+
+        Controls.Add(title);
+        Controls.Add(subtitle);
+        Controls.Add(tabs);
+        Controls.Add(_statusLabel);
+    }
+
+    private TabPage BuildPracticeTab()
+    {
+        var page = CreateTabPage("게임");
+
+        _modeCombo = CreateCombo(84, 22, 132);
+        _modeCombo.DataSource = new[] { "스파링", "래더" };
+        _modeCombo.SelectedIndexChanged += (_, _) =>
+        {
+            UpdateModeControls();
+            ApplyBotFilters();
+        };
+
+        _enemyRaceFilter = CreateCombo(84, 66, 132);
+        _enemyRaceFilter.DataSource = new[] { "모두", "테란", "저그", "프로토스", "랜덤" };
+        _enemyRaceFilter.SelectedIndexChanged += (_, _) => ApplyBotFilters();
+
+        _sortCombo = CreateCombo(84, 110, 132);
+        _sortCombo.DataSource = new[] { "ELO 높은순", "ELO 낮은순", "이름순" };
+        _sortCombo.SelectedIndexChanged += (_, _) => ApplyBotFilters();
+
+        _searchBox = CreateTextBox(236, 66, 244, 28);
+        _searchBox.PlaceholderText = "상대 이름 검색";
+        _searchBox.TextChanged += (_, _) => ApplyBotFilters();
+
+        _botList = CreateListBox(16, 156, 332, 216);
+        _botList.SelectedIndexChanged += (_, _) => OnBotChanged();
+
+        _mapList = CreateListBox(16, 424, 332, 156);
+        _mapList.SelectedIndexChanged += (_, _) => UpdateDetails();
+
+        _playerRaceCombo = CreateCombo(32, 218, 180);
+        _playerRaceCombo.DataSource = new[]
+        {
+            StarCraftRace.Terran,
+            StarCraftRace.Protoss,
+            StarCraftRace.Zerg,
+            StarCraftRace.Random
+        };
+
+        _playerRaceCombo.Location = new Point(780, 22);
+        _playerRaceCombo.Size = new Size(132, 28);
+        _playerRaceCombo.SelectedIndexChanged += (_, _) => UpdateDetails();
+
+        _buildCombo = CreateCombo(780, 66, 240);
+        _buildCombo.DataSource = new[] { "봇 기본 빌드 (자동)", "랜덤 빌드 (지원 봇만)" };
+        _buildCombo.Enabled = false;
+
+        var refreshButton = CreateButton("새로고침", 1014, 20, 88, 32);
+        refreshButton.Click += (_, _) => LoadCatalog();
+
+        _launchButton = CreateButton("스파링 시작", 922, 528, 180, 42);
+        _launchButton.Font = new Font(Font.FontFamily, 11, FontStyle.Bold);
+        _launchButton.Click += async (_, _) => await LaunchCurrentPlanAsync();
+
+        _difficultyLabel = new Label
+        {
+            AutoSize = false,
+            Location = new Point(372, 124),
+            Size = new Size(282, 74),
+            ForeColor = Color.FromArgb(166, 255, 126),
+            Font = new Font(Font.FontFamily, 14, FontStyle.Bold),
+            BorderStyle = BorderStyle.FixedSingle
+        };
+
+        _detailsText = CreateTextBox(372, 214, 730, 296);
+        _detailsText.Multiline = true;
+        _detailsText.ReadOnly = true;
+        _detailsText.ScrollBars = ScrollBars.Vertical;
+
+        var runtimeText = CreateTextBox(672, 124, 430, 74);
+        runtimeText.Multiline = true;
+        runtimeText.ReadOnly = true;
+        runtimeText.Text = string.Join(Environment.NewLine, new[]
+        {
+            $"사람: {_paths.PlayerRuntimeRoot}",
+            $"AI: {_paths.AiRuntimeRoot}",
+            "원본 SCHNAIL은 읽기 전용"
+        });
+
+        page.Controls.Add(CreateLabel("모드", 16, 26));
+        page.Controls.Add(_modeCombo);
+        page.Controls.Add(CreateLabel("상대 종족", 16, 70));
+        page.Controls.Add(_enemyRaceFilter);
+        page.Controls.Add(CreateLabel("정렬", 16, 114));
+        page.Controls.Add(_sortCombo);
+        page.Controls.Add(_searchBox);
+        _botListLabel = CreateLabel("상대 선택", 16, 132);
+        page.Controls.Add(_botListLabel);
+        page.Controls.Add(_botList);
+        page.Controls.Add(CreateLabel("맵 선택", 16, 400));
+        page.Controls.Add(_mapList);
+        page.Controls.Add(CreateLabel("내 종족", 724, 26));
+        page.Controls.Add(_playerRaceCombo);
+        page.Controls.Add(CreateLabel("빌드", 724, 70));
+        page.Controls.Add(_buildCombo);
+        page.Controls.Add(refreshButton);
+        page.Controls.Add(_difficultyLabel);
+        page.Controls.Add(runtimeText);
+        page.Controls.Add(_detailsText);
+        page.Controls.Add(_launchButton);
+        UpdateModeControls();
+
+        return page;
+    }
+
+    private TabPage BuildSettingsTab()
+    {
+        var page = CreateTabPage("설정");
+        page.Controls.Add(CreateLabel("리플레이 저장 루트", 18, 28));
+        _replayRootText = CreateTextBox(160, 24, 760, 28);
+        _replayRootText.Text = _settings.ReplayRoot;
+        var browseReplayButton = CreateButton("찾기", 934, 22, 72, 32);
+        browseReplayButton.Click += (_, _) => BrowseFolderInto(_replayRootText);
+
+        page.Controls.Add(CreateLabel("사용자 맵 폴더", 18, 78));
+        _userMapRootText = CreateTextBox(160, 74, 760, 28);
+        _userMapRootText.Text = _settings.UserMapRoot;
+        var browseMapButton = CreateButton("찾기", 934, 72, 72, 32);
+        browseMapButton.Click += (_, _) => BrowseFolderInto(_userMapRootText);
+
+        var saveButton = CreateButton("설정 저장", 160, 126, 120, 34);
+        saveButton.Click += (_, _) => SaveSettingsFromUi();
+
+        page.Controls.Add(_replayRootText);
+        page.Controls.Add(browseReplayButton);
+        page.Controls.Add(_userMapRootText);
+        page.Controls.Add(browseMapButton);
+        page.Controls.Add(saveButton);
+        page.Controls.Add(CreateReadOnlyBlock(
+            18,
+            188,
+            1040,
+            138,
+            "사람 StarCraft는 W-MODE 기반 테두리 없는 전체 창모드로 실행합니다.\r\nAI 클라이언트는 창모드, 음소거, 커서 클립 OFF로 별도 실행합니다.\r\n사용자 맵은 .scm/.scx 파일을 읽어 StarAI 런타임 maps\\StarAI 폴더로 복사합니다."));
+        return page;
+    }
+
+    private TabPage BuildHotkeyTab()
+    {
+        var page = CreateTabPage("Hotkeys");
+
+        page.Controls.Add(CreateLabel("검색", 18, 26));
+        _hotkeySearch = CreateTextBox(62, 22, 220, 28);
+        _hotkeySearch.PlaceholderText = "예: probe, storm, 뮤탈";
+        _hotkeySearch.TextChanged += (_, _) => RefreshHotkeyObjects();
+        page.Controls.Add(_hotkeySearch);
+
+        page.Controls.Add(CreateLabel("종족", 298, 26));
+        _hotkeyRaceFilter = CreateCombo(-1000, -1000, 110);
+        _hotkeyRaceFilter.Items.AddRange(["Terran", "Zerg", "Protoss", "Common", "전체"]);
+        _hotkeyRaceFilter.SelectedIndex = 0;
+        _hotkeyRaceFilter.SelectedIndexChanged += (_, _) =>
+        {
+            RefreshHotkeyFilterButtons();
+            RefreshHotkeyObjects();
+        };
+        AddHotkeyFilterButtons(page, _hotkeyRaceFilter, _hotkeyRaceButtons, 342, 16, 74, 36);
+
+        page.Controls.Add(CreateLabel("분류", 298, 68));
+        _hotkeyCategoryFilter = CreateCombo(-1000, -1000, 128);
+        _hotkeyCategoryFilter.Items.AddRange(["유닛", "건물", "일반", "연구", "업그레이드", "기술", "변태", "전체"]);
+        _hotkeyCategoryFilter.SelectedIndex = 0;
+        _hotkeyCategoryFilter.SelectedIndexChanged += (_, _) =>
+        {
+            RefreshHotkeyFilterButtons();
+            RefreshHotkeyObjects();
+        };
+        AddHotkeyFilterButtons(page, _hotkeyCategoryFilter, _hotkeyCategoryButtons, 342, 58, 82, 30);
+
+        var importButton = CreateButton("SCHNAIL 원본", 752, 18, 118, 32);
+        importButton.Click += (_, _) => ImportHotkeys();
+        var saveButton = CreateButton("CSV 저장", 880, 18, 96, 32);
+        saveButton.Click += (_, _) => SaveHotkeys(applyMpq: false);
+        var applyButton = CreateButton("런타임 반영", 986, 18, 118, 32);
+        applyButton.Click += (_, _) => SaveHotkeys(applyMpq: true);
+        page.Controls.Add(importButton);
+        page.Controls.Add(saveButton);
+        page.Controls.Add(applyButton);
+
+        _hotkeyCountLabel = new Label
+        {
+            AutoSize = false,
+            Location = new Point(18, 96),
+            Size = new Size(680, 20),
+            ForeColor = Color.FromArgb(128, 218, 93),
+            Text = "명령 0개"
+        };
+        page.Controls.Add(_hotkeyCountLabel);
+
+        page.Controls.Add(CreateLabel("선택 항목", 18, 120));
+        _hotkeyObjectList = CreateListBox(18, 142, 246, 428);
+        _hotkeyObjectList.Font = new Font("Segoe UI", 10);
+        _hotkeyObjectList.SelectedIndexChanged += (_, _) => RefreshHotkeyTiles();
+        page.Controls.Add(_hotkeyObjectList);
+
+        page.Controls.Add(CreateLabel("명령", 282, 120));
+        _hotkeyCommandPanel = new FlowLayoutPanel
+        {
+            Location = new Point(282, 142),
+            Size = new Size(426, 428),
+            BackColor = Color.Black,
+            BorderStyle = BorderStyle.FixedSingle,
+            AutoScroll = true,
+            WrapContents = true,
+            FlowDirection = FlowDirection.LeftToRight,
             Padding = new Padding(10)
         };
-        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
-        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
-        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 32));
-        root.RowStyles.Add(new RowStyle(SizeType.Percent, 76));
-        root.RowStyles.Add(new RowStyle(SizeType.Percent, 24));
-        Controls.Add(root);
+        page.Controls.Add(_hotkeyCommandPanel);
 
-        root.Controls.Add(BuildLeftPanel(), 0, 0);
-        root.Controls.Add(BuildCenterPanel(), 1, 0);
-        root.Controls.Add(BuildRightPanel(), 2, 0);
-
-        _statusBox = new TextBox
+        _hotkeyCommandTitle = new Label
         {
-            Dock = DockStyle.Fill,
-            Multiline = true,
+            AutoSize = false,
+            Location = new Point(730, 120),
+            Size = new Size(366, 60),
+            ForeColor = Color.FromArgb(166, 255, 126),
+            Font = new Font(Font.FontFamily, 15, FontStyle.Bold)
+        };
+        _hotkeyCommandMeta = new Label
+        {
+            AutoSize = false,
+            Location = new Point(730, 184),
+            Size = new Size(366, 54),
+            ForeColor = Color.FromArgb(128, 218, 93)
+        };
+        _hotkeyDefaultText = new Label
+        {
+            AutoSize = false,
+            Location = new Point(730, 240),
+            Size = new Size(366, 56),
+            ForeColor = Color.FromArgb(128, 218, 93)
+        };
+        page.Controls.Add(_hotkeyCommandTitle);
+        page.Controls.Add(_hotkeyCommandMeta);
+        page.Controls.Add(_hotkeyDefaultText);
+
+        page.Controls.Add(CreateLabel("현재 키", 730, 316));
+        _hotkeyKeyText = CreateTextBox(794, 312, 84, 30);
+        _hotkeyKeyText.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                ApplySelectedHotkey(showStatus: true);
+                e.SuppressKeyPress = true;
+            }
+        };
+        var applyKeyButton = CreateButton("키 적용", 892, 308, 90, 36);
+        applyKeyButton.Click += (_, _) => ApplySelectedHotkey(showStatus: true);
+        page.Controls.Add(_hotkeyKeyText);
+        page.Controls.Add(applyKeyButton);
+
+        page.Controls.Add(CreateReadOnlyBlock(
+            730,
+            370,
+            366,
+            142,
+            "타일의 왼쪽 큰 문자가 현재 핫키입니다.\r\nSCHNAIL 원본 버튼은 원본 CSV를 사람 런타임으로 복사합니다.\r\nCSV 저장은 작업 파일만 갱신합니다.\r\n런타임 반영은 사람 런타임 patch_rt.mpq에만 적용합니다.\r\n원본 SCHNAIL 설치 폴더는 수정하지 않습니다."));
+        page.Controls.Add(CreateReadOnlyBlock(
+            18,
+            580,
+            1078,
+            38,
+            "봇/AI 런타임에는 사람 핫키를 반영하지 않습니다. 사람 런타임만 커스텀 핫키를 사용합니다."));
+        LoadHotkeys();
+        return page;
+    }
+
+    private TabPage BuildHistoryTab()
+    {
+        var page = CreateTabPage("전적");
+        var refreshButton = CreateButton("새로고침", 18, 18, 96, 32);
+        refreshButton.Click += (_, _) => RefreshHistory();
+        _historyGrid = new DataGridView
+        {
+            Location = new Point(18, 64),
+            Size = new Size(1078, 500),
+            AutoGenerateColumns = false,
+            AllowUserToAddRows = false,
             ReadOnly = true,
-            ScrollBars = ScrollBars.Vertical,
-            BackColor = Color.Black,
-            ForeColor = UiPalette.Text,
-            BorderStyle = BorderStyle.FixedSingle
+            BackgroundColor = Color.Black,
+            GridColor = Color.FromArgb(60, 60, 60),
+            DataSource = _historySource,
+            RowHeadersVisible = false
         };
-        root.Controls.Add(_statusBox, 0, 1);
-        root.SetColumnSpan(_statusBox, 3);
-    }
-
-    private Control BuildLeftPanel()
-    {
-        var panel = Panel("상대 선택");
-
-        panel.Controls.Add(Label("내 종족"));
-        _playerRaceBox = Combo(new object[]
+        _historyGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
-            new RaceChoice("테란", Race.Terran),
-            new RaceChoice("프로토스", Race.Protoss),
-            new RaceChoice("저그", Race.Zerg),
-            new RaceChoice("랜덤", Race.Random)
+            DataPropertyName = nameof(PracticeSessionRecord.StartedAtUtc),
+            HeaderText = "시작",
+            Width = 170
         });
-        _playerRaceBox.SelectedIndexChanged += (_, _) =>
+        _historyGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
-            if (_playerRaceBox.SelectedItem is RaceChoice choice && choice.Race is { } race)
-            {
-                _selectedPlayerRace = race;
-            }
-
-            RefreshBots();
-            SavePreferences();
-        };
-        panel.Controls.Add(_playerRaceBox);
-
-        panel.Controls.Add(Label("상대 종족"));
-        _enemyRaceBox = Combo(new object[]
-        {
-            new RaceChoice("전체", null),
-            new RaceChoice("테란", Race.Terran),
-            new RaceChoice("프로토스", Race.Protoss),
-            new RaceChoice("저그", Race.Zerg),
-            new RaceChoice("랜덤", Race.Random)
+            DataPropertyName = nameof(PracticeSessionRecord.BotName),
+            HeaderText = "봇",
+            Width = 170
         });
-        _enemyRaceBox.SelectedIndexChanged += (_, _) =>
+        _historyGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
-            RefreshBuildFilters();
-            RefreshBots();
-            SavePreferences();
-        };
-        panel.Controls.Add(_enemyRaceBox);
-
-        panel.Controls.Add(Label("난이도"));
-        _tierBox = Combo(new object[]
-        {
-            new TierChoice("전체", null),
-            new TierChoice("복구", DifficultyTier.Recovery),
-            new TierChoice("메인", DifficultyTier.Main),
-            new TierChoice("도전", DifficultyTier.Challenge),
-            new TierChoice("드릴", DifficultyTier.Drill),
-            new TierChoice("실험", DifficultyTier.Experimental)
+            DataPropertyName = nameof(PracticeSessionRecord.MapName),
+            HeaderText = "맵",
+            Width = 180
         });
-        _tierBox.SelectedIndexChanged += (_, _) =>
+        _historyGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
-            RefreshBots();
-            SavePreferences();
-        };
-        panel.Controls.Add(_tierBox);
-
-        panel.Controls.Add(Label("빌드 필터"));
-        _buildFilterBox = Combo(Array.Empty<object>());
-        _buildFilterBox.SelectedIndexChanged += (_, _) =>
-        {
-            RefreshBots();
-            SavePreferences();
-        };
-        panel.Controls.Add(_buildFilterBox);
-
-        panel.Controls.Add(Label("정렬"));
-        _sortBox = Combo(new object[]
-        {
-            new SortChoice("추천순", "recommended"),
-            new SortChoice("ELO 낮은순", "elo-asc"),
-            new SortChoice("ELO 높은순", "elo-desc"),
-            new SortChoice("이름순", "name")
+            DataPropertyName = nameof(PracticeSessionRecord.PlayerRace),
+            HeaderText = "내 종족",
+            Width = 90
         });
-        _sortBox.SelectedIndexChanged += (_, _) =>
+        _historyGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
-            RefreshBots();
-            SavePreferences();
-        };
-        panel.Controls.Add(_sortBox);
-
-        panel.Controls.Add(Label("검색"));
-        _searchBox = TextBox("봇 이름, 빌드, 메모 검색");
-        _searchBox.TextChanged += (_, _) =>
-        {
-            RefreshBots();
-            SavePreferences();
-        };
-        panel.Controls.Add(_searchBox);
-
-        _botList = new ListBox
-        {
-            Dock = DockStyle.Fill,
-            BackColor = Color.Black,
-            ForeColor = UiPalette.Text,
-            BorderStyle = BorderStyle.FixedSingle,
-            IntegralHeight = false
-        };
-        _botList.SelectedIndexChanged += (_, _) => OnBotSelected();
-        panel.Controls.Add(_botList);
-        MakeRowFill(panel, _botList);
-
-        return panel;
-    }
-
-    private Control BuildCenterPanel()
-    {
-        var panel = Panel("연습 설정");
-
-        panel.Controls.Add(Label("맵"));
-        _mapBox = Combo(Array.Empty<object>());
-        _mapBox.SelectedIndexChanged += (_, _) => SavePreferences();
-        panel.Controls.Add(_mapBox);
-
-        panel.Controls.Add(Label("봇 빌드 / 행동"));
-        _buildBox = Combo(Array.Empty<object>());
-        _buildBox.SelectedIndexChanged += (_, _) =>
-        {
-            UpdateDetails();
-            SavePreferences();
-        };
-        panel.Controls.Add(_buildBox);
-
-        panel.Controls.Add(Label("봇 메모"));
-        _detailsBox = new TextBox
-        {
-            Dock = DockStyle.Fill,
-            Multiline = true,
-            ReadOnly = true,
-            ScrollBars = ScrollBars.Vertical,
-            BackColor = Color.Black,
-            ForeColor = UiPalette.Text,
-            BorderStyle = BorderStyle.FixedSingle
-        };
-        panel.Controls.Add(_detailsBox);
-        MakeRowFill(panel, _detailsBox);
-
-        return panel;
-    }
-
-    private Control BuildRightPanel()
-    {
-        var panel = Panel("실행");
-
-        panel.Controls.Add(Label("StarCraft 1.16.1 폴더"));
-        var rootRow = new TableLayoutPanel { Dock = DockStyle.Top, ColumnCount = 2, AutoSize = true };
-        rootRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        rootRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 86));
-        _rootBox = TextBox(null);
-        _rootBox.TextChanged += (_, _) =>
-        {
-            LoadData(_rootBox.Text.Trim(), keepSelection: true);
-            SavePreferences();
-        };
-        rootRow.Controls.Add(_rootBox, 0, 0);
-        rootRow.Controls.Add(Button("찾기", (_, _) => BrowseRoot()), 1, 0);
-        panel.Controls.Add(rootRow);
-
-        panel.Controls.Add(Label("방 이름"));
-        _gameNameBox = TextBox(null);
-        _gameNameBox.Text = "AIPractice";
-        _gameNameBox.TextChanged += (_, _) => SavePreferences();
-        panel.Controls.Add(_gameNameBox);
-
-        panel.Controls.Add(Label("게임 속도"));
-        _speedBox = Combo(new object[]
-        {
-            new SpeedChoice("기본 속도", null),
-            new SpeedChoice("Fastest 고정 (42 ms/frame)", 42),
-            new SpeedChoice("조금 빠르게 (24 ms/frame)", 24)
+            DataPropertyName = nameof(PracticeSessionRecord.BotRace),
+            HeaderText = "상대",
+            Width = 90
         });
-        _speedBox.SelectedIndex = 1;
-        _speedBox.SelectedIndexChanged += (_, _) => SavePreferences();
-        panel.Controls.Add(_speedBox);
-
-        _windowedBox = Check("테두리 없는 전체 창모드", true);
-        _windowedBox.CheckedChanged += (_, _) => SavePreferences();
-        panel.Controls.Add(_windowedBox);
-
-        _confineMouseBox = Check("스타 마우스 가두기", false);
-        _confineMouseBox.CheckedChanged += (_, _) =>
+        _historyGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
-            if (!_confineMouseBox.Checked)
-            {
-                StarCraftMouseClipper.ReleaseClip();
-            }
-
-            SavePreferences();
-        };
-        panel.Controls.Add(_confineMouseBox);
-
-        _apmAlertBox = Check("APM / 게임 시간 표시 (실험적)", false);
-        _apmAlertBox.CheckedChanged += (_, _) => SavePreferences();
-        panel.Controls.Add(_apmAlertBox);
-
-        _startButton = Button("스파링 시작", async (_, _) => await StartSparringAsync());
-        panel.Controls.Add(_startButton);
-        panel.Controls.Add(Button("핫키 편집", (_, _) => OpenHotkeyEditor()));
-        panel.Controls.Add(Button("전적 / 리플레이", (_, _) => OpenHistory()));
-        panel.Controls.Add(Button("스타 폴더 열기", (_, _) => OpenStarCraftFolder()));
-
-        var help = new TextBox
+            DataPropertyName = nameof(PracticeSessionRecord.ActionsPerMinute),
+            HeaderText = "APM",
+            Width = 70
+        });
+        _historyGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
-            Dock = DockStyle.Fill,
-            Multiline = true,
-            ReadOnly = true,
-            BackColor = Color.Black,
-            ForeColor = UiPalette.Dim,
-            BorderStyle = BorderStyle.FixedSingle,
-            Text =
-                "흐름:\r\n" +
-                "1. 봇/맵/빌드를 고른 뒤 스파링 시작을 누릅니다.\r\n" +
-                "2. 내 클라이언트가 먼저 켜져 설정한 맵으로 Local PC 방을 만듭니다.\r\n" +
-                "3. 잠시 뒤 AI 클라이언트가 같은 방에 자동 참가합니다.\r\n\r\n" +
-                @"리플레이는 D:\OneDrive\Documents\StarCraft\Maps\Replays\ai 아래 날짜별 폴더에 저장됩니다."
-        };
-        panel.Controls.Add(help);
-        MakeRowFill(panel, help);
+            DataPropertyName = nameof(PracticeSessionRecord.ActionCount),
+            HeaderText = "액션",
+            Width = 80
+        });
+        _historyGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            DataPropertyName = nameof(PracticeSessionRecord.DurationSeconds),
+            HeaderText = "초",
+            Width = 70
+        });
 
-        return panel;
+        page.Controls.Add(refreshButton);
+        page.Controls.Add(_historyGrid);
+        RefreshHistory();
+        return page;
     }
 
-    private void LoadData(string starCraftRoot, bool keepSelection = false)
+    private static TabPage CreateTabPage(string title)
     {
-        if (string.IsNullOrWhiteSpace(starCraftRoot))
+        return new TabPage(title)
         {
-            return;
-        }
-
-        var currentBot = keepSelection ? SelectedBot()?.Id : _preferences.BotId;
-        var currentMap = keepSelection ? SelectedMap()?.RelativePath : _preferences.MapRelativePath;
-
-        if (_rootBox is not null && !string.Equals(_rootBox.Text, starCraftRoot, StringComparison.OrdinalIgnoreCase))
-        {
-            _rootBox.Text = starCraftRoot;
-        }
-
-        _allBots = PracticeCatalog.GetAvailableBots(starCraftRoot);
-        _allMaps = PracticeCatalog.GetMaps(starCraftRoot);
-
-        _mapBox.Items.Clear();
-        foreach (var map in _allMaps)
-        {
-            _mapBox.Items.Add(map);
-        }
-
-        if (_mapBox.Items.Count > 0)
-        {
-            var selectedIndex = PracticeSelection.FindMapIndex(_allMaps, currentMap);
-            _mapBox.SelectedIndex = Math.Max(0, selectedIndex);
-        }
-
-        var isInitialLoad = !_loadedInitialData;
-        if (isInitialLoad)
-        {
-            SelectRace(_playerRaceBox, _preferences.PlayerRace);
-            SelectOptionalRace(_enemyRaceBox, _preferences.EnemyRace);
-            SelectTier(_preferences.Tier);
-            SelectSort(_preferences.Sort);
-        }
-        RefreshBuildFilters(isInitialLoad ? _preferences.BuildFilter : null);
-        RefreshBots(currentBot);
-        if (isInitialLoad)
-        {
-            _loadedInitialData = true;
-        }
-        Log($"{starCraftRoot}에서 사용 가능한 봇 {_allBots.Count}개, 맵 {_allMaps.Count}개를 불러왔습니다.");
-    }
-
-    private void RefreshBots(string? preferredBotId = null)
-    {
-        if (_botList is null)
-        {
-            return;
-        }
-
-        preferredBotId ??= SelectedBot()?.Id;
-        var enemyRace = SelectedEnemyRace();
-        var tier = SelectedTier();
-        var buildFilter = _buildFilterBox.SelectedItem?.ToString() ?? "전체";
-        var search = _searchBox.Text.Trim();
-
-        IEnumerable<BotProfile> bots = _allBots;
-        if (enemyRace is not null)
-        {
-            bots = bots.Where(bot => bot.Race == enemyRace);
-        }
-
-        if (tier is not null)
-        {
-            bots = bots.Where(bot => bot.Tier == tier);
-        }
-
-        bots = bots.Where(bot => MatchesBuildFilter(bot, buildFilter));
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            bots = bots.Where(bot => SearchText(bot).Contains(search, StringComparison.OrdinalIgnoreCase));
-        }
-
-        bots = SortBots(bots);
-        var items = bots.Select(bot => new BotListItem(bot)).ToArray();
-        _botList.BeginUpdate();
-        _botList.DataSource = null;
-        _botList.DataSource = items;
-        _botList.EndUpdate();
-
-        if (items.Length > 0)
-        {
-            var index = preferredBotId is null
-                ? 0
-                : Array.FindIndex(items, item => string.Equals(item.Bot.Id, preferredBotId, StringComparison.OrdinalIgnoreCase));
-            _botList.SelectedIndex = Math.Max(0, index);
-        }
-        else
-        {
-            _buildBox.Items.Clear();
-            _detailsBox.Text = "조건에 맞는 봇이 없습니다.";
-        }
-    }
-
-    private IEnumerable<BotProfile> SortBots(IEnumerable<BotProfile> bots)
-    {
-        var mode = (_sortBox.SelectedItem as SortChoice)?.Id ?? "recommended";
-        return mode switch
-        {
-            "elo-asc" => bots.OrderBy(bot => bot.Elo ?? int.MaxValue).ThenBy(bot => bot.Name),
-            "elo-desc" => bots.OrderByDescending(bot => bot.Elo ?? int.MinValue).ThenBy(bot => bot.Name),
-            "name" => bots.OrderBy(bot => bot.Name),
-            _ => bots.OrderBy(bot => bot.Tier).ThenBy(bot => bot.Elo ?? int.MaxValue).ThenBy(bot => bot.Name)
+            BackColor = Color.FromArgb(5, 7, 5),
+            ForeColor = Color.FromArgb(128, 218, 93)
         };
     }
 
-    private void RefreshBuildFilters(string? preferredFilter = null)
+    private void LoadCatalog()
     {
-        if (_buildFilterBox is null)
-        {
-            return;
-        }
-
-        var selected = preferredFilter ?? _buildFilterBox.SelectedItem?.ToString();
-        var enemyRace = SelectedEnemyRace();
-        var bots = enemyRace is null
-            ? _allBots
-            : _allBots.Where(bot => bot.Race == enemyRace).ToArray();
-
-        var filters = new SortedSet<string>(StringComparer.OrdinalIgnoreCase) { "전체", "기본" };
-        foreach (var bot in bots)
-        {
-            foreach (var tag in bot.SearchTags)
-            {
-                if (!IsGenericTag(tag))
-                {
-                    filters.Add(TagKo(tag));
-                }
-            }
-
-            foreach (var build in bot.BuildOptions.Where(option => !string.Equals(option.Id, "default", StringComparison.OrdinalIgnoreCase)))
-            {
-                filters.Add(build.Name);
-            }
-        }
-
-        _buildFilterBox.Items.Clear();
-        foreach (var filter in filters)
-        {
-            _buildFilterBox.Items.Add(filter);
-        }
-
-        var index = selected is null ? -1 : _buildFilterBox.Items.IndexOf(selected);
-        if (index < 0)
-        {
-            index = _buildFilterBox.Items.IndexOf("전체");
-        }
-
-        _buildFilterBox.SelectedIndex = index >= 0 ? index : 0;
-    }
-
-    private void OnBotSelected()
-    {
-        _buildBox.Items.Clear();
-        if (SelectedBot() is not { } bot)
-        {
-            UpdateDetails();
-            return;
-        }
-
-        foreach (var build in bot.BuildOptions.DefaultIfEmpty(new BuildOption("default", "기본", "기본 행동")))
-        {
-            _buildBox.Items.Add(new BuildListItem(build));
-        }
-
-        var preferredBuildId = _suppressPreferenceSave ? _preferences.BotBuildId : null;
-        var preferredIndex = -1;
-        if (!string.IsNullOrWhiteSpace(preferredBuildId))
-        {
-            for (var i = 0; i < _buildBox.Items.Count; i++)
-            {
-                if (_buildBox.Items[i] is BuildListItem item &&
-                    item.Build.Id.Equals(preferredBuildId, StringComparison.OrdinalIgnoreCase))
-                {
-                    preferredIndex = i;
-                    break;
-                }
-            }
-        }
-
-        _buildBox.SelectedIndex = _buildBox.Items.Count > 0 ? Math.Max(0, preferredIndex) : -1;
-        UpdateDetails();
-        SavePreferences();
-    }
-
-    private void UpdateDetails()
-    {
-        if (SelectedBot() is not { } bot)
-        {
-            _detailsBox.Text = "봇을 선택하세요.";
-            return;
-        }
-
-        var build = SelectedBuild();
-        var elo = bot.Elo?.ToString() ?? "미상";
-        var tags = bot.SearchTags.Count == 0
-            ? "없음"
-            : string.Join(", ", bot.SearchTags.Select(TagKo).Distinct(StringComparer.OrdinalIgnoreCase));
-
-        _detailsBox.Text =
-            $"{bot.Name} ({RaceKo(bot.Race)}, {TierKo(bot.Tier)}, ELO {elo})\r\n\r\n" +
-            $"성향: {KoreanStyle(bot)}\r\n\r\n" +
-            $"빌드 힌트: {KoreanBuildHint(bot)}\r\n\r\n" +
-            $"마이크로 위험도: {KoreanMicroRisk(bot)}\r\n\r\n" +
-            $"선택 빌드: {BuildNameKo(build)}\r\n" +
-            $"빌드 설명: {BuildDescriptionKo(build, bot)}\r\n\r\n" +
-            $"태그: {tags}\r\n\r\n" +
-            $"DLL: {bot.RelativeDllPath}";
-    }
-
-    private PracticeSettings CurrentSettings()
-    {
-        var root = _rootBox.Text.Trim();
-        if (string.IsNullOrWhiteSpace(root))
-        {
-            throw new InvalidOperationException("StarCraft 1.16.1 폴더를 지정하세요.");
-        }
-
-        var bot = SelectedBot() ?? throw new InvalidOperationException("상대 봇을 선택하세요.");
-        var map = SelectedMap() ?? throw new InvalidOperationException("맵을 선택하세요.");
-        var playerRace = SelectedPlayerRace();
-        var gameName = string.IsNullOrWhiteSpace(_gameNameBox.Text) ? "AIPractice" : _gameNameBox.Text.Trim();
-
-        return new PracticeSettings(
-            root,
-            bot,
-            map,
-            playerRace,
-            gameName,
-            WindowedMode: true,
-            (_speedBox.SelectedItem as SpeedChoice)?.SpeedOverrideMs,
-            SelectedBuild());
-    }
-
-    private async Task StartSparringAsync()
-    {
-        _startButton.Enabled = false;
-        PracticeSettings? settingsForCleanup = null;
-        string? aiRootForCleanup = null;
-
         try
         {
-            var settings = CurrentSettings();
-            var useBorderlessWindow = _windowedBox.Checked;
-            var showApmAlert = _apmAlertBox.Checked;
-            if (showApmAlert && CrashLogInspector.HasRecentApmAlertCrash(settings.StarCraftRoot, TimeSpan.FromDays(14)))
-            {
-                showApmAlert = false;
-                _apmAlertBox.Checked = false;
-                Log("최근 APMAlert 크래시가 감지되어 이번 실행에서는 APM / 게임 시간 표시를 끕니다.");
-            }
-            settingsForCleanup = settings;
-            SavePreferences();
-            if (!_confineMouseBox.Checked)
-            {
-                StarCraftMouseClipper.ReleaseClip();
-            }
-
-            var stoppedProcesses = await Task.Run(() => _launcher.StopExistingLocalRuntime(settings.StarCraftRoot));
-            if (stoppedProcesses > 0)
-            {
-                Log($"이전 로컬 StarCraft/ChaosLauncher 잔여 프로세스 {stoppedProcesses}개를 정리했습니다.");
-                await Task.Delay(500);
-            }
-
-            var hotkeys = HotkeyImporter.ImportBestAvailable(settings.StarCraftRoot);
-            Log(hotkeys.Message);
-
-            Log("내 클라이언트와 AI 클라이언트를 분리된 StarCraft 런타임 폴더로 실행합니다.");
-
-            var issues = _configurator.Validate(settings).ToArray();
-            var errors = issues.Where(issue => issue.IsError).ToArray();
-            if (errors.Length > 0)
-            {
-                throw new InvalidOperationException(string.Join(Environment.NewLine, errors.Select(issue => issue.Message)));
-            }
-
-            foreach (var issue in issues.Where(issue => !issue.IsError))
-            {
-                Log("참고: " + issue.Message);
-            }
-
-            Log("SCHNAIL식으로 내 클라이언트와 AI 클라이언트를 분리된 설정 폴더로 실행합니다.");
-
-            var aiRoot = StarCraftRuntimeRoot.EnsureAiRoot(settings.StarCraftRoot);
-            aiRootForCleanup = aiRoot;
-            var botSettings = settings with { StarCraftRoot = aiRoot, WindowedMode = true };
-            Log($"AI 전용 런타임 확인 완료: {aiRoot}");
-
-            var botIssues = _configurator.Validate(botSettings).ToArray();
-            var botErrors = botIssues.Where(issue => issue.IsError).ToArray();
-            if (botErrors.Length > 0)
-            {
-                throw new InvalidOperationException(string.Join(Environment.NewLine, botErrors.Select(issue => issue.Message)));
-            }
-
-            WModeConfigurator.Apply(settings.StarCraftRoot, windowedMode: true, clipCursor: _confineMouseBox.Checked);
-            WModeConfigurator.Apply(botSettings.StarCraftRoot, botSettings.WindowedMode, clipCursor: false);
-
-            var playerIni = _configurator.ApplyPlayerHost(settings);
-            Log($"선택값 확인: 내 종족 {RaceKo(settings.PlayerRace)}, 상대 봇 {settings.Bot.Name}({RaceKo(settings.Bot.Race)}), 맵 {settings.Map.Name}");
-            Log($"내 클라이언트 설정 완료: {RaceKo(settings.PlayerRace)} / {settings.Map.Name} / {settings.GameName}. INI: {playerIni}");
-
-            Log("내 클라이언트를 먼저 시작합니다. BWAPI auto_menu가 Local PC 방을 만듭니다.");
-            var launcherProcess = await Task.Run(() =>
-                _launcher.OpenChaosAndStartStarCraft(
-                    settings.StarCraftRoot,
-                    ChaosLaunchMode.Bot,
-                    enableWMode: true,
-                    enableApmAlert: showApmAlert));
-            if (useBorderlessWindow)
-            {
-                var targetBounds = Screen.FromControl(this).Bounds;
-                var applied = await Task.Run(() =>
-                    StarCraftBorderlessWindow.ApplyWhenReady(settings.StarCraftRoot, targetBounds, TimeSpan.FromSeconds(8)));
-                Log(applied
-                    ? "내 클라이언트를 해상도 변경 없는 테두리 없는 창모드로 맞췄습니다."
-                    : "참고: 내 클라이언트 창을 찾지 못해 테두리 없는 창모드 적용을 건너뛰었습니다.");
-            }
-            _launcher.DisableStartupLaunch(settings.StarCraftRoot);
-            await Task.Run(() => _launcher.CloseChaosLauncher(launcherProcess));
-
-            await Task.Delay(TimeSpan.FromSeconds(5));
-
-            var botIni = _configurator.ApplyBotJoin(botSettings);
-            Log($"AI 클라이언트 설정 완료: {settings.Bot.Name}({RaceKo(settings.Bot.Race)}) / 참가 전용 / 소리 OFF. INI: {botIni}");
-
-            Log("AI 클라이언트를 새 ChaosLauncher 실행으로 시작합니다. Start 버튼 자동 클릭은 사용하지 않습니다.");
-            var botLauncherProcess = await Task.Run(() =>
-                _launcher.OpenChaosAndStartStarCraft(
-                    botSettings.StarCraftRoot,
-                    ChaosLaunchMode.Bot,
-                    enableWMode: botSettings.WindowedMode,
-                    enableApmAlert: false));
-            _launcher.DisableStartupLaunch(botSettings.StarCraftRoot);
-            await Task.Run(() => _launcher.CloseChaosLauncher(botLauncherProcess));
-            Log("내 클라이언트와 AI 클라이언트 StarCraft 시작을 모두 확인했습니다. AI는 기존 Local PC 방 참가 설정으로 실행되었습니다.");
-
-            _history.Add(settings.StarCraftRoot, new MatchRecord(
-                DateTime.Now,
-                settings.Bot.Name,
-                settings.Bot.Race,
-                settings.Bot.Elo,
-                settings.Map.Name,
-                settings.BuildOption?.Name ?? "기본",
-                PracticeConfigurator.DefaultReplayRoot));
-
-            Log(@"리플레이 저장 위치: D:\OneDrive\Documents\StarCraft\Maps\Replays\ai\날짜별 폴더");
+            var schnailCatalog = SchnailCatalogReader.Read(_paths.SchnailRoot);
+            var userMaps = UserMapCatalogReader.ReadDirectory(_settings.UserMapRoot);
+            _catalog = UserMapCatalogReader.Merge(schnailCatalog, userMaps);
+            _statusLabel.Text = $"SCHNAIL 카탈로그 로드 완료: 봇 {_catalog.Bots.Count}개, 맵 {_catalog.Maps.Count}개 (사용자 맵 {userMaps.Count}개)";
+            ApplyBotFilters();
         }
         catch (Exception ex)
         {
-            Log("오류: " + ex.Message);
-            MessageBox.Show(this, ex.Message, "StarAI 연습 클라이언트", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-        finally
-        {
-            if (settingsForCleanup is not null)
-            {
-                try
-                {
-                    _launcher.DisableStartupLaunch(settingsForCleanup.StarCraftRoot);
-                    if (!string.IsNullOrWhiteSpace(aiRootForCleanup))
-                    {
-                        _launcher.DisableStartupLaunch(aiRootForCleanup);
-                    }
-                }
-                catch
-                {
-                    // Best-effort cleanup only. A launch failure should keep the original error visible.
-                }
-            }
-
-            _startButton.Enabled = true;
+            _catalog = null;
+            _botList.DataSource = Array.Empty<BotItem>();
+            _mapList.DataSource = Array.Empty<MapItem>();
+            _detailsText.Text = ex.Message;
+            _statusLabel.Text = "카탈로그 로드 실패";
         }
     }
 
-    private void BrowseRoot()
+    private void BrowseFolderInto(TextBox target)
     {
         using var dialog = new FolderBrowserDialog
         {
-            Description = "StarCraft 1.16.1 폴더를 선택하세요.",
-            SelectedPath = Directory.Exists(_rootBox.Text) ? _rootBox.Text : PracticeCatalog.DefaultRoot
+            SelectedPath = Directory.Exists(target.Text) ? target.Text : string.Empty,
+            UseDescriptionForTitle = true,
+            Description = "폴더 선택"
         };
 
         if (dialog.ShowDialog(this) == DialogResult.OK)
         {
-            _rootBox.Text = dialog.SelectedPath;
-            LoadData(dialog.SelectedPath);
+            target.Text = dialog.SelectedPath;
         }
     }
 
-    private void OpenHotkeyEditor()
+    private void SaveSettingsFromUi()
     {
-        using var form = new HotkeyEditorForm(_rootBox.Text.Trim());
-        form.ShowDialog(this);
+        _settings = new PracticeClientSettings(
+            ReplayRoot: string.IsNullOrWhiteSpace(_replayRootText.Text)
+                ? PracticeRuntimeOptions.Defaults().ReplayRoot
+                : _replayRootText.Text.Trim(),
+            UserMapRoot: _userMapRootText.Text.Trim());
+        _settingsStore.Save(_settings);
+        LoadCatalog();
+        MessageBox.Show(this, "설정을 저장했습니다.", "설정");
     }
 
-    private void OpenHistory()
+    private PracticeRuntimeOptions CurrentRuntimeOptions()
     {
-        using var form = new MatchHistoryForm(_rootBox.Text.Trim());
-        form.ShowDialog(this);
+        return new PracticeRuntimeOptions(_settings.ReplayRoot);
     }
 
-    private void OpenStarCraftFolder()
+    private void RefreshHistory()
     {
-        var root = _rootBox.Text.Trim();
-        if (!Directory.Exists(root))
+        _historySource.DataSource = _historyStore.Load().Take(100).ToList();
+    }
+
+    private void LoadHotkeys()
+    {
+        var workingCsv = Path.Combine(_paths.PlayerRuntimeRoot, HotkeyCsvStore.RelativeWorkingCsvPath);
+        var sourceCsv = File.Exists(workingCsv)
+            ? workingCsv
+            : Path.Combine(_paths.SchnailRoot, "res", "sc_hotkeys.csv");
+        var messages = Path.Combine(_paths.SchnailRoot, "res", "messages_kr.properties");
+        _hotkeyEntries = _hotkeyStore.Load(sourceCsv, messages);
+        RefreshHotkeyObjects();
+    }
+
+    private void RefreshHotkeyObjects()
+    {
+        if (_hotkeyObjectList is null)
         {
-            MessageBox.Show(this, "StarCraft 폴더가 존재하지 않습니다.", "StarAI 연습 클라이언트");
             return;
         }
 
-        Process.Start(new ProcessStartInfo { FileName = root, UseShellExecute = true });
+        var previous = (_hotkeyObjectList.SelectedItem as HotkeyObjectItem)?.Key;
+        var objects = FilterHotkeyEntries()
+            .GroupBy(entry => HotkeyObjectInfo.From(entry))
+            .OrderBy(group => group.Key.CategoryRank)
+            .ThenBy(group => group.Key.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new HotkeyObjectItem(group.Key, group.Count()))
+            .ToList();
+
+        _hotkeyObjectList.DataSource = null;
+        _hotkeyObjectList.DataSource = objects;
+        var selected = objects.FirstOrDefault(item => item.Key == previous) ?? objects.FirstOrDefault();
+        if (selected is not null)
+        {
+            _hotkeyObjectList.SelectedItem = selected;
+        }
+
+        RefreshHotkeyTiles();
     }
 
-    private void ApplyInitialPreferences()
+    private void RefreshHotkeyTiles()
     {
-        _rootBox.Text = _preferences.StarCraftRoot ?? PracticeCatalog.DefaultRoot;
-        _gameNameBox.Text = string.IsNullOrWhiteSpace(_preferences.GameName) ? "AIPractice" : _preferences.GameName;
-        _searchBox.Text = _preferences.Search ?? string.Empty;
-        _windowedBox.Checked = _preferences.PlayerFullscreen;
-        _confineMouseBox.Checked = _preferences.ConfineMouse;
-        _apmAlertBox.Checked = _preferences.ShowApmAlert &&
-                               !CrashLogInspector.HasRecentApmAlertCrash(_rootBox.Text, TimeSpan.FromDays(14));
-        SelectSpeed(_preferences.SpeedOverrideMs);
+        if (_hotkeyCommandPanel is null)
+        {
+            return;
+        }
+
+        var previousCommandId = _selectedHotkeyEntry?.CommandId;
+        var selectedObject = (_hotkeyObjectList?.SelectedItem as HotkeyObjectItem)?.Info;
+        var entries = FilterHotkeyEntries()
+            .Where(entry => selectedObject is null || HotkeyObjectInfo.From(entry).Key == selectedObject.Key)
+            .OrderBy(entry => HotkeyCommandRank(entry))
+            .ThenBy(entry => entry.Description, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        _hotkeyCommandPanel.SuspendLayout();
+        _hotkeyCommandPanel.Controls.Clear();
+        foreach (var entry in entries)
+        {
+            _hotkeyCommandPanel.Controls.Add(CreateHotkeyTile(entry));
+        }
+
+        _hotkeyCommandPanel.ResumeLayout();
+
+        if (_hotkeyCountLabel is not null)
+        {
+            var objectCount = _hotkeyObjectList?.Items.Count ?? 0;
+            _hotkeyCountLabel.Text = $"항목 {objectCount}개 / 명령 {entries.Count}개";
+        }
+
+        var selected = entries.FirstOrDefault(entry => entry.CommandId == previousCommandId) ?? entries.FirstOrDefault();
+        SelectHotkey(selected);
     }
 
-    private void SavePreferences()
+    private IEnumerable<HotkeyEntry> FilterHotkeyEntries()
     {
-        if (_suppressPreferenceSave ||
-            _rootBox is null ||
-            _playerRaceBox is null ||
-            _enemyRaceBox is null ||
-            _tierBox is null ||
-            _sortBox is null ||
-            _buildFilterBox is null ||
-            _searchBox is null ||
+        var query = _hotkeySearch?.Text.Trim() ?? string.Empty;
+        var race = SelectedComboText(_hotkeyRaceFilter, "전체");
+        var category = SelectedComboText(_hotkeyCategoryFilter, "전체");
+
+        return _hotkeyEntries
+            .Where(entry => HotkeyMatchesQuery(entry, query))
+            .Where(entry => race == "전체" || HotkeyRaceName(entry) == race)
+            .Where(entry => category == "전체" || HotkeyDepthCategoryName(entry) == category);
+    }
+
+    private void AddHotkeyFilterButtons(
+        Control parent,
+        ComboBox source,
+        List<Button> buttons,
+        int x,
+        int y,
+        int buttonWidth,
+        int buttonHeight)
+    {
+        buttons.Clear();
+        for (var index = 0; index < source.Items.Count; index++)
+        {
+            var value = source.Items[index]?.ToString() ?? string.Empty;
+            var button = CreateButton(value, x + index * (buttonWidth + 6), y, buttonWidth, buttonHeight);
+            button.Tag = value;
+            button.Click += (_, _) =>
+            {
+                source.SelectedItem = value;
+                RefreshHotkeyFilterButtons();
+                RefreshHotkeyObjects();
+            };
+            buttons.Add(button);
+            parent.Controls.Add(button);
+        }
+
+        RefreshHotkeyFilterButtons();
+    }
+
+    private void RefreshHotkeyFilterButtons()
+    {
+        RefreshHotkeyFilterButtonGroup(_hotkeyRaceButtons, SelectedComboText(_hotkeyRaceFilter, "전체"));
+        RefreshHotkeyFilterButtonGroup(_hotkeyCategoryButtons, SelectedComboText(_hotkeyCategoryFilter, "전체"));
+    }
+
+    private static void RefreshHotkeyFilterButtonGroup(IEnumerable<Button> buttons, string selectedValue)
+    {
+        foreach (var button in buttons)
+        {
+            var selected = string.Equals(button.Tag?.ToString(), selectedValue, StringComparison.OrdinalIgnoreCase);
+            button.BackColor = selected ? Color.FromArgb(24, 42, 18) : Color.Black;
+            button.ForeColor = selected ? Color.FromArgb(190, 255, 144) : Color.FromArgb(128, 218, 93);
+            button.FlatAppearance.BorderColor = selected ? Color.FromArgb(220, 48, 48) : Color.FromArgb(96, 190, 82);
+            button.FlatAppearance.BorderSize = selected ? 2 : 1;
+        }
+    }
+
+    private static string SelectedComboText(ComboBox? combo, string fallback)
+    {
+        if (combo is null)
+        {
+            return fallback;
+        }
+
+        if (!string.IsNullOrWhiteSpace(combo.Text))
+        {
+            return combo.Text;
+        }
+
+        if (combo.SelectedItem is not null)
+        {
+            return combo.SelectedItem.ToString() ?? fallback;
+        }
+
+        return combo.SelectedIndex >= 0 && combo.SelectedIndex < combo.Items.Count
+            ? combo.Items[combo.SelectedIndex]?.ToString() ?? fallback
+            : fallback;
+    }
+
+    private Button CreateHotkeyTile(HotkeyEntry entry)
+    {
+        var key = string.IsNullOrWhiteSpace(entry.Hotkey) ? "-" : entry.Hotkey.ToUpperInvariant();
+        var category = HotkeyCategoryName(entry);
+        var race = HotkeyRaceName(entry);
+        var tile = new Button
+        {
+            Tag = entry,
+            Text = $"{key}    {entry.Description}\r\n{race} / {category}",
+            TextAlign = ContentAlignment.MiddleLeft,
+            Size = new Size(202, 58),
+            Margin = new Padding(4),
+            BackColor = Color.FromArgb(8, 18, 8),
+            ForeColor = Color.FromArgb(166, 255, 126),
+            FlatStyle = FlatStyle.Flat,
+            Font = new Font("Segoe UI", 9)
+        };
+        tile.FlatAppearance.BorderColor = Color.FromArgb(96, 190, 82);
+        tile.FlatAppearance.MouseOverBackColor = Color.FromArgb(18, 44, 18);
+        tile.Click += (_, _) => SelectHotkey(entry);
+        return tile;
+    }
+
+    private void SelectHotkey(HotkeyEntry? entry)
+    {
+        _selectedHotkeyEntry = entry;
+        if (_hotkeyCommandTitle is null ||
+            _hotkeyCommandMeta is null ||
+            _hotkeyDefaultText is null ||
+            _hotkeyKeyText is null)
+        {
+            return;
+        }
+
+        if (entry is null)
+        {
+            _hotkeyCommandTitle.Text = "명령을 선택하세요";
+            _hotkeyCommandMeta.Text = string.Empty;
+            _hotkeyDefaultText.Text = string.Empty;
+            _hotkeyKeyText.Text = string.Empty;
+            _hotkeyKeyText.Enabled = false;
+            return;
+        }
+
+        _hotkeyKeyText.Enabled = true;
+        _hotkeyCommandTitle.Text = entry.Description;
+        _hotkeyCommandMeta.Text =
+            $"{HotkeyRaceName(entry)} / {HotkeyCategoryName(entry)}\r\nID: {entry.CommandId}\r\nTBL: {entry.StringId}";
+        _hotkeyDefaultText.Text = $"원본: {StripStarCraftMarkup(entry.DefaultText)}";
+        _hotkeyKeyText.Text = entry.Hotkey;
+    }
+
+    private void ImportHotkeys()
+    {
+        try
+        {
+            _hotkeyStore.ImportFromSchnail(_paths, _paths.PlayerRuntimeRoot);
+            LoadHotkeys();
+            MessageBox.Show(this, "SCHNAIL 핫키 CSV를 작업 런타임으로 가져왔습니다.", "핫키");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "핫키 가져오기 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void SaveHotkeys(bool applyMpq)
+    {
+        try
+        {
+            ApplySelectedHotkey(showStatus: false);
+            var result = new HotkeyPatchApplier().SaveAndApply(_paths, _paths.PlayerRuntimeRoot, _hotkeyEntries, applyMpq);
+            MessageBox.Show(this, result.Message, "핫키");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "핫키 저장 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void ApplySelectedHotkey(bool showStatus)
+    {
+        if (_selectedHotkeyEntry is null || _hotkeyKeyText is null)
+        {
+            return;
+        }
+
+        _selectedHotkeyEntry.Hotkey = _hotkeyKeyText.Text.Trim();
+        var commandId = _selectedHotkeyEntry.CommandId;
+        RefreshHotkeyTiles();
+        SelectHotkey(_hotkeyEntries.FirstOrDefault(entry => entry.CommandId == commandId));
+
+        if (showStatus)
+        {
+            _statusLabel.Text = $"핫키 변경 대기: {_selectedHotkeyEntry.Description} -> {_selectedHotkeyEntry.Hotkey}";
+        }
+    }
+
+    private void ApplyBotFilters()
+    {
+        if (_catalog is null || _updatingSelections)
+        {
+            return;
+        }
+
+        _updatingSelections = true;
+        try
+        {
+            var query = _searchBox.Text.Trim();
+            var raceFilter = SelectedEnemyRace();
+            var bots = _catalog.Bots.AsEnumerable();
+
+            if (!IsLadderMode && !string.IsNullOrWhiteSpace(query))
+            {
+                bots = bots.Where(bot => bot.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            bots = raceFilter switch
+            {
+                StarCraftRace.Terran => bots.Where(bot => bot.Race == StarCraftRace.Terran),
+                StarCraftRace.Zerg => bots.Where(bot => bot.Race == StarCraftRace.Zerg),
+                StarCraftRace.Protoss => bots.Where(bot => bot.Race == StarCraftRace.Protoss),
+                StarCraftRace.Random => bots.Where(bot => bot.Race == StarCraftRace.Random),
+                _ => bots
+            };
+
+            bots = IsLadderMode
+                ? bots.OrderByDescending(bot => bot.Elo ?? int.MinValue).ThenBy(bot => bot.Name)
+                : (_sortCombo.SelectedItem?.ToString() ?? "ELO 높은순") switch
+            {
+                "ELO 낮은순" => bots.OrderBy(bot => bot.Elo ?? int.MaxValue).ThenBy(bot => bot.Name),
+                "이름순" => bots.OrderBy(bot => bot.Name, StringComparer.OrdinalIgnoreCase),
+                _ => bots.OrderByDescending(bot => bot.Elo ?? int.MinValue).ThenBy(bot => bot.Name)
+            };
+
+            _botList.DataSource = bots.Select(bot => new BotItem(bot)).ToList();
+        }
+        finally
+        {
+            _updatingSelections = false;
+        }
+
+        if (IsLadderMode)
+        {
+            ApplyLadderMapFilters();
+        }
+        else
+        {
+            OnBotChanged();
+        }
+    }
+
+    private void OnBotChanged()
+    {
+        if (IsLadderMode)
+        {
+            UpdateDetails();
+            return;
+        }
+
+        if (_catalog is null || _botList.SelectedItem is not BotItem botItem || _updatingSelections)
+        {
+            return;
+        }
+
+        _updatingSelections = true;
+        try
+        {
+            var maps = PracticeCatalogCompatibility.MapsForBot(_catalog, botItem.Bot.Id)
+                .Select(map => new MapItem(map))
+                .ToList();
+            _mapList.DataSource = maps;
+        }
+        finally
+        {
+            _updatingSelections = false;
+        }
+
+        UpdateDetails();
+    }
+
+    private void UpdateDetails()
+    {
+        if (_catalog is null)
+        {
+            return;
+        }
+
+        var mapItem = _mapList.SelectedItem as MapItem;
+        if (IsLadderMode)
+        {
+            UpdateLadderDetails(mapItem?.Map);
+            return;
+        }
+
+        if (_botList.SelectedItem is not BotItem botItem)
+        {
+            return;
+        }
+
+        var bot = botItem.Bot;
+        var map = mapItem?.Map;
+        var compatibleMapCount = PracticeCatalogCompatibility.MapsForBot(_catalog, bot.Id).Count;
+        var difficulty = LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo);
+        _difficultyLabel.Text = difficulty is null
+            ? "난이도\r\nSCR 환산 미확인"
+            : $"난이도\r\n{difficulty.Label}";
+
+        _detailsText.Text = string.Join(Environment.NewLine, new[]
+        {
+            $"봇: {bot.Name}",
+            $"종족: {bot.Race}",
+            $"ELO: {bot.Elo?.ToString() ?? "알 수 없음"}",
+            $"실행 형식: {bot.ExecutableKind} / {bot.ExecutableName}",
+            $"BWAPI: {bot.BwapiVersion}",
+            $"SCR 래더 참고 환산: {difficulty?.Label ?? "미확인"}",
+            $"환산 주의: {difficulty?.Disclaimer ?? "ELO 정보가 없어 환산하지 않았습니다."}",
+            $"호환 맵: {compatibleMapCount}개",
+            $"선택 맵: {(map is null ? "없음" : $"{map.Name} ({map.FileName})")}",
+            $"맵 종류: {(map?.IsUserMap == true ? "사용자 추가 맵 (호환성 제약 미확인)" : "SCHNAIL 맵")}",
+            "빌드: 봇 기본 빌드 (공통 BWAPI 빌드 선택 규격이 없어 아직 봇별 강제 선택은 보류)",
+            $"봇 원본 폴더: {bot.SourceDirectory ?? "미확인"}",
+            $"맵 원본 파일: {map?.SourcePath ?? "미확인"}",
+            "",
+            bot.Description ?? ""
+        });
+    }
+
+    private void ApplyLadderMapFilters()
+    {
+        if (_catalog is null || _updatingSelections)
+        {
+            return;
+        }
+
+        _updatingSelections = true;
+        try
+        {
+            var enemyRace = SelectedEnemyRace();
+            var maps = _catalog.Maps
+                .Where(map => map.Enabled)
+                .Where(map => LadderBotSelector.CandidatesForMap(_catalog, map.Id, enemyRace).Count > 0)
+                .OrderBy(map => map.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(map => new MapItem(map))
+                .ToList();
+            _mapList.DataSource = maps;
+        }
+        finally
+        {
+            _updatingSelections = false;
+        }
+
+        UpdateDetails();
+    }
+
+    private void UpdateLadderDetails(PracticeMap? map)
+    {
+        if (_catalog is null)
+        {
+            return;
+        }
+
+        var enemyRace = SelectedEnemyRace();
+        IReadOnlyList<PracticeBot> candidates = map is null
+            ? Array.Empty<PracticeBot>()
+            : LadderBotSelector.CandidatesForMap(_catalog, map.Id, enemyRace);
+        _difficultyLabel.Text = candidates.Count == 0
+            ? "래더\r\n후보 없음"
+            : $"래더\r\n후보 {candidates.Count}개";
+
+        var difficultyRange = FormatDifficultyRange(candidates);
+        var preview = candidates.Take(12).Select(bot =>
+        {
+            var difficulty = LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo);
+            return $"- {bot.Name} / {bot.Race} / {difficulty?.Label ?? $"ELO {bot.Elo?.ToString() ?? "?"}"}";
+        });
+
+        _detailsText.Text = string.Join(Environment.NewLine, new[]
+        {
+            "모드: 래더",
+            $"내 종족: {(_playerRaceCombo.SelectedItem is StarCraftRace race ? race : StarCraftRace.Terran)}",
+            $"상대 종족: {RaceFilterLabel(enemyRace)}",
+            $"선택 맵: {(map is null ? "없음" : $"{map.Name} ({map.FileName})")}",
+            $"랜덤 후보: {candidates.Count}개",
+            $"난이도 범위: {difficultyRange}",
+            "빌드: 선택된 봇의 기본 빌드 (봇별 빌드 선택 API 조사/구현 전)",
+            $"맵 원본 파일: {map?.SourcePath ?? "미확인"}",
+            "",
+            "후보 미리보기",
+            string.Join(Environment.NewLine, preview)
+        });
+    }
+
+    private async Task LaunchCurrentPlanAsync()
+    {
+        SetLaunchButtonsEnabled(false);
+        try
+        {
+            var plan = PrepareCurrentPlan();
+            var runtimeOptions = CurrentRuntimeOptions();
+            PracticeRuntimeConfigurator.Apply(plan, runtimeOptions);
+            _statusLabel.Text = $"{CurrentModeLabel()} 시작 중: StarCraft 사람 클라이언트와 AI 클라이언트를 실행합니다.";
+            var screenBounds = Screen.FromControl(this).Bounds;
+            var cncDdrawHandlesPlayerDisplay = plan.Player.CncDdrawMode == CncDdrawMode.BorderlessFullscreen;
+            var sessionStartedAt = DateTime.UtcNow;
+            var actionCounter = new ActionRateCounter();
+            DisposePracticeOverlay();
+            var existingStarCraftProcesses = StarCraftBorderlessWindow.CurrentStarCraftProcessIds();
+            _inputActionHook = new GlobalInputActionHook(actionCounter, existingStarCraftProcesses);
+
+            var report = await Task.Run(() => new PracticeSessionLauncher().Launch(
+                plan,
+                runtimeOptions,
+                PracticeSessionLaunchOptions.Defaults()));
+            var borderlessApplied = false;
+
+            if (report.Player.StarCraftProcessId is not null)
+            {
+                borderlessApplied = cncDdrawHandlesPlayerDisplay ||
+                    await Task.Run(() => StarCraftBorderlessWindow.ApplyToProcessWhenReady(
+                        report.Player.StarCraftProcessId.Value,
+                        screenBounds,
+                        TimeSpan.FromSeconds(8)).Applied);
+            }
+
+            _practiceOverlay = new PracticeOverlayForm();
+            _practiceOverlay.StartSession(screenBounds, sessionStartedAt, actionCounter);
+            StartSessionHistory(plan, runtimeOptions, sessionStartedAt, actionCounter);
+            if (report.Ai.StarCraftProcessId is not null)
+            {
+                _aiMinimizeKeeper = new StarCraftWindowMinimizeKeeper(
+                    report.Ai.StarCraftProcessId.Value,
+                    TimeSpan.FromSeconds(24),
+                    TimeSpan.FromSeconds(45));
+            }
+
+            if (report.Player.StarCraftProcessId is not null && !cncDdrawHandlesPlayerDisplay)
+            {
+                _borderlessKeeper = new StarCraftBorderlessKeeper(
+                    report.Player.StarCraftProcessId.Value,
+                    screenBounds,
+                    TimeSpan.FromSeconds(8));
+            }
+
+            _statusLabel.Text =
+                $"{CurrentModeLabel()} 실행 완료 | 이전 프로세스 {report.StoppedLocalProcesses}개 정리 | " +
+                $"사람 전체 창모드 {(borderlessApplied ? "적용" : "확인 실패")} | AI 창 최소화 | 타이머/APM ON | APMAlert OFF";
+            WindowState = FormWindowState.Minimized;
+        }
+        catch (Exception ex)
+        {
+            DisposePracticeOverlay();
+            _statusLabel.Text = $"{CurrentModeLabel()} 실행 실패";
+            MessageBox.Show(this, ex.Message, $"{CurrentModeLabel()} 시작 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            SetLaunchButtonsEnabled(true);
+        }
+    }
+
+    private PracticeLaunchPlan PrepareCurrentPlan()
+    {
+        if (_catalog is null || _mapList.SelectedItem is not MapItem mapItem)
+        {
+            throw new InvalidOperationException(IsLadderMode
+                ? "래더 모드에서는 맵을 먼저 선택해주세요."
+                : "봇과 맵을 먼저 선택해주세요.");
+        }
+
+        var bot = IsLadderMode
+            ? LadderBotSelector.PickRandom(_catalog, mapItem.Map.Id, SelectedEnemyRace(), _random)
+            : _botList.SelectedItem is BotItem botItem
+                ? botItem.Bot
+                : throw new InvalidOperationException("스파링 모드에서는 봇과 맵을 먼저 선택해주세요.");
+        var aiRoot = RuntimeProvisioner.EnsureAiRoot(_paths.PlayerRuntimeRoot);
+        var paths = _paths with { AiRuntimeRoot = aiRoot };
+        var race = _playerRaceCombo.SelectedItem is StarCraftRace selectedRace ? selectedRace : StarCraftRace.Terran;
+        var selection = new PracticeSelection(
+            bot.Id,
+            mapItem.Map.Id,
+            race,
+            IsLadderMode ? "StarAI Ladder" : "StarAI Practice",
+            PlayerBorderless: true,
+            ClipCursor: false,
+            AllowApmAlert: false);
+        var plan = PracticeLaunchPlanBuilder.Build(_catalog, paths, selection);
+        return RuntimeProvisioner.PrepareRuntimeAssets(plan);
+    }
+
+    private void SetLaunchButtonsEnabled(bool enabled)
+    {
+        _launchButton.Enabled = enabled;
+    }
+
+    private bool IsLadderMode => _modeCombo?.SelectedItem?.ToString() == "래더";
+
+    private StarCraftRace? SelectedEnemyRace()
+    {
+        return _enemyRaceFilter?.SelectedItem?.ToString() switch
+        {
+            "테란" => StarCraftRace.Terran,
+            "저그" => StarCraftRace.Zerg,
+            "프로토스" => StarCraftRace.Protoss,
+            "랜덤" => StarCraftRace.Random,
+            _ => null
+        };
+    }
+
+    private void UpdateModeControls()
+    {
+        if (_searchBox is null ||
+            _sortCombo is null ||
             _botList is null ||
-            _mapBox is null ||
-            _buildBox is null ||
-            _speedBox is null ||
-            _gameNameBox is null ||
-            _windowedBox is null ||
-            _confineMouseBox is null ||
-            _apmAlertBox is null)
+            _botListLabel is null ||
+            _launchButton is null ||
+            _buildCombo is null)
         {
             return;
         }
 
-        new LauncherPreferences
+        var ladder = IsLadderMode;
+        _searchBox.Enabled = !ladder;
+        _sortCombo.Enabled = !ladder;
+        _botList.Enabled = !ladder;
+        _botListLabel.Text = ladder ? "래더 후보" : "상대 선택";
+        _launchButton.Text = ladder ? "래더 시작" : "스파링 시작";
+        _buildCombo.Enabled = false;
+        if (_buildCombo.Items.Count > 0)
         {
-            StarCraftRoot = _rootBox.Text.Trim(),
-            PlayerRace = SelectedPlayerRace(),
-            EnemyRace = SelectedEnemyRace(),
-            Tier = SelectedTier(),
-            BuildFilter = _buildFilterBox.SelectedItem?.ToString(),
-            Sort = (_sortBox.SelectedItem as SortChoice)?.Id ?? "recommended",
-            Search = _searchBox.Text,
-            BotId = SelectedBot()?.Id,
-            MapRelativePath = SelectedMap()?.RelativePath,
-            BotBuildId = SelectedBuild()?.Id,
-            GameName = string.IsNullOrWhiteSpace(_gameNameBox.Text) ? "AIPractice" : _gameNameBox.Text.Trim(),
-            SpeedOverrideMs = (_speedBox.SelectedItem as SpeedChoice)?.SpeedOverrideMs,
-            PlayerFullscreen = _windowedBox.Checked,
-            WindowedMode = true,
-            ConfineMouse = _confineMouseBox.Checked,
-            ShowApmAlert = _apmAlertBox.Checked
-        }.Save();
+            _buildCombo.SelectedIndex = 0;
+        }
+
+        UpdateDetails();
     }
 
-    private BotProfile? SelectedBot() => (_botList.SelectedItem as BotListItem)?.Bot;
-    private MapProfile? SelectedMap() => _mapBox.SelectedItem as MapProfile;
-    private BuildOption? SelectedBuild() => (_buildBox.SelectedItem as BuildListItem)?.Build;
-
-    private Race SelectedPlayerRace()
+    private string CurrentModeLabel()
     {
-        if (_playerRaceBox.SelectedItem is RaceChoice choice && choice.Race is { } race)
-        {
-            _selectedPlayerRace = race;
-        }
-
-        return _selectedPlayerRace;
-    }
-    private Race? SelectedEnemyRace() => (_enemyRaceBox.SelectedItem as RaceChoice)?.Race;
-    private DifficultyTier? SelectedTier() => (_tierBox.SelectedItem as TierChoice)?.Tier;
-
-    private void SelectRace(ComboBox combo, Race race)
-    {
-        for (var i = 0; i < combo.Items.Count; i++)
-        {
-            if (combo.Items[i] is RaceChoice choice && choice.Race == race)
-            {
-                combo.SelectedIndex = i;
-                return;
-            }
-        }
+        return IsLadderMode ? "래더" : "스파링";
     }
 
-    private void SelectOptionalRace(ComboBox combo, Race? race)
+    private static string RaceFilterLabel(StarCraftRace? race)
     {
-        for (var i = 0; i < combo.Items.Count; i++)
+        return race switch
         {
-            if (combo.Items[i] is RaceChoice choice && choice.Race == race)
-            {
-                combo.SelectedIndex = i;
-                return;
-            }
-        }
-    }
-
-    private void SelectTier(DifficultyTier? tier)
-    {
-        for (var i = 0; i < _tierBox.Items.Count; i++)
-        {
-            if (_tierBox.Items[i] is TierChoice choice && choice.Tier == tier)
-            {
-                _tierBox.SelectedIndex = i;
-                return;
-            }
-        }
-    }
-
-    private void SelectSort(string sortId)
-    {
-        for (var i = 0; i < _sortBox.Items.Count; i++)
-        {
-            if (_sortBox.Items[i] is SortChoice choice &&
-                choice.Id.Equals(sortId, StringComparison.OrdinalIgnoreCase))
-            {
-                _sortBox.SelectedIndex = i;
-                return;
-            }
-        }
-    }
-
-    private void SelectSpeed(int? speedOverrideMs)
-    {
-        for (var i = 0; i < _speedBox.Items.Count; i++)
-        {
-            if (_speedBox.Items[i] is SpeedChoice choice && choice.SpeedOverrideMs == speedOverrideMs)
-            {
-                _speedBox.SelectedIndex = i;
-                return;
-            }
-        }
-    }
-
-    private static bool MatchesBuildFilter(BotProfile bot, string filter)
-    {
-        if (string.IsNullOrWhiteSpace(filter) || filter == "전체")
-        {
-            return true;
-        }
-
-        if (filter == "기본")
-        {
-            return true;
-        }
-
-        return SearchText(bot).Contains(filter, StringComparison.OrdinalIgnoreCase) ||
-               bot.SearchTags.Select(TagKo).Any(tag => tag.Contains(filter, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static string SearchText(BotProfile bot)
-    {
-        return string.Join(" ", new[]
-        {
-            bot.Name,
-            bot.Race.ToString(),
-            bot.Tier.ToString(),
-            bot.Style,
-            bot.BuildHints,
-            bot.MicroRisk,
-            string.Join(" ", bot.SearchTags),
-            string.Join(" ", bot.BuildOptions.SelectMany(option => new[] { option.Name, option.Description }))
-        });
-    }
-
-    private static bool IsGenericTag(string tag)
-    {
-        return tag.Equals("terran", StringComparison.OrdinalIgnoreCase) ||
-               tag.Equals("protoss", StringComparison.OrdinalIgnoreCase) ||
-               tag.Equals("zerg", StringComparison.OrdinalIgnoreCase) ||
-               tag.Equals("random", StringComparison.OrdinalIgnoreCase) ||
-               tag.Equals("main", StringComparison.OrdinalIgnoreCase) ||
-               tag.Equals("challenge", StringComparison.OrdinalIgnoreCase) ||
-               tag.Equals("warmup", StringComparison.OrdinalIgnoreCase) ||
-               tag.Equals("low", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string KoreanStyle(BotProfile bot)
-    {
-        if (bot.Tier == DifficultyTier.Drill)
-        {
-            return $"{RaceKo(bot.Race)} 날빌/방어 드릴용 봇입니다. 메인 스파링보다는 특정 상황 연습에 맞습니다.";
-        }
-
-        if (bot.Tier == DifficultyTier.Recovery)
-        {
-            return $"{RaceKo(bot.Race)} 감각 복구용 저강도 봇입니다. 빌드 순서, 일꾼 생산, 첫 정찰을 다시 손에 붙이기 좋습니다.";
-        }
-
-        if (bot.Tier == DifficultyTier.Challenge)
-        {
-            return $"강한 {RaceKo(bot.Race)} 봇입니다. 매일 상대하기보다는 빌드가 안정된 뒤 체크용으로 쓰는 쪽이 좋습니다.";
-        }
-
-        if (bot.Race == Race.Random)
-        {
-            return "Steamhammer 계열 랜덤 종족 봇입니다. 상대 종족/오프닝 예측을 줄이고 싶을 때 쓰는 확인용입니다.";
-        }
-
-        return $"{RaceKo(bot.Race)} 메인 스파링 후보입니다. 너무 낮은 압박은 아니지만 최상위 봇처럼 과하게 몰아붙이는 타입은 아닙니다.";
-    }
-
-    private static string KoreanBuildHint(BotProfile bot)
-    {
-        var buildNames = bot.BuildOptions
-            .Where(option => !string.Equals(option.Id, "default", StringComparison.OrdinalIgnoreCase))
-            .Select(option => option.Name)
-            .Take(6)
-            .ToArray();
-
-        if (buildNames.Length > 0)
-        {
-            return "선택 가능한 빌드: " + string.Join(", ", buildNames) + ". 특정 빌드를 고르면 가능한 경우 봇 설정 파일의 전략 가중치를 조정합니다.";
-        }
-
-        return bot.Tier switch
-        {
-            DifficultyTier.Recovery => "빌드 강제 옵션은 없지만, 초반 빌드 복구와 첫 멀티 타이밍 확인용으로 쓰기 좋습니다.",
-            DifficultyTier.Main => "기본 행동으로 돌려보고, 리플레이 느낌이 괜찮으면 메인 스파링 풀에 남겨두세요.",
-            DifficultyTier.Challenge => "상위 체크용입니다. 승패보다 내 빌드가 무너지지 않는지 보는 용도로 두세요.",
-            DifficultyTier.Drill => "일반 운영이 아니라 특정 초반 공격/방어 드릴용입니다.",
-            _ => "실험 후보입니다. 첫 판 리플레이를 보고 계속 쓸지 결정하세요."
+            StarCraftRace.Terran => "테란",
+            StarCraftRace.Zerg => "저그",
+            StarCraftRace.Protoss => "프로토스",
+            StarCraftRace.Random => "랜덤",
+            _ => "모두"
         };
     }
 
-    private static string KoreanMicroRisk(BotProfile bot)
+    private static string FormatDifficultyRange(IReadOnlyList<PracticeBot> candidates)
     {
-        if (bot.MicroRisk.Contains("High", StringComparison.OrdinalIgnoreCase) || bot.Tier == DifficultyTier.Challenge)
-        {
-            return "높음. 컨트롤이 봇스럽게 느껴질 수 있어 체크용으로 권장합니다.";
-        }
+        var labels = candidates
+            .Select(bot => LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo)?.Label)
+            .Where(label => !string.IsNullOrWhiteSpace(label))
+            .Cast<string>()
+            .Distinct()
+            .ToList();
 
-        if (bot.MicroRisk.Contains("Low", StringComparison.OrdinalIgnoreCase) || bot.Tier == DifficultyTier.Recovery)
+        return labels.Count switch
         {
-            return "낮음~중간. 빌드 복구를 크게 방해하지 않는 편입니다.";
-        }
-
-        return "중간. 첫 2~3판 리플레이를 보고 너무 봇스럽다면 제외하세요.";
-    }
-
-    private static string BuildNameKo(BuildOption? build)
-    {
-        if (build is null)
-        {
-            return "기본";
-        }
-
-        return build.Name switch
-        {
-            "Default" or "Default mix" => "기본",
-            _ => build.Name
+            0 => "미확인",
+            1 => labels[0],
+            _ => $"{labels.Last()} ~ {labels.First()}"
         };
     }
 
-    private static string BuildDescriptionKo(BuildOption? build, BotProfile bot)
+    private void StartSessionHistory(
+        PracticeLaunchPlan plan,
+        PracticeRuntimeOptions runtimeOptions,
+        DateTime startedAtUtc,
+        ActionRateCounter actionCounter)
     {
-        if (build is null || build.Id == "default")
+        _sessionHistoryTimer?.Stop();
+        _sessionHistoryTimer?.Dispose();
+
+        _activeActionCounter = actionCounter;
+        _activeSessionStartedAtUtc = startedAtUtc;
+        _activeSessionRecord = new PracticeSessionRecord(
+            Id: Guid.NewGuid(),
+            StartedAtUtc: startedAtUtc,
+            LastUpdatedAtUtc: startedAtUtc,
+            BotName: plan.Bot.Name,
+            BotRace: plan.Bot.Race,
+            MapName: plan.Map.Name,
+            MapFileName: plan.Map.FileName,
+            PlayerRace: plan.Player.Race,
+            ReplayRoot: runtimeOptions.ReplayRoot,
+            ActionCount: 0,
+            ActionsPerMinute: 0,
+            DurationSeconds: 0);
+
+        UpdateActiveSessionHistory();
+        _sessionHistoryTimer = new System.Windows.Forms.Timer
         {
-            return "봇 기본 전략 풀을 그대로 사용합니다.";
-        }
-
-        if (build.Patch is null)
-        {
-            return "설명용 빌드입니다. 현재 봇 설정 파일을 직접 바꾸지는 않습니다.";
-        }
-
-        return $"{build.Name} 계열을 우선하도록 {bot.Name} 설정 파일을 조정합니다.";
-    }
-
-    private static string RaceKo(Race race) => race switch
-    {
-        Race.Terran => "테란",
-        Race.Protoss => "프로토스",
-        Race.Zerg => "저그",
-        Race.Random => "랜덤",
-        _ => race.ToString()
-    };
-
-    private static string TierKo(DifficultyTier tier) => tier switch
-    {
-        DifficultyTier.Recovery => "복구",
-        DifficultyTier.Main => "메인",
-        DifficultyTier.Challenge => "도전",
-        DifficultyTier.Drill => "드릴",
-        DifficultyTier.Experimental => "실험",
-        _ => tier.ToString()
-    };
-
-    private static string TagKo(string tag) => tag.ToLowerInvariant() switch
-    {
-        "warmup" => "워밍업",
-        "recovery" => "복구",
-        "bio" => "바이오",
-        "macro" => "운영",
-        "wall" => "입구막기",
-        "heuristic" => "전략예측",
-        "defensive" => "수비형",
-        "vulture" => "벌처",
-        "harass" => "견제",
-        "experimental" => "실험",
-        "rush" => "러시",
-        "reaver" => "리버",
-        "drop" => "드랍",
-        "fe" => "더블",
-        "dt" => "다크",
-        "goon" => "드라군",
-        "carrier" => "캐리어",
-        "mix" => "혼합",
-        "replay-derived" => "리플레이 기반",
-        "probe rush" => "프로브 러시",
-        "zealot rush" => "질럿 러시",
-        "ling" => "저글링",
-        "hydra" => "히드라",
-        "muta" => "뮤탈",
-        "adaptive" => "적응형",
-        "overkill" => "오버킬",
-        "pool" => "풀",
-        "human-like" => "사람식",
-        "5 pool" => "5풀",
-        "top" => "최상위",
-        "main" => "메인",
-        "challenge" => "도전",
-        "terran" => "테란",
-        "protoss" => "프로토스",
-        "zerg" => "저그",
-        "random" => "랜덤",
-        _ => tag
-    };
-
-    private void Log(string message)
-    {
-        _statusBox.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}");
-    }
-
-    private static TableLayoutPanel Panel(string title)
-    {
-        var panel = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            BackColor = UiPalette.Panel,
-            ForeColor = UiPalette.Text,
-            Padding = new Padding(14),
-            ColumnCount = 1,
-            RowCount = 1
+            Interval = 10000
         };
-        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        panel.Controls.Add(new Label
-        {
-            Text = title,
-            AutoSize = true,
-            ForeColor = UiPalette.Text,
-            Font = new Font("Malgun Gothic", 14F, FontStyle.Bold),
-            Margin = new Padding(0, 0, 0, 8)
-        });
-        return panel;
+        _sessionHistoryTimer.Tick += (_, _) => UpdateActiveSessionHistory();
+        _sessionHistoryTimer.Start();
     }
 
-    private static void MakeRowFill(TableLayoutPanel panel, Control control)
+    private void UpdateActiveSessionHistory()
     {
-        var row = panel.GetPositionFromControl(control).Row;
-        while (panel.RowStyles.Count <= row)
+        if (_activeSessionRecord is null || _activeActionCounter is null)
         {
-            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            return;
         }
 
-        for (var i = 0; i < panel.RowStyles.Count; i++)
+        var elapsed = DateTime.UtcNow - _activeSessionStartedAtUtc;
+        var record = _activeSessionRecord with
         {
-            panel.RowStyles[i] = new RowStyle(i == row ? SizeType.Percent : SizeType.AutoSize, i == row ? 100 : 0);
+            LastUpdatedAtUtc = DateTime.UtcNow,
+            ActionCount = _activeActionCounter.ActionCount,
+            ActionsPerMinute = _activeActionCounter.ActionsPerMinute(elapsed),
+            DurationSeconds = Math.Round(Math.Max(0, elapsed.TotalSeconds), 1)
+        };
+        _activeSessionRecord = record;
+        _historyStore.Upsert(record);
+        if (_historyGrid is { IsDisposed: false })
+        {
+            RefreshHistory();
         }
     }
 
-    private static Label Label(string text)
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        DisposePracticeOverlay();
+        base.OnFormClosed(e);
+    }
+
+    private void DisposePracticeOverlay()
+    {
+        UpdateActiveSessionHistory();
+        _sessionHistoryTimer?.Stop();
+        _sessionHistoryTimer?.Dispose();
+        _sessionHistoryTimer = null;
+        _activeSessionRecord = null;
+        _activeActionCounter = null;
+
+        _inputActionHook?.Dispose();
+        _inputActionHook = null;
+
+        _practiceOverlay?.Close();
+        _practiceOverlay?.Dispose();
+        _practiceOverlay = null;
+
+        _borderlessKeeper?.Dispose();
+        _borderlessKeeper = null;
+        _aiMinimizeKeeper?.Dispose();
+        _aiMinimizeKeeper = null;
+    }
+
+    private static Label CreateLabel(string text, int x, int y)
     {
         return new Label
         {
             Text = text,
-            Dock = DockStyle.Top,
             AutoSize = true,
-            ForeColor = UiPalette.Dim,
-            Margin = new Padding(0, 4, 0, 2)
+            ForeColor = Color.FromArgb(128, 218, 93),
+            Location = new Point(x, y)
         };
     }
 
-    private static TextBox TextBox(string? placeholder)
+    private static ComboBox CreateCombo(int x, int y, int width)
+    {
+        return new ComboBox
+        {
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Location = new Point(x, y),
+            Size = new Size(width, 28),
+            BackColor = Color.Black,
+            ForeColor = Color.FromArgb(166, 255, 126),
+            FlatStyle = FlatStyle.Flat
+        };
+    }
+
+    private static ListBox CreateListBox(int x, int y, int width, int height)
+    {
+        return new ListBox
+        {
+            Location = new Point(x, y),
+            Size = new Size(width, height),
+            BackColor = Color.Black,
+            ForeColor = Color.FromArgb(166, 255, 126),
+            BorderStyle = BorderStyle.FixedSingle,
+            IntegralHeight = false,
+            Font = new Font("Segoe UI", 11)
+        };
+    }
+
+    private static TextBox CreateTextBox(int x, int y, int width, int height)
     {
         return new TextBox
         {
-            Dock = DockStyle.Top,
+            Location = new Point(x, y),
+            Size = new Size(width, height),
             BackColor = Color.Black,
-            ForeColor = UiPalette.Text,
-            BorderStyle = BorderStyle.FixedSingle,
-            PlaceholderText = placeholder ?? string.Empty,
-            Margin = new Padding(0, 0, 0, 6)
+            ForeColor = Color.FromArgb(166, 255, 126),
+            BorderStyle = BorderStyle.FixedSingle
         };
     }
 
-    private static CheckBox Check(string text, bool isChecked)
+    private static Button CreateButton(string text, int x, int y, int width, int height)
     {
-        return new CheckBox
+        return new Button
         {
             Text = text,
-            Dock = DockStyle.Top,
-            Checked = isChecked,
-            ForeColor = UiPalette.Text,
-            Margin = new Padding(0, 4, 0, 4)
+            Location = new Point(x, y),
+            Size = new Size(width, height),
+            BackColor = Color.Black,
+            ForeColor = Color.FromArgb(166, 255, 126),
+            FlatStyle = FlatStyle.Flat
         };
     }
 
-    private static ComboBox Combo(IEnumerable<object> items)
+    private static TextBox CreateReadOnlyBlock(int x, int y, int width, int height, string text)
     {
-        var combo = new ComboBox
+        var textBox = CreateTextBox(x, y, width, height);
+        textBox.Multiline = true;
+        textBox.ReadOnly = true;
+        textBox.Text = text;
+        return textBox;
+    }
+
+    private static bool HotkeyMatchesQuery(HotkeyEntry entry, string query)
+    {
+        return string.IsNullOrWhiteSpace(query) ||
+               entry.Description.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+               entry.CommandId.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+               entry.StringId.ToString().Contains(query, StringComparison.OrdinalIgnoreCase) ||
+               entry.Hotkey.Contains(query, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string HotkeyRaceName(HotkeyEntry entry)
+    {
+        var id = entry.CommandId.ToLowerInvariant();
+        return id switch
         {
-            Dock = DockStyle.Top,
-            DropDownStyle = ComboBoxStyle.DropDownList,
-            BackColor = Color.Black,
-            ForeColor = UiPalette.Text,
-            FlatStyle = FlatStyle.Flat,
-            Margin = new Padding(0, 0, 0, 6)
+            var value when value.StartsWith("terran_", StringComparison.Ordinal) => "Terran",
+            var value when value.StartsWith("protoss_", StringComparison.Ordinal) => "Protoss",
+            var value when value.StartsWith("zerg_", StringComparison.Ordinal) => "Zerg",
+            _ => "Common"
+        };
+    }
+
+    private static string HotkeyCategoryName(HotkeyEntry entry)
+    {
+        var id = entry.CommandId.ToLowerInvariant();
+        return id switch
+        {
+            var value when value.StartsWith("general_", StringComparison.Ordinal) => "일반",
+            var value when value.Contains("_train_", StringComparison.Ordinal) => "생산",
+            var value when value.Contains("_build_", StringComparison.Ordinal) => "건설",
+            var value when value.Contains("_res_", StringComparison.Ordinal) => "연구",
+            var value when value.Contains("_upg_", StringComparison.Ordinal) => "업그레이드",
+            var value when value.Contains("_spell_", StringComparison.Ordinal) => "기술",
+            var value when value.Contains("_morph_", StringComparison.Ordinal) => "변태",
+            _ => "기타"
+        };
+    }
+
+    private static string HotkeyDepthCategoryName(HotkeyEntry entry)
+    {
+        return HotkeyCategoryName(entry) switch
+        {
+            "생산" => "유닛",
+            "건설" => "건물",
+            var category => category
+        };
+    }
+
+    private static int HotkeyCommandRank(HotkeyEntry entry)
+    {
+        return HotkeyCategoryName(entry) switch
+        {
+            "생산" => 0,
+            "건설" => 0,
+            "기술" => 1,
+            "연구" => 2,
+            "업그레이드" => 3,
+            _ => 9
+        };
+    }
+
+    private static string HotkeyObjectDisplayName(HotkeyEntry entry)
+    {
+        var description = entry.Description.Trim();
+        var suffixes = new[]
+        {
+            " 생산",
+            " 소환",
+            " 건설",
+            " 개발",
+            " 업그레이드",
+            " 사용",
+            " 연구"
         };
 
-        foreach (var item in items)
+        foreach (var suffix in suffixes)
         {
-            combo.Items.Add(item);
+            if (description.EndsWith(suffix, StringComparison.Ordinal))
+            {
+                return description[..^suffix.Length].Trim();
+            }
         }
 
-        if (combo.Items.Count > 0)
-        {
-            combo.SelectedIndex = 0;
-        }
-
-        return combo;
+        return description;
     }
 
-    private static Button Button(string text, EventHandler onClick)
+    private static string StripStarCraftMarkup(string value)
     {
-        var button = new Button
-        {
-            Text = text,
-            Dock = DockStyle.Top,
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Color.Black,
-            ForeColor = UiPalette.Text,
-            Height = 36,
-            Margin = new Padding(0, 4, 0, 4)
-        };
-        button.FlatAppearance.BorderColor = UiPalette.Border;
-        button.FlatAppearance.MouseOverBackColor = Color.FromArgb(28, 60, 28);
-        button.Click += onClick;
-        return button;
+        return value
+            .Replace("<0>", string.Empty, StringComparison.Ordinal)
+            .Replace("<1>", string.Empty, StringComparison.Ordinal)
+            .Replace("<2>", string.Empty, StringComparison.Ordinal)
+            .Replace("<3>", string.Empty, StringComparison.Ordinal)
+            .Trim();
     }
 
-    private sealed record RaceChoice(string Label, Race? Race)
-    {
-        public override string ToString() => Label;
-    }
-
-    private sealed record TierChoice(string Label, DifficultyTier? Tier)
-    {
-        public override string ToString() => Label;
-    }
-
-    private sealed record SortChoice(string Label, string Id)
-    {
-        public override string ToString() => Label;
-    }
-
-    private sealed record SpeedChoice(string Label, int? SpeedOverrideMs)
-    {
-        public override string ToString() => Label;
-    }
-
-    private sealed record BuildListItem(BuildOption Build)
-    {
-        public override string ToString() => BuildNameKo(Build);
-    }
-
-    private sealed record BotListItem(BotProfile Bot)
+    private sealed record BotItem(PracticeBot Bot)
     {
         public override string ToString()
         {
             var elo = Bot.Elo is null ? "ELO ?" : $"ELO {Bot.Elo}";
-            return $"{Bot.Name}    {RaceKo(Bot.Race)}  {TierKo(Bot.Tier)}  {elo}";
+            return $"{Bot.Name} / {Bot.Race} / {elo}";
         }
     }
+
+    private sealed record MapItem(PracticeMap Map)
+    {
+        public override string ToString() => Map.Name;
+    }
+
+    private sealed record HotkeyObjectInfo(
+        string Key,
+        string Race,
+        string Category,
+        string DisplayName,
+        int CategoryRank)
+    {
+        public static HotkeyObjectInfo From(HotkeyEntry entry)
+        {
+            var race = HotkeyRaceName(entry);
+            var category = HotkeyDepthCategoryName(entry);
+            var display = HotkeyObjectDisplayName(entry);
+            var rank = category switch
+            {
+                "일반" => 0,
+                "유닛" => 1,
+                "건물" => 2,
+                "기술" => 3,
+                "연구" => 4,
+                "업그레이드" => 5,
+                "변태" => 6,
+                _ => 9
+            };
+            var key = $"{race}|{category}|{display}".ToLowerInvariant();
+            return new HotkeyObjectInfo(key, race, category, display, rank);
+        }
+    }
+
+    private sealed record HotkeyObjectItem(HotkeyObjectInfo Info, int Count)
+    {
+        public string Key => Info.Key;
+
+        public override string ToString() => $"{Info.Category}  {Info.DisplayName}  ({Count})";
+    }
+
 }
