@@ -1,0 +1,224 @@
+580,m<1>Morph to <3>M<1>utalisk<0>,zerg_train_mutalisk,t<1>Morph to Mutalisk(<3>T<1>)<0>
+603,s<1>Build <3>S<1>huttle<0>,protoss_train_shuttle
+1265,d<3><3>D<1>isruption Web<0>,protoss_cmd_distweb
+499,c<2>Increase <3>C<1>arrier Capacity<10>(+4 Max Interceptors)<0>,protoss_res_carriercap,d<2>Increase Carrier Capacity<10>(+4 Max Interceptors)(<3>D<1>)<0>
+342,r<3><3>R<1>ecall<0>,protoss_cmd_recall
+480,v<2>Evolve <3>V<1>entral Sacs<10>(Transporting for Overlord)<0>,zerg_res_ventralsacs,z<2>Evolve Ventral Sacs<10>(Transporting for Overlord)(<3>Z<1>)<0>
+500,k<2>Develop <3>K<1>haydarin Core<10>(+50 Arbiter energy)<0>,protoss_res_arbiterenergy,d<2>Develop Khaydarin Core<10>(+50 Arbiter energy)(<3>D<1>)<0>
+477,m<2>Research <3>M<1>oebius Reactor<10>(+50 Ghost energy)<0>,terran_res_ghostenergy,x<2>Research Moebius Reactor<10>(+50 Ghost energy)(<3>X<1>)<0>
+457,p<2>Upgrade Vehicle <3>P<1>lating<0>,terran_upg_vehicleplating,z<2>Upgrade Vehicle Plating(<3>Z<1>)<0>
+680,b<0><3>B<1>asic Mutation<0>,zerg_cmd_buildstruc
+1248,r<3><3>R<1>estoration<0>,terran_cmd_restoration
+469,w<2>Upgrade Ground <3>W<1>eapons<0>,protoss_upg_groundweapons,a<2>Upgrade Ground Weapons(<3>A<1>)<0>
+632,a<1>Warp in <3>A<1>ssimilator<0>,protoss_build_assimilator
+495,g<2>Develop <3>G<1>ravitic Booster<10>(Faster Observer movement)<0>,protoss_res_observermove,a<2>Develop Gravitic Booster<10>(Faster Observer movement)(<3>A<1>)<0>
+657,a<1>Build <3>A<1>rmory<0>,terran_build_armory
+638,r<1>Warp in <3>R<1>obotics Facility<0>,protoss_build_roboticsfacility
+488,m<2>Evolve <3>M<1>etasynaptic Node<10>(+50 Defiler energy)<0>,zerg_res_defilerenergy,d<2>Evolve Metasynaptic Node<10>(+50 Defiler energy)(<3>D<1>)<0>
+614,c<1>Mutate into <3>C<1>reep Colony<0>,zerg_build_creepcolony
+333,c<4>Research Personnel <3>C<1>loaking<10>(Ghost ability)<0>,terran_res_ghostcloak,s<4>Research Personnel Cloaking<10>(Ghost ability)(<3>S<1>)<0>
+598,o<1>Build <3>O<1>bserver<0>,protoss_train_observer
+1267,f<3><3>F<1>eedback<0>,protoss_cmd_feedback
+675,g<0><3>G<1>ather<0>,general_cmd_gather
+641,t<1>Warp in <3>T<1>emplar Archives<0>,protoss_build_templararchives
+335,l<3><3>L<1>ockdown<0>,terran_ab_lockdown
+606,c<1>Warp in <3>C<1>arrier<0>,protos_train_carrier
+623,d<1>Mutate into <3>D<1>efiler Mound<0>,zerg_build_defilermound
+592,s<1>Build <3>S<1>CV<0>,terran_train_scv
+491,s<2>Upgrade <3>S<1>carab Damage<0>,protoss_res_scarabdmg,a<2>Upgrade Scarab Damage(<3>A<1>)<0>
+1260,d<4>Develop <3>D<1>isruption Web<10>(Corsair ability)<0>,protoss_res_distweb,z<4>Develop Disruption Web<10>(Corsair ability)(<3>Z<1>)<0>
+1282,c<2>Research <3>C<1>haron Boosters<10>(Increased Goliath Missile Range)<0>,terran_res_charon,z<2>Research Charon Boosters<10>(Increased Goliath Missile Range)(<3>Z<1>)<0>
+329,m<4>Research Defensive <3>M<1>atrix<10>(Science Vessel ability)<0>,terran_res_defmatrix
+396,h<4>Develop <3>H<1>allucination<10>(Templar ability)<0>,protoss_res_hallucination,s<4>Develop Hallucination<10>(Templar ability)(<3>S<1>)<0>
+626,g<1>Mutate into <3>G<1>reater Spire<0>,zerg_cmd_greaterspire
+404,r<1>A<3>r<1>chon Warp<0>,protoss_cmd_archonwarp
+585,i<1>Train <3>I<1>nfested Terran<0>,zerg_train_infestedterran
+473,i<2>Research <3>I<1>on Thrusters<10>(Faster Vulture movement)<0>,terran_res_vulturespeed,a<2>Research Ion Thrusters<10>(Faster Vulture movement)(<3>A<1>)<0>
+1245,r<4>Research <3>R<1>estoration<10>(Medic ability)<0>,terran_res_restoration,z<4>Research Restoration<10>(Medic ability)(<3>Z<1>)<0>
+588,f<1>Train <3>F<1>irebat<0>,terran_train_firebat
+681,v<0>Ad<3>v<1>anced Mutation<0>,zerg_cmd_buildadvstruc
+497,a<2>Develop <3>A<1>pial Sensors<10>(Increase Scout sight range)<0>,protoss_res_scoutsight,a<2>Develop Apial Sensors<10>(Increase Scout sight range)(<3>A<1>)<0>
+581,g<5><3>G<1>uardian Aspect<0>,zerg_train_guardian
+684,u<0><3>U<1>nload All<0>,general_cmd_unload
+395,p<4>Develop <3>P<1>sionic Storm<10>(Templar ability)<0>,protoss_res_psistorm,a<4>Develop Psionic Storm<10>(Templar ability)(<3>A<1>)<0>
+579,o<1>Morph to <3>O<1>verlord<0>,zerg_train_overlord,v<1>Morph to Overlord(<3>V<1>)<0>
+658,c<1>Build <3>C<1>omsat Station<0>,terran_build_comsat
+605,a<1>Warp in <3>A<1>rbiter<0>,protoss_train_arbiter
+625,h<1>Mutate into <3>H<1>ive<0>,zerg_cmd_hive
+604,s<1>Warp in <3>S<1>cout<0>,protoss_train_scout
+371,c<4>Evolve <3>C<1>onsume<10>(Defiler ability)<0>,zerg_res_consume,s<4>Evolve Consume<10>(Defiler ability)(<3>S<1>)<0>
+463,w<2>Upgrade Infantry <3>W<1>eapons<0>,terran_upg_infweapons,a<2>Upgrade Infantry Weapons(<3>A<1>)<0>
+1290,c<1>Train Medi<3>c<1><0>,terran_train_medic
+485,m<2>Evolve <3>M<1>uscular Augments<10>(Faster Hydralisk movement)<0>,zerg_res_muscularaug,a<2>Evolve Muscular Augments<10>(Faster Hydralisk movement)(<3>A<1>)<0>
+631,p<1>Warp in <3>P<1>ylon<0>,protoss_build_pylon,e<1>Warp in Pylon(<3>E<1>)<0>
+378,g<3>Pla<3>g<1>ue<0>,zerg_cmode_plague
+594,v<1>Build Science <3>V<1>essel<0>,terran_train_vessel
+607,i<1>Build <3>I<1>nterceptor<0>,protoss_cmd_inteceptor
+621,q<1>Mutate into <3>Q<1>ueen's Nest<0>,zerg_buiild_queensnest
+467,a<2>Upgrade Missile <3>A<1>ttacks<0>,zerg_upg_missileattack,s<2>Upgrade Missile Attacks(<3>S<1>)<0>
+661,c<1>Build <3>C<1>overt Ops<0>,terran_build_covertops
+381,e<3><3>E<1>nsnare<0>,zerg_cmd_ensnare
+624,l<1>Mutate into <3>L<1>air<0>,zerg_cmd_lair
+644,a<1>Warp in <3>A<1>rbiter Tribunal<0>,protoss_build_arbitertribunal
+1246,f<4>Research Optical <3>F<1>lare<10>(Medic ability)<0>,terran_res_opticalflare,x<4>Research Optical Flare<10>(Medic ability)(<3>X<1>)<0>
+470,w<2>Upgrade Air <3>W<1>eapons<0>,protoss_upg_airweapons,s<2>Upgrade Air Weapons(<3>S<1>)<0>
+373,u<0><3>U<1>nburrow<0>,zerg_cmd_unburrow
+642,s<1>Warp in <3>S<1>targate<0>,protoss_build_stargate
+650,e<1>Build <3>E<1>ngineering Bay<0>,terran_build_engineeringbay
+620,s<1>Mutate into <3>S<1>pire<0>,zerg_build_spire
+341,e<3>Activate <3>E<1>MP Shockwave<0>,terran_ab_emp
+336,i<3>Use Spider M<3>i<1>nes<0>,terran_ab_spidermines
+575,z<1>Morph to <3>Z<1>erglings<0>,zerg_train_zergling,e<1>Morph to Zerglings(<3>E<1>)<0>
+583,f<1>Morph to De<3>f<1>iler<0>,zerg_train_defiler
+1262,f<4>Develop <3>F<1>eedback<10>(Dark Archon ability)<0>,protoss_res_feedback
+678,b<0><3>B<1>uild Structure<0>,terran_cmd_buildstruc
+677,r<0><3>R<1>epair<0>,terran_cmd_repair
+655,s<1>Build <3>S<1>tarport<0>,terran_build_starport
+1292,o<1>Warp in C<3>o<1>rsair<0>,protoss_train_corsair
+595,d<1>Build <3>D<1>ropship<0>,terran_train_dropship
+489,s<2>Develop <3>S<1>ingularity Charge<10>(Increase Dragoon attack range)<0>,protoss_res_dragoonrange,d<2>Develop Singularity Charge<10>(Increase Dragoon attack range)(<3>D<1>)<0>
+622,u<1>Mutate into <3>U<1>ltralisk Cavern<0>,zerg_build_ultracavern
+498,g<2>Develop <3>G<1>ravitic Thrusters<10>(Faster Scout movement)<0>,protoss_res_scoutspeed,s<2>Develop Gravitic Thrusters<10>(Faster Scout movement)(<3>S<1>)<0>
+602,t<1>Warp in High <3>T<1>emplar<0>,protoss_train_hightemplar
+1281,d<2>Research Ca<3>d<1>uceus Reactor<10>(+50 Medic energy)<0>,terran_res_medicenergy,c<2>Research Caduceus Reactor<10>(+50 Medic energy)(<3>C<1>)<0>
+368,r<4>Evolve Pa<3>r<1>asite<10>(Queen ability)<0>,zerg_res_parasite
+460,c<2>Evolve Flyer <3>C<1>arapace<0>,zerg_upg_flyercarapace,s<2>Evolve Flyer Carapace(<3>S<1>)<0>
+377,r<3>Pa<3>r<1>asite<0>,zerg_cmd_parasite
+683,l<0><3>L<1>oad<0>,general_cmd_load
+639,o<1>Warp in <3>O<1>bservatory<0>,protoss_build_observatory
+578,d<1>Morph to <3>D<1>rone<0>,zerg_train_drone
+468,a<2>Upgrade Flyer <3>A<1>ttacks<0>,zerg_upg_flyerattack
+576,h<1>Morph to <3>H<1>ydralisk<0>,zerg_train_hydra
+674,s<0><3>S<1>elect Larva<0>,zerg_cmd_selectlarva
+475,t<2>Research <3>T<1>itan Reactor<10>(+50 Science Vessel energy)<0>,terran_res_vesselenergy,d<2>Research Titan Reactor<10>(+50 Science Vessel energy)(<3>D<1>)<0>
+649,b<1>Build <3>B<1>arracks<0>,terran_build_barracks
+328,s<4>Research <3>S<1>iege Tech<10>(Siege Tank ability)<0>,terran_res_siegetech,d<4>Research Siege Tech<10>(Siege Tank ability)(<3>D<1>)<0>
+662,p<1>Build <3>P<1>hysics Lab<0>,terran_build_physicslab
+676,c<0>Return <3>C<1>argo<0>,general_cmd_cargo
+493,g<2>Develop <3>G<1>ravitic Drive<10>(Faster Shuttle movement)<0>,protoss_res_shuttlespeed,d<2>Develop Gravitic Drive<10>(Faster Shuttle movement)(<3>D<1>)<0>
+648,r<1>Build <3>R<1>efinery<0>,terran_build_refinery
+1266,c<3>Mind <3>C<1>ontrol<0>,protoss_cmd_mindcontrol
+609,r<1>Build Sca<3>r<1>ab<0>,protoss_cmd_scarab
+645,b<1>Warp in Robotics Support <3>B<1>ay<0>,protoss_build_roboticssupport
+464,w<2>Upgrade Vehicle <3>W<1>eapons<0>,terran_upg_vehicleweapons,a<2>Upgrade Vehicle Weapons(<3>A<1>)<0>
+481,a<2>Evolve <3>A<1>ntennae<10>(Increase Overlord sight range)<0>,zerg_res_antennae,x<2>Evolve Antennae<10>(Increase Overlord sight range)(<3>X<1>)<0>
+327,m<4>Research Spider <3>M<1>ines<10>(Vulture ability)<0>,terran_res_spidermines,s<4>Research Spider Mines<10>(Vulture ability)(<3>S<1>)<0>
+589,v<1>Build <3>V<1>ulture<0>,terran_train_vulture
+1268,e<3>Ma<3>e<1>lstrom<0>,protoss_cmd_malestrom
+338,o<3>Siege M<3>o<1>de<0>,terran_ab_siege
+618,d<1>Mutate into Hydralisk <3>D<1>en<0>,zerg_build_hydraden
+334,t<3>Use S<3>t<1>im Packs<0>,terran_ab_usestim
+366,b<4>Evolve Spawn <3>B<1>roodling<10>(Queen ability)<0>,zerg_res_broodling,a<4>Evolve Spawn Broodling<10>(Queen ability)(<3>A<1>)<0>
+634,f<1>Warp in <3>F<1>orge<0>,protoss_build_forge
+345,c<0>De<3>c<1>loak<0>,terran_ab_decloak
+372,u<3>B<3>u<1>rrow<0>,zerg_cmd_burrow
+593,w<1>Build <3>W<1>raith<0>,terran_train_wraith
+671,l<0><3>L<1>iftoff<0>,general_cmd_liftoff
+616,s<1>Mutate into <3>S<1>pawning Pool<0>,zerg_build_spawningpool
+1249,f<3>Optical <3>F<1>lare<0>,terran_cmd_optflare
+660,c<1>Build <3>C<1>ontrol Tower<0>,terran_build_controltower
+400,t<3>Psionic S<3>t<1>orm<0>,protoss_cmd_psistorm
+476,o<2>Research <3>O<1>cular Implants<10>(Increase Ghost sight range)<0>,terran_res_ghostsight,z<2>Research Ocular Implants<10>(Increase Ghost sight range)(<3>Z<1>)<0>
+653,u<1>Build B<3>u<1>nker<0>,terran_build_bunker
+1288,d<5><3>D<1>evourer Aspect<0>,zerg_cmd_devourer
+324,t<4>Research S<3>t<1>im Pack Tech<10>(Marine and Firebat ability)<0>,terran_res_stimpack,s<4>Research Stim Pack Tech<10>(Marine and Firebat ability)(<3>S<1>)<0>
+1284,c<2>Evolve <3>C<1>hitinous Plating<10>(Improved Ultralisk Armor)<0>,zerg_res_ultraarmor,s<2>Evolve Chitinous Plating<10>(Improved Ultralisk Armor)(<3>S<1>)<0>
+617,v<1>Mutate into E<3>v<1>olution Chamber<0>,zerg_build_evolutionchamber
+1264,r<1>Da<3>r<1>k Archon Meld<0>,protoss_cmd_darkarchonmeld
+1283,a<2>Evolve <3>A<1>nabolic Synthesis<10>(Faster Ultralisk Movement)<0>,zerg_res_ultraspeed
+343,t<3>S<3>t<1>asis Field<0>,protoss_cmd_stasis
+685,n<0><3>N<1>uclear Strike<0>,terran_cmd_nuke
+376,w<3>Dark S<3>w<1>arm<0>,zerg_cmd_darkswarm
+331,y<4>Research <3>Y<1>amato Gun<10>(Battlecruiser ability)<0>,terran_res_yamato,a<4>Research Yamato Gun<10>(Battlecruiser ability)(<3>A<1>)<0>
+1285,j<2>Develop Argus <3>J<1>ewel<10>(+50 Corsair energy)<0>,protoss_res_corsairenergy,x<2>Develop Argus Jewel<10>(+50 Corsair energy)(<3>X<1>)<0>
+1286,t<2>Develop Argus <3>T<1>alisman<10>(+50 Dark Archon energy)<0>,protoss_res_darkarchonenergy,c<2>Develop Argus Talisman<10>(+50 Dark Archon energy)(<3>C<1>)<0>
+630,n<1>Warp in <3>N<1>exus<0>,protoss_build_nexus
+459,c<2>Evolve <3>C<1>arapace<0>,zerg_upg_carapace,d<2>Evolve Carapace(<3>D<1>)<0>
+337,s<3><3>S<1>canner Sweep (Detector)<0>,terran_ab_scanner
+332,c<4>Research <3>C<1>loaking Field<10>(Wraith ability)<0>,terran_res_wraithcloak,a<4>Research Cloaking Field<10>(Wraith ability)(<3>A<1>)<0>
+591,t<1>Build Siege <3>T<1>ank<0>,terran_train_tank
+472,u<2>Research <3>U<1>-238 Shells<10>(Increase Marine attack range)<0>,terran_res_u238,a<2>Research U-238 Shells<10>(Increase Marine attack range)(<3>A<1>)<0>
+654,f<1>Build <3>F<1>actory<0>,terran_build_factory
+679,v<0>Build Ad<3>v<1>anced Structure<0>,terran_cmd_buildadvstruc
+597,n<1>Arm <3>N<1>uclear Silo<0>,terran_cmd_armsilo
+466,m<2>Upgrade <3>M<1>elee Attacks<0>,zerg_upg_meleeattack,a<2>Upgrade Melee Attacks(<3>A<1>)<0>
+471,s<2>Upgrade Plasma <3>S<1>hields<0>,protoss_upg_shiends,d<2>Upgrade Plasma Shields(<3>D<1>)<0>
+1263,e<4>Develop Ma<3>e<1>lstrom<10>(Dark Archon ability)<0>,protoss_res_maelstrom,x<4>Develop Maelstrom<10>(Dark Archon ability)(<3>X<1>)<0>
+330,i<4>Research <3>I<1>rradiate<10>(Science Vessel ability)<0>,terran_res_irradiate,s<4>Research Irradiate<10>(Science Vessel ability)(<3>S<1>)<0>
+613,h<1>Mutate into <3>H<1>atchery<0>,zerg_build_hatchery
+486,g<2>Evolve <3>G<1>rooved Spines<10>(Increase Hydralisk attack range)<0>,zerg_res_hydrarange,s<2>Evolve Grooved Spines<10>(Increase Hydralisk attack range)(<3>S<1>)<0>
+577,u<1>Morph to <3>U<1>ltralisk<0>,zerg_train_ultra
+667,p<0><3>P<1>atrol<0>,general_cmd_patrol
+375,b<3>Spawn <3>B<1>roodlings<0>,zerg_cmd_broodling
+343,y<3><3>Y<1>amato Gun<0>,terran_ab_yamato
+646,c<1>Build <3>C<1>ommand Center<0>,terran_build_commandcenter
+672,r<0>Set <3>R<1>ally Point<0>,general_cmd_rally
+640,c<1>Warp in <3>C<1>itadel of Adun<0>,protoss_build_citadel
+627,s<1>Mutate into <3>S<1>pore Colony<0>,zerg_cmd_sporecolony,a<1>Mutate into Spore Colony(<3>A<1>)<0>
+483,m<2>Evolve <3>M<1>etabolic Boost<10>(Faster Zergling movement)<0>,zerg_res_metaboost,a<2>Evolve Metabolic Boost<10>(Faster Zergling movement)(<3>A<1>)<0>
+401,l<3>Ha<3>l<1>lucination<0>,protoss_cmd_hallucination
+1291,y<1>Build Valk<3>y<1>rie<0>,terran_train_valkyrie
+398,s<4>Develop <3>S<1>tasis Field<10>(Arbiter ability)<0>,protoss_res_stasis,s<4>Develop Stasis Field<10>(Arbiter ability)(<3>S<1>)<0>
+586,m<1>Train <3>M<1>arine<0>,terran_train_marine,s<1>Train Marine(<3>S<1>)<0>
+582,q<1>Morph to <3>Q<1>ueen<0>,zerg_train_queen
+397,r<4>Develop <3>R<1>ecall<10>(Arbiter ability)<0>,protoss_res_recall,a<4>Develop Recall<10>(Arbiter ability)(<3>A<1>)<0>
+482,p<2>Evolve <3>P<1>neumatized Carapace<10>(Faster Overlord movement)<0>,zerg_res_pneumcarapace,c<2>Evolve Pneumatized Carapace<10>(Faster Overlord movement)(<3>C<1>)<0>
+462,a<2>Upgrade Air <3>A<1>rmor<0>,protoss_upg_airarmor,a<2>Upgrade Air Armor(<3>A<1>)<0>
+629,n<0>Place <3>N<1>ydus Canal Exit<0>,zerg_cmd_placenydusexit
+456,a<2>Upgrade Infantry <3>A<1>rmor<0>,terran_upg_infarmor,s<2>Upgrade Infantry Armor(<3>S<1>)<0>
+496,k<2>Develop <3>K<1>haydarin Amulet<10>(+50 Templar energy)<0>,protoss_res_templarenergy,d<2>Develop Khaydarin Amulet<10>(+50 Templar energy)(<3>D<1>)<0>
+599,p<1>Build <3>P<1>robe<0>,protoss_train_probe,e<1>Build Probe(<3>E<1>)<0>
+364,b<4>Evolve <3>B<1>urrow<10>(Ground unit ability)<0>,zerg_res_burrow
+633,g<1>Warp in <3>G<1>ateway<0>,protoss_build_gateway
+1253,l<4>Evolve <3>L<1>urker Aspect<10>(Hydralisk ability)<0>,zerg_res_lurkeraspect,z<4>Evolve Lurker Aspect<10>(Hydralisk ability)(<3>Z<1>)<0>
+326,e<4>Research <3>E<1>MP Shockwave<10>(Science Vessel ability)<0>,terran_res_emp,a<4>Research EMP Shockwave<10>(Science Vessel ability)(<3>A<1>)<0>
+666,a<0><3>A<1>ttack<0>,general_cmd_attack
+490,l<2>Develop <3>L<1>eg Enhancements<10>(Faster Zealot movement)<0>,protoss_res_legspeed,a<2>Develop Leg Enhancements<10>(Faster Zealot movement)(<3>A<1>)<0>
+1247,a<3>He<3>a<1>l<0>,terran_cmd_heal
+1293,k<1>Warp in Dar<3>k<1> Templar<0>,protoss_train_darktemplar
+587,g<1>Train <3>G<1>host<0>,terran_train_ghost
+608,v<1>Build Rea<3>v<1>er<0>,protoss_train_reaver
+615,e<1>Mutate into <3>E<1>xtractor<0>,zerg_build_extractor
+461,a<2>Upgrade Ground <3>A<1>rmor<0>,protoss_upg_groundarmor,s<2>Upgrade Ground Armor(<3>S<1>)<0>
+494,s<2>Develop <3>S<1>ensor Array<10>(Increase Observer sight range)<0>,protoss_res_observersight,s<2>Develop Sensor Array<10>(Increase Observer sight range)(<3>S<1>)<0>
+656,i<1>Build Sc<3>i<1>ence Facility<0>,terran_build_sciencefacility
+673,r<0><3>R<1>echarge Shields<0>,protoss_cmd_recharge
+367,s<4>Evolve Dark <3>S<1>warm<10>(Defiler ability)<0>,zerg_res_darkswarm
+339,o<0>Tank M<3>o<1>de<0>,terran_ab_unsiege
+647,s<1>Build <3>S<1>upply Depot<0>,terran_build_supplydepot
+325,l<4>Research <3>L<1>ockdown<10>(Ghost ability)<0>,terran_res_lockdown,a<4>Research Lockdown<10>(Ghost ability)(<3>A<1>)<0>
+584,s<1>Morph to <3>S<1>courge<0>,zerg_train_scourge,c<1>Morph to Scourge(<3>C<1>)<0>
+637,b<1>Warp in Shield <3>B<1>attery<0>,protoss_build_shieldbattery
+664,m<0><3>M<1>ove<0>,general_cmd_move
+643,f<1>Warp in <3>F<1>leet Beacon<0>,protoss_build_fleetbeacon
+344,c<3><3>C<1>loak<0>,terran_ab_cloak
+628,u<1>Mutate into S<3>u<1>nken Colony<0>,zerg_cmd_sunkencolony,s<1>Mutate into Sunken Colony(<3>S<1>)<0>
+636,y<1>Warp in C<3>y<1>bernetics Core<0>,protoss_build_cybercore
+340,d<3>Activate <3>D<1>efensive Matrix<0>,terran_ab_defmatrix
+665,s<0><3>S<1>top<0>,general_cmd_stop
+478,a<2>Research <3>A<1>pollo Reactor<10>(+50 Wraith energy)<0>,terran_res_wraithenergy,s<2>Research Apollo Reactor<10>(+50 Wraith energy)(<3>S<1>)<0>
+663,c<1>Build Ma<3>c<1>hine Shop<0>,terran_build_machineshop
+601,d<1>Warp in <3>D<1>ragoon<0>,protoss_train_dragoon
+487,g<2>Evolve <3>G<1>amete Meiosis<10>(+50 Queen energy)<0>,zerg_res_queenenergy,d<2>Evolve Gamete Meiosis<10>(+50 Queen energy)(<3>D<1>)<0>
+590,g<1>Build <3>G<1>oliath<0>,terran_train_goliath
+596,b<1>Build <3>B<1>attlecruiser<0>,terran_train_battlecruiser
+458,h<2>Upgrade S<3>h<1>ip Plating<0>,terran_upg_shipplating,x<2>Upgrade Ship Plating(<3>X<1>)<0>
+670,l<0><3>L<1>and<0>,general_cmd_land
+635,c<1>Warp in Photon <3>C<1>annon<0>,protoss_build_cannon
+652,a<1>Build <3>A<1>cademy<0>,terran_build_academy
+492,c<2>Increase Reaver <3>C<1>apacity<10>(+5 Max Scarabs)<0>,protoss_res_reavercap,s<2>Increase Reaver Capacity<10>(+5 Max Scarabs)(<3>S<1>)<0>
+374,i<0><3>I<1>nfest Terran Command Center<0>,zerg_cmd_infest_cc
+619,n<1>Mutate into <3>N<1>ydus Canal<0>,zerg_build_nydus
+651,t<1>Build Missile <3>T<1>urret<0>,terran_build_missileturret
+342,i<3><3>I<1>rradiate<0>,terran_ab_irradiate
+1261,m<4>Develop <3>M<1>ind Control<10>(Dark Archon ability)<0>,protoss_res_mindcontrol,z<4>Develop Mind Control<10>(Dark Archon ability)(<3>Z<1>)<0>
+465,s<2>Upgrade <3>S<1>hip Weapons<0>,terran_upg_shipweapons,s<2>Upgrade Ship Weapons(<3>S<1>)<0>
+379,c<3><3>C<1>onsume<0>,zerg_cmd_consume
+659,n<1>Build <3>N<1>uclear Silo<0>,terran_build_nukesilo
+1289,l<1>Morph to <3>L<1>urker<0>,zerg_cmd_lurker
+668,h<0><3>H<1>old Position<0>,general_cmd_holdpos
+484,a<2>Evolve <3>A<1>drenal Glands<10>(Faster Zergling Attack)<0>,zerg_res_adrenal,s<2>Evolve Adrenal Glands<10>(Faster Zergling Attack)(<3>S<1>)<0>
+600,z<1>Warp in <3>Z<1>ealot<0>,protoss_train_zealot,s<1>Warp in Zealot(<3>S<1>)<0>
+369,g<4>Evolve Pla<3>g<1>ue<10>(Defiler ability)<0>,zerg_res_plague,a<4>Evolve Plague<10>(Defiler ability)(<3>A<1>)<0>
+479,c<2>Research <3>C<1>olossus Reactor<10>(+50 Battlecruiser energy)<0>,terran_res_bcenergy,s<2>Research Colossus Reactor<10>(+50 Battlecruiser energy)(<3>S<1>)<0>
+370,e<4>Evolve <3>E<1>nsnare<10>(Queen ability)<0>,zerg_res_ensnare,s<4>Evolve Ensnare<10>(Queen ability)(<3>S<1>)<0>

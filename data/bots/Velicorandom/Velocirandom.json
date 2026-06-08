@@ -1,0 +1,184 @@
+{
+"Bot Info" :
+{
+	    "BotName"          : "Velocirandom",
+		"Authors"          : "Raptor",
+		"PrintInfoOnStart" : true
+},
+
+"BWAPI" :
+	{
+		    "SetLocalSpeed"          : 11,
+			"SetFrameSkip"           : 0,
+			"UserInput"              : false,
+			"CompleteMapInformation" : false
+	},
+
+		"Micro" :
+		{
+			    "KiteWithRangedUnits"     : true,
+				"KiteLongerRangedUnits"   : ["Mutalisk"],
+				"WorkersDefendRush"       : true,
+				"RetreatMeleeUnitShields" : 0,
+				"RetreatMeleeUnitHP"      : 8,
+				"RegroupRadius"           : 500,
+				"UnitNearEnemyRadius"     : 800,
+				"ScoutDefenseRadius"      : { "Terran" : 500 }
+		},
+
+			"Macro" :
+		{
+			    "BOSSFrameLimit"      : 160,
+				"WorkersPerRefinery"  : 3,
+				"WorkersPerPatch"     : { "Zerg" : 1.6, "Protoss" : 2.3, "Terran" : 2.6 },
+				"BuildingSpacing"     : 1,
+				"PylonSpacing"        : 3
+		},
+
+			"Debug" :
+			{
+				    "ErrorLogFilename"          : "bwapi-data/AI/Velocirandom_ErrorLog.txt",
+					"LogAssertToErrorFile"      : true,
+
+					"DrawGameInfo"              : true,
+					"DrawStrategySketch"        : false,
+					"DrawUnitHealthBars"        : true,
+					"DrawProductionInfo"        : true,
+					"DrawBuildOrderSearchInfo"  : false,
+					"DrawScoutInfo"             : false,
+					"DrawEnemyUnitInfo"         : false,
+					"DrawModuleTimers"          : false,
+					"DrawResourceInfo"          : false,
+					"DrawCombatSimInfo"         : false,
+					"DrawUnitTargetInfo"        : false,
+					"DrawUnitOrders"            : false,
+					"DrawBWTAInfo"              : false,
+					"DrawMapGrid"               : false,
+					"DrawBaseInfo"              : false,
+					"DrawStrategyBossInfo"      : false,
+					"DrawSquadInfo"             : false,
+					"DrawWorkerInfo"            : false,
+					"DrawMouseCursorInfo"       : false,
+					"DrawBuildingInfo"          : false,
+					"DrawReservedBuildingTiles" : false,
+					"DrawBOSSStateInfo"         : false
+			},
+
+				"Modules" :
+				{
+					"UseStrategyIO"             : false
+				},
+
+					"Tools" :
+					{
+						"MapGridSize"               : 320
+					},
+
+						"Strategy" :
+						{
+							"ScoutHarassEnemy"          : false,
+
+								"ReadDirectory"  : "bwapi-data/read/",
+								"WriteDirectory" : "bwapi-data/write/",
+
+								"TvT" :
+							{ "StrategyMix" : [
+							{ "Weight" : 100, "Strategy" : "Terran_MarineRush" }
+							]},
+
+								"TvP" :
+							{ "StrategyMix" : [
+							{ "Weight" : 100, "Strategy" : "Terran_MarineRush" }
+							]},
+
+								"TvZ" :
+							{ "StrategyMix" : [
+							{ "Weight" : 100, "Strategy" : "Terran_MarineRush" }
+							]},
+
+								"TvU" :
+							{ "StrategyMix" : [
+							{ "Weight" : 100, "Strategy" : "Terran_MarineRush" }
+							]},
+
+								"PvT" :
+							{ "StrategyMix" : [
+							{ "Weight" : 100, "Strategy" : "Protoss_Zealot" }
+							]},
+
+								"PvP" :
+							{ "StrategyMix" : [
+							{ "Weight" : 50, "Strategy" : "Protoss_ZealotRush" },
+							{ "Weight" : 50, "Strategy" : "Protoss_Zealot" }
+							]},
+
+								"PvZ" :
+							{ "StrategyMix" : [
+							{ "Weight" : 50, "Strategy" : "Protoss_ZealotRush" },
+							{ "Weight" : 50, "Strategy" : "Protoss_Zealot" }
+							]},
+
+								"PvU" :
+							{ "StrategyMix" : [
+							{ "Weight" : 100, "Strategy" : "Protoss_Zealot" }
+							]},
+
+								"ZvT" :
+							{ "StrategyMix" : [
+							{ "Weight" : 50, "Strategy" : "1BHPGT" },
+							{ "Weight" : 25, "Strategy" : "HPST4" },
+							{ "Weight" : 25, "Strategy" : "HPGD" }
+							]},
+
+								"ZvP" :
+							{ "StrategyMix" : [
+							{ "Weight" : 100, "Strategy" : "1BHPGT" }
+							]},
+
+								"ZvZ" :
+							{ "StrategyMix" : [
+							{ "Weight" : 100, "Strategy" : "1BHPGT" }
+							]},
+
+								"ZvU" :
+							{ "StrategyMix" : [
+							{ "Weight" : 25, "Strategy" : "1BPH" },
+							{ "Weight" : 50, "Strategy" : "1BHPGT" },
+							{ "Weight" : 25, "Strategy" : "HPGD" }
+							]},
+
+
+								"UseEnemySpecificStrategy" : true,
+								"EnemySpecificStrategy" :
+							{
+								"Dave Churchill"            : { "Zerg" : "1BPH" },
+								"Jakub Trancik"             : { "Zerg" : "1BPH" },
+								"Yuanheng Zhu"              : { "Zerg" : "1BPH" },
+								"krasi0P"                   : { "Zerg" : "1BPH", "Protoss" : "Protoss_ZealotRush" },
+								"Newbie Zerg"               : { "Zerg" : "1BPH" },
+								"Iron bot"                  : { "Zerg" : "HPGD" },
+								"Hao Pan"                   : { "Zerg" : "HPGD" },
+								"SAIDA"                     : { "Zerg" : "HPGD" },
+								"Locutus"                   : { "Zerg" : "HPGDR" },
+								"Bereaver"                  : { "Protoss" : "Protoss_Zealot" },
+								"DaQin"                     : { "Zerg" : "HPGDR" },
+								"Tscmoop2"                  : { "Zerg" : "HPST4" },
+								"Stone"                     : { "Zerg" : "1BPH" },
+								"JumpyDoggoBot"             : { "Zerg" : "1BPH" }
+							},
+
+								"Strategies" :
+							{
+								"Terran_MarineRush"       : { "Race" : "Terran", "OpeningGroup" : "bio", "OpeningBuildOrder" : ["SCV", "SCV", "SCV", "SCV", "SCV", "SCV", "go scout location", "Barracks", "Barracks", "Supply Depot", "Barracks", "go defensive", "Marine", "Marine", "Marine", "Marine", "Marine", "Supply Depot", "Marine", "Marine", "Marine", "go aggressive", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Supply Depot", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Supply Depot", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine", "Marine"]},
+								"Protoss_ZealotRush"      : { "Race" : "Protoss", "OpeningGroup" : "zealots", "OpeningBuildOrder" : ["Probe", "Probe", "Probe", "Probe", "Pylon", "Probe", "go scout location", "Probe", "Gateway", "Probe", "Probe", "Gateway", "Probe", "go defensive", "Zealot", "Pylon", "Probe", "Zealot", "Zealot", "Probe", "Pylon", "Zealot", "Zealot", "Probe", "go aggressive", "Gateway", "Zealot", "Zealot", "Pylon", "Probe", "Zealot", "Zealot", "Zealot", "Zealot", "Zealot", "Gateway", "Zealot", "Zealot", "Zealot", "Zealot", "Zealot", "Zealot", "Zealot", "Zealot", "Zealot", "Zealot", "Zealot"]},
+								"Protoss_Zealot"          : { "Race" : "Protoss", "OpeningGroup" : "dragoons", "OpeningBuildOrder" : ["Probe", "Probe", "Probe", "Probe", "Pylon", "Probe", "go scout location", "Probe", "Gateway", "Probe", "Probe", "Gateway", "Probe", "go defensive", "Zealot", "Pylon", "Probe", "Zealot", "Zealot", "Probe", "Pylon", "Zealot", "Zealot", "Probe", "go aggressive", "Gateway", "Zealot", "Zealot", "Pylon", "Probe", "Zealot", "Zealot", "Zealot", "Probe", "Assimilator", "Probe", "Zealot", "Zealot", "Zealot", "Cybernetics Core", "Zealot", "Zealot", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Singularity Charge", "Dragoon", "Dragoon", "Dragoon", "Gateway", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon", "Dragoon"]},
+								"1BPH"                    : { "Race" : "Zerg", "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Spawning Pool", "go scout location", "Drone", "Overlord", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Hatchery @ Macro", "Drone", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Drone", "Drone", "Drone", "Drone", "Hatchery"] },
+								"1BHPGT"                  : { "Race" : "Zerg", "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Drone", "Drone", "Hatchery @ Macro", "Drone", "Spawning Pool", "Drone", "Extractor", "go gas until 100", "Overlord", "go scout location", "Drone", "Zergling", "Zergling", "Zergling", "Metabolic Boost", "go defensive", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "go aggressive", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Hatchery", "Drone", "Drone", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling", "Zergling"] },
+								"HPGD"                    : { "Race" : "Zerg", "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Drone", "Drone", "Hatchery", "go scout location", "Overlord", "Drone", "Drone", "Spawning Pool", "Drone", "Extractor", "Drone", "Drone", "Drone", "Drone", "Drone", "Drone",  "Hydralisk Den", "Overlord", "go defensive", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go aggressive", "Hydralisk", "Muscular Augments", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Drone", "Extractor", "Drone", "Drone", "Drone", "Hatchery @ macro"] },
+								"HPGDR"                   : { "Race" : "Zerg", "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Drone", "Drone", "Hatchery", "go scout location", "Overlord", "Drone", "Drone", "Spawning Pool", "Drone", "Extractor", "Drone", "Drone", "Drone", "Drone", "Drone", "Drone",  "Hydralisk Den", "Overlord", "go defensive", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go aggressive", "Hydralisk", "Grooved Spines", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "go gas until 150", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Hydralisk", "Drone", "Extractor", "Drone", "Drone", "Drone", "Hatchery @ macro"] },
+								"HPST4"                   : { "Race" : "Zerg", "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Drone", "Drone", "Hatchery", "Drone", "go scout location", "Overlord", "Drone", "Drone", "Drone", "Spawning Pool", "Extractor", "Drone", "Drone", "Drone", "Drone", "Drone", "Drone", "Creep Colony @ Natural", "Creep Colony @ Natural", "Lair", "Drone", "Drone", "Sunken Colony", "Sunken Colony", "Creep Colony @ Natural", "Creep Colony @ Natural", "Drone", "Drone", "Sunken Colony", "Sunken Colony", "Spire", "Drone", "Extractor", "Drone", "Overlord", "Drone", "Drone", "Overlord", "Overlord", "go defensive main", "Zerg Flyer Attacks", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "go aggressive main", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Zerg Flyer Carapace", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Hatchery", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Extractor", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Hatchery", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Extractor", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk"] },
+								"HPST4T"                  : { "Race" : "Zerg", "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Drone", "Drone", "Hatchery", "Drone", "go scout location", "Overlord", "Drone", "Drone", "Drone", "Spawning Pool", "Extractor", "Drone", "Drone", "Drone", "Drone", "Drone", "Drone", "Creep Colony @ Natural", "Creep Colony @ Natural", "Lair", "Drone", "Drone", "Sunken Colony", "Sunken Colony", "Creep Colony", "Creep Colony @ Natural", "Drone", "Drone", "Sunken Colony", "Sunken Colony", "Spire", "Drone", "Extractor", "Drone", "Overlord", "Drone", "Drone", "Overlord", "Overlord", "go defensive", "Zerg Flyer Attacks", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "go aggressive", "Mutalisk", "Zerg Flyer Carapace", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Hatchery", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Extractor", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Hatchery", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Extractor", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk"] },
+								"HPST6"                   : { "Race" : "Zerg", "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Drone", "Drone", "Hatchery", "Drone", "go scout location", "Overlord", "Drone", "Drone", "Drone", "Spawning Pool", "Extractor", "Drone", "Drone", "Drone", "Drone", "Drone", "Drone", "Creep Colony @ Natural", "Creep Colony @ Natural", "Lair", "Drone", "Drone", "Sunken Colony", "Sunken Colony", "Creep Colony @ Natural", "Creep Colony @ Natural", "Drone", "Drone", "Sunken Colony", "Sunken Colony", "Spire", "Drone", "Creep Colony @ Natural", "Creep Colony @ Natural", "Drone", "Drone", "Sunken Colony", "Sunken Colony", "Overlord", "Drone", "Drone", "Drone", "Overlord", "Extractor", "go defensive main", "Zerg Flyer Attacks", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "go aggressive main", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Drone", "Zerg Flyer Carapace", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Hatchery", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Extractor", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Hatchery", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Extractor", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Drone", "Drone", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk", "Mutalisk"] }
+							}
+						}
+}

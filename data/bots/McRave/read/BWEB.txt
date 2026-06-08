@@ -1,0 +1,19 @@
+Wed Sep 10 15:17:23 2025
+(4)Circuit Breaker.scx
+Natural Choke/Natural Area
+
+Buildings:
+Protoss_Gateway
+Protoss_Forge
+Protoss_Pylon
+
+Failure Reasons:
+Power: 77264
+Angle: 8025
+Placement: 5981
+Tight: 642
+Path: 35
+Spawn: 0
+
+Generation Time: 192.72ms
+--------------------

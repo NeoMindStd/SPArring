@@ -1,0 +1,95 @@
+1.4
+TvP
+(4)Fighting Spirit.scx
+Vultures
+Unknown
+Naked expand
+0
+0
+0
+14238
+5054
+14206
+0
+6942
+14206
+0
+14206
+19811
+END GAME
+1.4
+TvP
+(4)Fighting Spirit.scx
+10-10-10FD
+Naked expand
+Unknown
+1
+0
+0
+5246
+7518
+0
+0
+4894
+0
+0
+0
+8217
+END GAME
+1.4
+TvP
+(4)Fighting Spirit.scx
+10-10-10FD
+Naked expand
+Unknown
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+250
+END GAME
+1.4
+TvP
+(4)Fighting Spirit.scx
+10-10-10FD
+Naked expand
+Unknown
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1893
+END GAME
+1.4
+TvP
+(4)Fighting Spirit.scx
+14CCTanks
+Naked expand
+Unknown
+0
+0
+0
+13918
+7422
+11134
+17758
+7422
+7646
+17758
+0
+18230
+END GAME

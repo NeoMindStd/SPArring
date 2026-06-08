@@ -1,0 +1,3 @@
+gas_proportion_total, supply_ratio_total, a_army_total, a_econ_total, a_tech_total, r_total, race_total, win_total, sdelay_total, mdelay_total, ldelay_total, name_total, map_name_total, enemy_average_army_, enemy_average_econ_, enemy_average_tech_, opening, score_building, score_kills, score_raze, score_units, detector_count, flyers, duration
+0.173521,0.779442,0.602321,0.397679,0.880796,0.162791,Protoss,0,10,0,0,Hivemind,FightingSpiritscx,0.240278,0.759722,0.388858,5pool drone drone ling ling ling overlord ling ling ling ling ling ling ling ling,1000,3000,0,3350,3,0,976
+0.629063,0.646292,0.0409205,0.959079,1.20141,0.731708,Protoss,0,0,0,0,Hivemind,FightingSpiritscx,0.33005,0.66995,0.189022,7pool drone overlord drone ling ling ling ling ling,1185,600,0,4000,3,1875,920

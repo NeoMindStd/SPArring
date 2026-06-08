@@ -2,14 +2,18 @@
 
 ## 프로젝트 구조
 
-- `src/StarAI.PracticeClient.Core`: 경로 정책, SCHNAIL 카탈로그 파싱, 사용자 맵, 선택 호환성, 실행 계획 생성, 핫키/전적 모델
+- `src/StarAI.PracticeClient.Core`: 경로 정책, StarAI 내장 자산 카탈로그 로딩, 사용자 맵, 선택 호환성, 실행 계획 생성, 핫키/전적 모델
 - `src/StarAI.PracticeClient.App`: WinForms 런처 UI, 설정/히스토리 저장, 오버레이, smoke entrypoint
 - `tests/StarAI.PracticeClient.Tests`: Core 단위 테스트
 - `scripts`: 반복 검증 스크립트
 
 ## 보호 대상
 
-읽기 전용 참조 대상:
+읽기 전용 제품 자산:
+
+- `C:\starai\StarAI.PracticeClient\data`
+
+개발/릴리즈 import 참조 대상:
 
 - `C:\Program Files (x86)\SCHNAIL Client`
 - StarCraft Remastered 원본 설치 폴더
@@ -34,6 +38,6 @@
 
 ## MPQ 정책
 
-- 원본 SCHNAIL MPQ는 수정하지 않는다.
+- StarAI 내장 `data`와 원본 Remastered/Battle.net 파일은 런타임에서 수정하지 않는다.
 - 핫키 적용은 사람 런타임 `patch_rt.mpq`에만 수행한다.
-- `JMpqEditor` 직접 쓰기는 금지하고, SCHNAIL과 같은 `SFmpq` writer를 사용한다.
+- `JMpqEditor` 직접 쓰기는 금지하고, StarAI에 포함된 `SFmpq` writer를 사용한다.

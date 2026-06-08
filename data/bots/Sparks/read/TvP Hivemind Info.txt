@@ -1,0 +1,1 @@
+Python,Hivemind,2GateExpand,RaxFact,10Rax,2Fact,Lost,13:20,4,Terran_Marine,14,Terran_Vulture,3,Terran_Siege_Tank_Tank_Mode,38,Terran_SCV,32,Terran_Vulture_Spider_Mine,25,Protoss_Probe,30,Protoss_Zealot,30,Protoss_Dragoon,3,Protoss_High_Templar,1,Protoss_Shuttle,3,Protoss_Observer

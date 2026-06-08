@@ -42,6 +42,17 @@ public sealed class RuntimeWritePolicyTests
     }
 
     [Fact]
+    public void CheckMutableRuntimeTargetRejectsBundledAssetFiles()
+    {
+        var verdict = RuntimeWritePolicy.CheckMutableRuntimeTarget(
+            SafePaths(),
+            @"C:\starai\StarAI.PracticeClient\data\bots\bots.dat");
+
+        Assert.False(verdict.Allowed);
+        Assert.Equal("target.protected-assets", verdict.Code);
+    }
+
+    [Fact]
     public void IsSameOrUnderUsesPathBoundaries()
     {
         Assert.False(RuntimeWritePolicy.IsSameOrUnder(

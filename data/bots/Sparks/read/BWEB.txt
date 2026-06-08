@@ -1,0 +1,19 @@
+Sat Aug  2 17:42:55 2025
+(4)Python.scx
+Main Choke/Main Area
+
+Buildings:
+Terran_Barracks
+Terran_Supply_Depot
+Terran_Supply_Depot
+
+Failure Reasons:
+Power: 0
+Angle: 0
+Placement: 63826
+Tight: 18103
+Path: 182
+Spawn: 0
+
+Generation Time: 89.2124ms
+--------------------

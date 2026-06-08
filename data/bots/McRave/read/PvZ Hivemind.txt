@@ -1,0 +1,55 @@
+7 2
+-
+1GateCore 0 0
+-
+0Zealot 0 0
+1Zealot 0 0
+2Zealot 0 0
+-
+DT 0 0
+Robo 0 0
+4Gate 0 0
+3Gate 0 0
+-
+2Gate 2 1
+-
+Proxy 0 0
+Natural 0 0
+Main 2 1
+-
+DT 0 0
+Robo 0 0
+4Gate 2 1
+Expand 0 0
+DoubleExpand 0 0
+-
+FFE 5 1
+-
+Forge 5 1
+Gate 0 0
+Nexus 0 0
+-
+NeoBisu 5 0
+2Stargate 0 0
+StormRush 0 1
+4GateArchon 0 0
+CorsairReaver 0 0
+5GateGoon 0 0
+-
+GateNexus 0 0
+-
+1Gate 0 0
+2Gate 0 0
+-
+Standard 0 0
+DoubleExpand 0 0
+Carrier 0 0
+-
+NexusGate 0 0
+-
+Dragoon 0 0
+Zealot 0 0
+-
+Standard 0 0
+DoubleExpand 0 0
+ReaverCarrier 0 0

@@ -1,0 +1,1 @@
+{"adapt":{"Hivemind":{"TvP":{"history":[{"choices":[],"result":"won","strat choices":[]},{"choices":[],"result":"won","strat choices":[]},{"choices":[],"result":"lost","strat choices":[]}]}}}}

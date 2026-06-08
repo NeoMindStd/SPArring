@@ -1,0 +1,18 @@
+Wed Aug  6 21:08:05 2025
+(4)Fighting Spirit.scx
+At: 10 o'clock.
+
+Buildings:
+Zerg_Hatchery
+Zerg_Evolution_Chamber
+
+Failure Reasons:
+Power: 0
+Angle: 1186
+Placement: 470
+Tight: 44
+Path: 4
+Spawn: 0
+
+Generation Time: 20.6087ms and succesful.
+--------------------

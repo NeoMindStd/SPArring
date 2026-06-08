@@ -1,0 +1,8 @@
+2026-05-25 20:42:03,4,8,4,(4)Fighting Spirit.scx,TvP_doublearmory,none,P_1gatecore,20183,-1,-1,-1,1
+2026-05-25 20:51:36,4,11,1,(4)Fighting Spirit.scx,TvP_proxybbs,none,P_unknown,6822,-1,-1,-1,1
+2026-05-25 20:53:18,4,11,-1,(4)Fighting Spirit.scx,TvP_bbs,none,P_unknown,1986,-1,-1,-1,1
+2026-05-25 21:02:32,4,8,4,(4)Fighting Spirit.scx,TvP_101010fd,none,P_1gatecore,12743,-1,-1,-1,1
+2026-05-25 21:04:49,4,1,-1,(4)Fighting Spirit.scx,TvP_2factvults,none,P_unknown,2420,-1,-1,-1,1
+2026-05-25 21:06:05,4,1,-1,(4)Fighting Spirit.scx,TvP_1raxfe,none,P_unknown,1366,-1,-1,-1,1
+2026-05-25 21:18:00,4,8,11,(4)Fighting Spirit.scx,TvP_14cc,none,P_1gatecore,16556,-1,-1,-1,1
+2026-06-02 15:25:51,4,8,1,(4)Fighting Spirit.scx,TvP_gundamrush,none,P_unknown,9793,6189,-1,-1,0

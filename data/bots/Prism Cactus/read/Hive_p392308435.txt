@@ -1,0 +1,8 @@
+Name: Hivemind
+Stats: 13626072 2002468762
+Seen: 0 0
+14Nexus: 0 0 69120
+SpeedZealot: 0 0 69120
+FFE: 0 1 72048
+2GateDT: 0 0 86400
+

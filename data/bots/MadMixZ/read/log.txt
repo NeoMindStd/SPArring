@@ -1,0 +1,918 @@
+2025-08-10 17:42:39 [main] botte.Main.main()
+INFO: MadMix started.
+2025-08-10 17:42:55 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: onStart started.
+2025-08-10 17:42:55 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Map is: 8Big_Game_Hunters.scm Big Game Hunters
+2025-08-10 17:42:55 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Analyzing map...
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Map data ready.
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Map has 8 startLocations. BWTA says 8 startLocations and 18 baseLocations.
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: getLatency=LanLow
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: getLatencyFrames=3
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: onStart ended.
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.getCentralIntelligence()
+INFO: Creating CentralIntelligence.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=3227.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4143.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=3703.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=908.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=1937.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=0.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=2976.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=2757.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=3144.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=1851.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=2998.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=2628.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4998.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4131.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=3964.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=3940.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=1118.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4571.0
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initialize()
+INFO: Found 0 stupid minerals on the map.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initialize()
+INFO: Found 0 travel minerals on the map.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralRegionHandler.initIsMoney()
+INFO: Map has 3360000 minerals in 204 units.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralRegionHandler initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Playing on SCHNAIL!
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: NORMAL_PLAY + ZvA_9_POOL
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: NORMAL_PLAY + ZvA_12_HATCH
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: NORMAL_PLAY + ZvA_POOL_SUNKENS
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: NORMAL_PLAY + ZvA_STRANGE_9_HATCH
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: NORMAL_PLAY + NOTHING
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: CAUTIOUS_PLAY + ZvA_9_POOL
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: CAUTIOUS_PLAY + ZvA_12_HATCH
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: CAUTIOUS_PLAY + ZvA_POOL_SUNKENS
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: CAUTIOUS_PLAY + ZvA_STRANGE_9_HATCH
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: CAUTIOUS_PLAY + NOTHING
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: ACTIVE_BRAVE_PLAY + ZvA_9_POOL
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: ACTIVE_BRAVE_PLAY + ZvA_12_HATCH
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: ACTIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: ACTIVE_BRAVE_PLAY + ZvA_STRANGE_9_HATCH
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: ACTIVE_BRAVE_PLAY + NOTHING
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: PASSIVE_BRAVE_PLAY + ZvA_9_POOL
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: PASSIVE_BRAVE_PLAY + ZvA_12_HATCH
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: PASSIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: PASSIVE_BRAVE_PLAY + ZvA_STRANGE_9_HATCH
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: PASSIVE_BRAVE_PLAY + NOTHING
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_LURKERS + ZvA_1_HATCH_LURKER
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_CHEESE_5_POOL_RUSH + ZvA_4_POOL
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_CHEESE_5_POOL_RUSH + ZvA_5_POOL
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_SUNKEN_MUTAS + NOTHING
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_SUNKEN_MUTAS + ZvA_POOL_SUNKENS
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_SUNKEN_MUTAS + ZvA_STRANGE_9_HATCH
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_BIG_MACRO + NOTHING
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MEGA_MACRO + NOTHING
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpponentModeler.getResultsFromFile()
+INFO: Reading results from bwapi-data\read\gamelog.csv
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Old sort:
+ACTIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_LURKERS + ZvA_1_HATCH_LURKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_12_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_BIG_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + ZvA_12_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_SUNKEN_MUTAS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_SUNKEN_MUTAS + ZvA_STRANGE_9_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+CAUTIOUS_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + ZvA_9_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_SUNKEN_MUTAS + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_STRANGE_9_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+CAUTIOUS_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_CHEESE_5_POOL_RUSH + ZvA_5_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_9_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_9_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_STRANGE_9_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_12_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_CHEESE_5_POOL_RUSH + ZvA_4_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+CAUTIOUS_PLAY + ZvA_9_POOL (3 wins, 1 losses) [0-0 3-1 0-0 3-1 0-0 3-1] testScore=0.8987925709802157 combinedScore=140.07590050000002 notPlayedTime=2
+CAUTIOUS_PLAY + ZvA_STRANGE_9_HATCH (1 wins, 1 losses) [0-0 1-1 0-0 1-1 0-0 1-1] testScore=0.898380237974825 combinedScore=139.2282 notPlayedTime=0
+CAUTIOUS_PLAY + ZvA_12_HATCH (0 wins, 1 losses) [0-0 0-1 0-0 0-1 0-0 0-1] testScore=0.8981734456610532 combinedScore=138.806 notPlayedTime=6
+ACTIVE_BRAVE_PLAY + ZvA_STRANGE_9_HATCH (0 wins, 1 losses) [0-0 0-1 0-0 0-1 0-0 0-1] testScore=0.8981734615002929 combinedScore=138.811 notPlayedTime=7
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Test sort:
+OPEN_SUNKEN_MUTAS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_CHEESE_5_POOL_RUSH + ZvA_5_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_CHEESE_5_POOL_RUSH + ZvA_4_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + ZvA_9_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_12_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_SUNKEN_MUTAS + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_9_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+CAUTIOUS_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_12_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_STRANGE_9_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + ZvA_12_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_BIG_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_STRANGE_9_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_LURKERS + ZvA_1_HATCH_LURKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_9_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+CAUTIOUS_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_SUNKEN_MUTAS + ZvA_STRANGE_9_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+CAUTIOUS_PLAY + ZvA_9_POOL (3 wins, 1 losses) [0-0 3-1 0-0 3-1 0-0 3-1] testScore=0.8987925709802157 combinedScore=140.07590050000002 notPlayedTime=2
+CAUTIOUS_PLAY + ZvA_STRANGE_9_HATCH (1 wins, 1 losses) [0-0 1-1 0-0 1-1 0-0 1-1] testScore=0.898380237974825 combinedScore=139.2282 notPlayedTime=0
+ACTIVE_BRAVE_PLAY + ZvA_STRANGE_9_HATCH (0 wins, 1 losses) [0-0 0-1 0-0 0-1 0-0 0-1] testScore=0.8981734615002929 combinedScore=138.811 notPlayedTime=7
+CAUTIOUS_PLAY + ZvA_12_HATCH (0 wins, 1 losses) [0-0 0-1 0-0 0-1 0-0 0-1] testScore=0.8981734456610532 combinedScore=138.806 notPlayedTime=6
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: New sort:
+OPEN_SUNKEN_MUTAS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_SUNKEN_MUTAS + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_12_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_BIG_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+CAUTIOUS_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + ZvA_12_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+CAUTIOUS_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_CHEESE_5_POOL_RUSH + ZvA_5_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_STRANGE_9_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_STRANGE_9_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_SUNKEN_MUTAS + ZvA_STRANGE_9_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_LURKERS + ZvA_1_HATCH_LURKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+ACTIVE_BRAVE_PLAY + ZvA_9_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_9_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+NORMAL_PLAY + ZvA_12_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+OPEN_CHEESE_5_POOL_RUSH + ZvA_4_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+PASSIVE_BRAVE_PLAY + ZvA_9_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+CAUTIOUS_PLAY + ZvA_9_POOL (3 wins, 1 losses) [0-0 3-1 0-0 3-1 0-0 3-1] testScore=0.8987925709802157 combinedScore=140.07590050000002 notPlayedTime=2
+CAUTIOUS_PLAY + ZvA_STRANGE_9_HATCH (1 wins, 1 losses) [0-0 1-1 0-0 1-1 0-0 1-1] testScore=0.898380237974825 combinedScore=139.2282 notPlayedTime=0
+ACTIVE_BRAVE_PLAY + ZvA_STRANGE_9_HATCH (0 wins, 1 losses) [0-0 0-1 0-0 0-1 0-0 0-1] testScore=0.8981734615002929 combinedScore=138.811 notPlayedTime=7
+CAUTIOUS_PLAY + ZvA_12_HATCH (0 wins, 1 losses) [0-0 0-1 0-0 0-1 0-0 0-1] testScore=0.8981734456610532 combinedScore=138.806 notPlayedTime=6
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Old top 3 openings:
+1st: ACTIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+2nd: OPEN_LURKERS + ZvA_1_HATCH_LURKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+3rd: PASSIVE_BRAVE_PLAY + ZvA_12_HATCH (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Test top 3 openings:
+1st: OPEN_SUNKEN_MUTAS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+2nd: OPEN_CHEESE_5_POOL_RUSH + ZvA_5_POOL (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+3rd: ACTIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: New top 3 openings:
+1st: OPEN_SUNKEN_MUTAS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+2nd: PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+3rd: PASSIVE_BRAVE_PLAY + ZvA_POOL_SUNKENS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.899974080662393 combinedScore=141.14000000000001 notPlayedTime=8
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Money map detected, using normal opening.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: OpponentModeler initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Zerg_Spawning_Pool : 0.17
+2025-08-10 17:42:56 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Metabolic_Boost : 0.6
+2025-08-10 17:42:56 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Muscular_Augments : 0.07
+2025-08-10 17:42:56 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Grooved_Spines : 0.04
+2025-08-10 17:42:56 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Adrenal_Glands : 0.01
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralStrategyHandler initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: allManagers initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralClusterHandler initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralMapHandler initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralBuildingPlacer initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: CombatSim initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralChatter initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralProductionTracker initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralTaxiHandler initialized.
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.getCentralIntelligence()
+INFO: CentralIntelligence created.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.addOwnBase()
+INFO: New own base added!
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 0 started 
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 0 ended 
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 1 started 
+2025-08-10 17:42:56 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #3_Larva told to chill forever.
+2025-08-10 17:42:56 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #8_Larva told to chill forever.
+2025-08-10 17:42:56 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #7_Larva told to chill forever.
+2025-08-10 17:42:56 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #9_Hatchery told to chill forever.
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 1 ended 
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 2 started 
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 2 ended 
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 3 started 
+2025-08-10 17:42:56 [JBWAPI Client] botte.opening.BuildOrder.update()
+INFO: Fixed build order done.
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 3 buildPoints=4.5323712
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 3 ended 
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 4 started 
+2025-08-10 17:42:56 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 4 ended 
+2025-08-10 17:42:56 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@24
+2025-08-10 17:43:10 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@24
+2025-08-10 17:43:10 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #10_Larva told to chill forever.
+2025-08-10 17:43:11 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 366 buildPoints=147.20643505914228
+2025-08-10 17:43:11 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@32
+2025-08-10 17:43:12 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3712, 144] at squared-distance 43789.0
+2025-08-10 17:43:20 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 586 buildPoints=87.66118879646761
+2025-08-10 17:43:21 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@114
+2025-08-10 17:43:25 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@32
+2025-08-10 17:43:25 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #11_Larva told to chill forever.
+2025-08-10 17:43:27 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3680, 112] at squared-distance 60736.0
+2025-08-10 17:43:34 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@114
+2025-08-10 17:43:36 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Overlord at 971 buildPoints=236.30983417596696
+2025-08-10 17:43:37 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@2f
+2025-08-10 17:43:40 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #12_Larva told to chill forever.
+2025-08-10 17:43:44 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 1147 buildPoints=213.47540942790638
+2025-08-10 17:43:44 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@119
+2025-08-10 17:43:51 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 1312 buildPoints=62.41944908413599
+2025-08-10 17:43:51 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@117
+2025-08-10 17:43:54 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #13_Larva told to chill forever.
+2025-08-10 17:43:58 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@119
+2025-08-10 17:44:00 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3584, 144] at squared-distance 27410.0
+2025-08-10 17:44:03 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@2f
+2025-08-10 17:44:04 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@117
+2025-08-10 17:44:07 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3808, 144] at squared-distance 53012.0
+2025-08-10 17:44:08 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #14_Larva told to chill forever.
+2025-08-10 17:44:10 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 1763 buildPoints=59.3025817485882
+2025-08-10 17:44:10 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@11e
+2025-08-10 17:44:16 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Spawning_Pool in 0.09ms at radius 4.
+2025-08-10 17:44:16 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Spawning_Pool at 1917 buildPoints=62.07888765972441
+2025-08-10 17:44:23 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #15_Larva told to chill forever.
+2025-08-10 17:44:23 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@11e
+2025-08-10 17:44:24 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 2093 buildPoints=118.9472075058324
+2025-08-10 17:44:24 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@121
+2025-08-10 17:44:25 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@32
+2025-08-10 17:44:25 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3616, 112] at squared-distance 30634.0
+2025-08-10 17:44:30 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 2258 buildPoints=58.96163815110841
+2025-08-10 17:44:31 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@11c
+2025-08-10 17:44:37 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@121
+2025-08-10 17:44:38 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #16_Larva told to chill forever.
+2025-08-10 17:44:38 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 2434 buildPoints=62.635582366347506
+2025-08-10 17:44:38 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@123
+2025-08-10 17:44:39 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3584, 144] at squared-distance 36569.0
+2025-08-10 17:44:44 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@11c
+2025-08-10 17:44:46 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3584, 144] at squared-distance 33850.0
+2025-08-10 17:44:52 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@123
+2025-08-10 17:44:52 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 2764 buildPoints=111.70873611710903
+2025-08-10 17:44:52 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #17_Larva told to chill forever.
+2025-08-10 17:44:52 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@125
+2025-08-10 17:44:54 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3904, 400] at squared-distance 96601.0
+2025-08-10 17:44:55 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Hatchery at 2841 buildPoints=55.39379483705721
+2025-08-10 17:45:05 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@125
+2025-08-10 17:45:06 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #18_Larva told to chill forever.
+2025-08-10 17:45:08 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3904, 400] at squared-distance 87817.0
+2025-08-10 17:45:09 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@123
+2025-08-10 17:45:09 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 3182 buildPoints=137.49663396062658
+2025-08-10 17:45:10 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@128
+2025-08-10 17:45:13 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [99, 22] which has 0.0 defense already.
+2025-08-10 17:45:13 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Failed to find build-location for Zerg_Creep_Colony in 0.26ms at maxRadius 7!
+Second search: Found build-location for Zerg_Creep_Colony in 0.49ms at radius 10.
+2025-08-10 17:45:13 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 3281 buildPoints=34.664939685272515
+2025-08-10 17:45:15 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3616, 112] at squared-distance 22529.0
+2025-08-10 17:45:16 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Research first: Metabolic_Boost buildPoints=0.5995199999999999
+2025-08-10 17:45:16 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #8_Spawning_Pool told to chill forever.
+2025-08-10 17:45:20 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #19_Larva told to chill forever.
+2025-08-10 17:45:21 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@2a
+2025-08-10 17:45:22 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 3479 buildPoints=98.40467070743998
+2025-08-10 17:45:22 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@12a
+2025-08-10 17:45:22 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Extractor at 3490 buildPoints=10.505996295913947
+2025-08-10 17:45:23 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@128
+2025-08-10 17:45:25 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3584, 144] at squared-distance 40034.0
+2025-08-10 17:45:28 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Failed to find morphing Zerg_Extractor in allBotUnits!
+2025-08-10 17:45:28 [JBWAPI Client] botte.BotteBWListener.onUnitRenegade()
+INFO: Unit renegaded: Zerg_Extractor player=true neutral=false enemy=false
+2025-08-10 17:45:35 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #22_Larva told to chill forever.
+2025-08-10 17:45:35 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Zergling at 3787 buildPoints=155.0684616980354
+2025-08-10 17:45:35 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #5_Creep_Colony told to chill forever.
+2025-08-10 17:45:35 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@12c
+2025-08-10 17:45:35 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Sunken_Colony at 3798 buildPoints=62.162959800787114
+2025-08-10 17:45:36 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@12a
+2025-08-10 17:45:36 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@2a
+2025-08-10 17:45:39 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3904, 336] at squared-distance 63522.0
+2025-08-10 17:45:49 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #5_Sunken_Colony told to chill forever.
+2025-08-10 17:45:49 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #23_Larva told to chill forever.
+2025-08-10 17:45:49 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 4128 buildPoints=211.30783890727025
+2025-08-10 17:45:49 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@12f
+2025-08-10 17:45:53 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@12c
+2025-08-10 17:45:54 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #22_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:45:54 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #22_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:45:54 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #22_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:45:54 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #22_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:45:54 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #22_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:45:54 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #21_Extractor told to chill forever.
+2025-08-10 17:45:54 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Extractor at 4249 buildPoints=0.12989600000000007
+2025-08-10 17:45:59 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Failed to find morphing Zerg_Extractor in allBotUnits!
+2025-08-10 17:45:59 [JBWAPI Client] botte.BotteBWListener.onUnitRenegade()
+INFO: Unit renegaded: Zerg_Extractor player=true neutral=false enemy=false
+2025-08-10 17:45:59 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4372 timeSinceCloser=110 mission=null
+2025-08-10 17:46:01 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4422 timeSinceCloser=160 mission=null
+2025-08-10 17:46:01 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4422 timeSinceCloser=116 mission=null
+2025-08-10 17:46:03 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@12f
+2025-08-10 17:46:03 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #27_Larva told to chill forever.
+2025-08-10 17:46:03 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Zergling at 4469 buildPoints=279.42065490559605
+2025-08-10 17:46:04 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4472 timeSinceCloser=210 mission=null
+2025-08-10 17:46:04 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4472 timeSinceCloser=166 mission=null
+2025-08-10 17:46:04 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@131
+2025-08-10 17:46:06 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4522 timeSinceCloser=260 mission=null
+2025-08-10 17:46:06 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4522 timeSinceCloser=216 mission=null
+2025-08-10 17:46:08 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4572 timeSinceCloser=310 mission=null
+2025-08-10 17:46:08 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4572 timeSinceCloser=266 mission=null
+2025-08-10 17:46:10 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4622 timeSinceCloser=360 mission=null
+2025-08-10 17:46:10 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4622 timeSinceCloser=316 mission=null
+2025-08-10 17:46:12 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4672 timeSinceCloser=410 mission=null
+2025-08-10 17:46:12 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4672 timeSinceCloser=366 mission=null
+2025-08-10 17:46:14 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4722 timeSinceCloser=460 mission=null
+2025-08-10 17:46:14 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4722 timeSinceCloser=416 mission=null
+2025-08-10 17:46:16 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4772 timeSinceCloser=510 mission=null
+2025-08-10 17:46:16 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4772 timeSinceCloser=466 mission=null
+2025-08-10 17:46:17 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #28_Larva told to chill forever.
+2025-08-10 17:46:17 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 4799 buildPoints=240.359308547982
+2025-08-10 17:46:18 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@136
+2025-08-10 17:46:18 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4822 timeSinceCloser=560 mission=null
+2025-08-10 17:46:18 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4822 timeSinceCloser=516 mission=null
+2025-08-10 17:46:20 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4872 timeSinceCloser=610 mission=null
+2025-08-10 17:46:20 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4872 timeSinceCloser=566 mission=null
+2025-08-10 17:46:22 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@131
+2025-08-10 17:46:22 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #27_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:46:22 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #27_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:46:22 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #27_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:46:22 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4922 timeSinceCloser=660 mission=null
+2025-08-10 17:46:22 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #24_Zergling to [3456, 416] lastDistance=1514.0 lastUpdate=4922 timeSinceCloser=616 mission=null
+2025-08-10 17:46:25 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #24_Zergling
+2025-08-10 17:46:25 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=4972 timeSinceCloser=710 mission=null
+2025-08-10 17:46:25 [JBWAPI Client] botte.CentralIntelligence.addOwnBase()
+INFO: New own base added!
+2025-08-10 17:46:25 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Overlord at 4986 buildPoints=365.5433440284556
+2025-08-10 17:46:25 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #16_Hatchery told to chill forever.
+2025-08-10 17:46:25 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #26_Extractor told to chill forever.
+2025-08-10 17:46:25 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #30_Larva told to chill forever.
+2025-08-10 17:46:25 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@138
+2025-08-10 17:46:26 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Hatchery at 4997 buildPoints=2.006352635682798
+2025-08-10 17:46:27 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=5022 timeSinceCloser=760 mission=null
+2025-08-10 17:46:29 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Zergling to [3456, 416] lastDistance=37441.0 lastUpdate=5072 timeSinceCloser=810 mission=null
+2025-08-10 17:46:31 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #22_Zergling
+2025-08-10 17:46:31 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@136
+2025-08-10 17:46:31 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #31_Larva told to chill forever.
+2025-08-10 17:46:32 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Zergling at 5140 buildPoints=308.58532999260564
+2025-08-10 17:46:32 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@13b
+2025-08-10 17:46:35 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3584, 144] at squared-distance 51881.0
+2025-08-10 17:46:37 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #28_Drone
+2025-08-10 17:46:38 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@1f
+2025-08-10 17:46:39 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #32_Larva told to chill forever.
+2025-08-10 17:46:39 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 5327 buildPoints=269.8986687240162
+2025-08-10 17:46:40 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@13c
+2025-08-10 17:46:46 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #33_Larva told to chill forever.
+2025-08-10 17:46:46 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Zergling at 5481 buildPoints=215.05661480182007
+2025-08-10 17:46:46 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@13e
+2025-08-10 17:46:50 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@13b
+2025-08-10 17:46:50 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #31_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:46:50 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #31_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:46:51 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@138
+2025-08-10 17:46:51 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #30_Overlord has null-cluster in FollowClusterMission.
+2025-08-10 17:46:51 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #30_Overlord has null-cluster in FollowClusterMission.
+2025-08-10 17:46:52 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #30_Overlord has null-cluster in FollowClusterMission.
+2025-08-10 17:46:52 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #30_Overlord has null-cluster in FollowClusterMission.
+2025-08-10 17:46:52 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #30_Overlord has null-cluster in FollowClusterMission.
+2025-08-10 17:46:52 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #30_Overlord has null-cluster in FollowClusterMission.
+2025-08-10 17:46:53 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@13c
+2025-08-10 17:46:53 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Starting research: Metabolic_Boost buildPoints=116.94756881769462
+2025-08-10 17:46:54 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #35_Larva told to chill forever.
+2025-08-10 17:46:54 [JBWAPI Client] botte.CentralProductionPlanner.updateFirstResearch()
+INFO: Started research: Metabolic_Boost
+2025-08-10 17:46:55 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [2784, 944] at squared-distance 42640.0
+2025-08-10 17:46:59 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 5800 buildPoints=249.2113206975755
+2025-08-10 17:47:00 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@142
+2025-08-10 17:47:00 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #36_Larva told to chill forever.
+2025-08-10 17:47:02 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [88, 33] which has 0.0 defense already.
+2025-08-10 17:47:02 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Creep_Colony in 0.07ms at radius 2.
+2025-08-10 17:47:02 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 5866 buildPoints=306.7857422771666
+2025-08-10 17:47:05 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@13e
+2025-08-10 17:47:05 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #33_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:47:08 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #38_Larva told to chill forever.
+2025-08-10 17:47:08 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@13c
+2025-08-10 17:47:09 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [99, 22] which has 0.738314071647405 defense already.
+2025-08-10 17:47:09 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Creep_Colony in 0.06ms at radius 3.
+2025-08-10 17:47:09 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 6042 buildPoints=829.5066945893983
+2025-08-10 17:47:13 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@142
+2025-08-10 17:47:14 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #39_Larva told to chill forever.
+2025-08-10 17:47:15 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [2784, 944] at squared-distance 46580.0
+2025-08-10 17:47:19 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@128
+2025-08-10 17:47:20 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [115, 9] which has 1.2000000000000002 defense already.
+2025-08-10 17:47:20 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Creep_Colony in 0.02ms at radius 3.
+2025-08-10 17:47:20 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 6295 buildPoints=1170.6696913585315
+2025-08-10 17:47:21 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #7_Overlord told to chill forever.
+2025-08-10 17:47:21 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #32_Creep_Colony told to chill forever.
+2025-08-10 17:47:22 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #40_Larva told to chill forever.
+2025-08-10 17:47:29 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #41_Larva told to chill forever.
+2025-08-10 17:47:30 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@117
+2025-08-10 17:47:31 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Sunken_Colony at 6559 buildPoints=2909.7591756032452
+2025-08-10 17:47:31 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@13c
+2025-08-10 17:47:33 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #18_Creep_Colony told to chill forever.
+2025-08-10 17:47:36 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #42_Larva told to chill forever.
+2025-08-10 17:47:38 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Zergling at 6724 buildPoints=434.8059192003614
+2025-08-10 17:47:38 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@149
+2025-08-10 17:47:43 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #11_Creep_Colony told to chill forever.
+2025-08-10 17:47:44 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #37_Zergling to [2871, 932] lastDistance=64417.0 lastUpdate=6872 timeSinceCloser=103 mission=null
+2025-08-10 17:47:45 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #32_Sunken_Colony told to chill forever.
+2025-08-10 17:47:46 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Sunken_Colony at 6911 buildPoints=638.3043147006781
+2025-08-10 17:47:46 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@117
+2025-08-10 17:47:46 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #37_Zergling to [2976, 976] lastDistance=64417.0 lastUpdate=6922 timeSinceCloser=153 mission=null
+2025-08-10 17:47:46 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #34_Zergling to [2976, 976] lastDistance=79469.0 lastUpdate=6922 timeSinceCloser=147 mission=null
+2025-08-10 17:47:46 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #33_Zergling to [2848, 1024] lastDistance=35956.0 lastUpdate=6922 timeSinceCloser=144 mission=null
+2025-08-10 17:47:49 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #34_Zergling
+2025-08-10 17:47:49 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #37_Zergling to [2976, 976] lastDistance=64417.0 lastUpdate=6972 timeSinceCloser=203 mission=null
+2025-08-10 17:47:49 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #33_Zergling to [2848, 1024] lastDistance=35956.0 lastUpdate=6972 timeSinceCloser=194 mission=null
+2025-08-10 17:47:49 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #33_Zergling to [2848, 1024] lastDistance=35956.0 lastUpdate=6972 timeSinceCloser=194 mission=null
+2025-08-10 17:47:51 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #37_Zergling
+2025-08-10 17:47:51 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #33_Zergling
+2025-08-10 17:47:51 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #33_Zergling
+2025-08-10 17:47:52 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #43_Larva told to chill forever.
+2025-08-10 17:47:53 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 7076 buildPoints=350.6037672935223
+2025-08-10 17:47:53 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@150
+2025-08-10 17:47:54 [JBWAPI Client] botte.CentralIntelligence.addOwnBase()
+INFO: New own base added!
+2025-08-10 17:47:54 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #44_Larva told to chill forever.
+2025-08-10 17:47:54 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #1_Hatchery told to chill forever.
+2025-08-10 17:47:57 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@149
+2025-08-10 17:47:57 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #39_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:47:57 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #39_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:47:57 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #39_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:47:57 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #39_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:47:57 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #39_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:47:57 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #39_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:47:57 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #39_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:47:57 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #39_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:47:59 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #11_Sunken_Colony told to chill forever.
+2025-08-10 17:48:00 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Sunken_Colony at 7252 buildPoints=599.8715184992739
+2025-08-10 17:48:01 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@128
+2025-08-10 17:48:04 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Zergling at 7351 buildPoints=303.7475241755877
+2025-08-10 17:48:05 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@154
+2025-08-10 17:48:07 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@150
+2025-08-10 17:48:07 [JBWAPI Client] botte.CentralProductionManager.checkCompleteMissions()
+INFO: Warning, failed to complete building Zerg_Sunken_Colony
+2025-08-10 17:48:07 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #46_Larva told to chill forever.
+2025-08-10 17:48:08 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #47_Larva told to chill forever.
+2025-08-10 17:48:10 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #37_Zergling
+2025-08-10 17:48:10 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #27_Zergling to [2976, 976] lastDistance=39085.0 lastUpdate=7472 timeSinceCloser=138 mission=null
+2025-08-10 17:48:11 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [88, 33] which has 0.0 defense already.
+2025-08-10 17:48:11 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Creep_Colony in 0.00ms at radius 0.
+2025-08-10 17:48:11 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 7505 buildPoints=808.0387126732782
+2025-08-10 17:48:12 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #27_Zergling
+2025-08-10 17:48:22 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Zerg_Creep_Colony
+2025-08-10 17:48:22 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [96, 31] which has 0.0 defense already.
+2025-08-10 17:48:22 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Creep_Colony in 0.06ms at radius 5.
+2025-08-10 17:48:22 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 7769 buildPoints=939.7892337642156
+2025-08-10 17:48:22 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #48_Larva told to chill forever.
+2025-08-10 17:48:23 [JBWAPI Client] botte.CentralIntelligence.removeOwnBase()
+INFO: Existing own base removed!
+2025-08-10 17:48:23 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@154
+2025-08-10 17:48:23 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #44_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:48:24 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Zergling at 7813 buildPoints=219.16895633060741
+2025-08-10 17:48:24 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@157
+2025-08-10 17:48:33 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Zerg_Creep_Colony
+2025-08-10 17:48:33 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [97, 32] which has 0.0 defense already.
+2025-08-10 17:48:33 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Creep_Colony in 0.04ms at radius 4.
+2025-08-10 17:48:33 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 8022 buildPoints=1561.4729775786313
+2025-08-10 17:48:33 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 8033 buildPoints=179.42095568931754
+2025-08-10 17:48:33 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@158
+2025-08-10 17:48:36 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #50_Larva told to chill forever.
+2025-08-10 17:48:39 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Zerg_Creep_Colony
+2025-08-10 17:48:39 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [97, 41] which has 0.0 defense already.
+2025-08-10 17:48:39 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Creep_Colony in 0.00ms at radius 0.
+2025-08-10 17:48:39 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 8165 buildPoints=1457.368646803465
+2025-08-10 17:48:43 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@157
+2025-08-10 17:48:47 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@158
+2025-08-10 17:48:49 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [98, 38] which has 0.0 defense already.
+2025-08-10 17:48:49 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Creep_Colony in 0.02ms at radius 3.
+2025-08-10 17:48:49 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 8407 buildPoints=2161.293914005176
+2025-08-10 17:48:51 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #52_Larva told to chill forever.
+2025-08-10 17:48:52 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@158
+2025-08-10 17:48:52 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@125
+2025-08-10 17:48:58 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [99, 22] which has 0.0 defense already.
+2025-08-10 17:48:58 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Creep_Colony in 0.07ms at radius 6.
+2025-08-10 17:48:58 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 8638 buildPoints=1287.3699346414467
+2025-08-10 17:49:04 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Zerg_Creep_Colony
+2025-08-10 17:49:04 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Zerg_Creep_Colony at DefencePoint for [115, 9] which has 0.0 defense already.
+2025-08-10 17:49:04 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Zerg_Creep_Colony in 0.02ms at radius 3.
+2025-08-10 17:49:04 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Creep_Colony at 8759 buildPoints=492.3712045738435
+2025-08-10 17:49:05 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #47_Creep_Colony told to chill forever.
+2025-08-10 17:49:05 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #17_Creep_Colony told to chill forever.
+2025-08-10 17:49:08 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@24
+2025-08-10 17:49:11 [JBWAPI Client] botte.CentralProductionManager.checkCompleteMissions()
+INFO: Warning, failed to complete building Zerg_Creep_Colony
+2025-08-10 17:49:11 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@24
+2025-08-10 17:49:12 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+WARNING: Redundant onMorph for #3_Drone
+2025-08-10 17:49:12 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Sunken_Colony at 8957 buildPoints=2666.201391865272
+2025-08-10 17:49:12 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@158
+2025-08-10 17:49:22 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Zergling at 9188 buildPoints=306.3960392620096
+2025-08-10 17:49:22 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@161
+2025-08-10 17:49:25 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #47_Sunken_Colony told to chill forever.
+2025-08-10 17:49:35 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Zerg_Drone at 9518 buildPoints=184.89609992672615
+2025-08-10 17:49:36 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@15c
+2025-08-10 17:49:36 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #53_Larva told to chill forever.
+2025-08-10 17:49:40 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@161
+2025-08-10 17:49:40 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #50_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:49:40 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #50_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:49:40 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #50_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:49:41 [JBWAPI Client] botte.CentralIntelligence.removeOwnBase()
+INFO: Existing own base removed!
+2025-08-10 17:49:41 [JBWAPI Client] botte.FollowClusterMission.updateUnit()
+WARNING: #50_Zergling has null-cluster in FollowClusterMission.
+2025-08-10 17:49:49 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Morphing existing unit bwapi.Unit@15c
+2025-08-10 17:49:50 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #55_Larva told to chill forever.
+2025-08-10 17:49:59 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #54_Zergling
+2025-08-10 17:50:00 [JBWAPI Client] botte.BotteBWListener.onUnitCreate()
+INFO: Neutral unit created: Resource_Vespene_Geyser
+2025-08-10 17:50:00 [JBWAPI Client] botte.BotteBWListener.onUnitComplete()
+INFO: Neutral unit completed: Resource_Vespene_Geyser
+2025-08-10 17:50:07 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #54_Zergling to [3106, 1293] lastDistance=4357.0 lastUpdate=10272 timeSinceCloser=116 mission=null
+2025-08-10 17:50:09 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #54_Zergling
+2025-08-10 17:50:11 [JBWAPI Client] botte.BotteBWListener.onUnitCreate()
+INFO: Neutral unit created: Resource_Vespene_Geyser
+2025-08-10 17:50:11 [JBWAPI Client] botte.BotteBWListener.onUnitComplete()
+INFO: Neutral unit completed: Resource_Vespene_Geyser
+2025-08-10 17:50:33 [JBWAPI Client] botte.CentralIntelligence.removeOwnBase()
+INFO: Existing own base removed!

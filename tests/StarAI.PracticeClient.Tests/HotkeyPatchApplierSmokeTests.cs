@@ -9,7 +9,7 @@ public sealed class HotkeyPatchApplierSmokeTests
     {
         var defaults = PracticePaths.Defaults();
         var sourcePatch = Path.Combine(defaults.PlayerRuntimeRoot, "patch_rt.mpq");
-        var compiler = Path.Combine(defaults.SchnailRoot, "res", "hotkey_data", "sctblcmp.exe");
+        var compiler = PracticeAssetPaths.TblCompiler(defaults);
         if (!File.Exists(sourcePatch) || !File.Exists(compiler))
         {
             return;

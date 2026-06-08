@@ -112,11 +112,14 @@ Last updated: 2026-06-05
 
 | 옵션 | 장점 | 단점/리스크 | 현재 판단 |
 | --- | --- | --- | --- |
-| SCHNAIL 원본 bots/maps에서 실행 시 런타임으로 복사 | 원본 보호, 최신 SCHNAIL 카탈로그 활용 | 첫 실행 때 복사 비용 | 채택 |
+| StarAI 내장 `data`에서 실행 시 런타임으로 복사 | 최종 사용자 SCHNAIL 의존 제거, 재현 가능한 카탈로그 | 릴리즈 ZIP 용량 증가, import 관리 필요 | 채택 |
+| SCHNAIL 원본 bots/maps에서 실행 시 런타임으로 복사 | 원본 보호, 최신 SCHNAIL 카탈로그 활용 | 제품 런타임이 SCHNAIL 설치에 의존 | 폐기 |
 | SCHNAIL 원본 경로를 직접 참조 | 복사 없음 | 원본 수정/잠금/업데이트 충돌 위험 | 금지 |
-| 봇/맵을 레포에 vendoring | 재현성 | 용량/라이선스/업데이트 부담 | 금지 |
+| 봇/맵을 레포/릴리즈에 vendoring | 재현성, 독립 설치 가능 | 용량/라이선스/업데이트 부담 | 조건부 채택 |
 
 선택: 맵은 양쪽 런타임 `maps\StarAI`, 봇은 AI 런타임 `bwapi-data\AI\StarAI\Bots\<봇명>`에 복사한다. DLL 봇은 복사된 DLL 상대 경로를 AI `bwapi.ini`의 `ai` 값으로 쓴다.
+
+2026-06-08 업데이트: 사용자가 SCHNAIL은 개발 참고 대상일 뿐 제품 의존성이 되면 안 된다고 명확히 했다. 따라서 `scripts\import-schnail-assets.ps1`로 릴리즈 준비 시 필요한 봇/맵/핫키 자산을 StarAI `data`에 import/include하고, 앱은 런타임에 `C:\Program Files (x86)\SCHNAIL Client`를 읽지 않는다.
 
 ## 봇-맵 런타임 예외
 

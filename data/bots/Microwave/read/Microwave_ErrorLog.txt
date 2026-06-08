@@ -1,0 +1,108 @@
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03
+
+!Assert:   _type == MacroActs::Unit
+File:      c:\users\micky holdorf\documents\microwave-source-v2.31-440\microwave\source\macroact.cpp
+Message:   getUnitType of non-unit
+Line:      295
+Time:      2025-08-10_20:03:03

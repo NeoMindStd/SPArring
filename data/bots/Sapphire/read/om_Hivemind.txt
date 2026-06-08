@@ -1,0 +1,50 @@
+3.0
+TvP
+8Big_Game_Hunters.scm
+7
+2
+BBS
+Unknown
+Unknown
+1
+3422
+0
+0
+0
+0
+0
+0
+3934
+0
+0
+0
+4404
+gas steal: 0 0 0
+opening timing: 0 4 0 0 0 0 0 0 0 0 111 2592 -1 -1
+unit timings:  64 3516 154 3769 156 3884 157 3493 160 3516 164 -3956
+END GAME
+3.0
+TvP
+8Big_Game_Hunters.scm
+17
+0
+Vultures
+Unknown
+Unknown
+0
+3710
+3070
+5214
+5214
+5192
+0
+0
+5214
+0
+0
+0
+8317
+gas steal: 0 0 0
+opening timing: 6432 20 600 0 148 242 1 0 0 1 111 3288 113 5304 120 6360 -1 -1
+unit timings:  66 5195
+END GAME

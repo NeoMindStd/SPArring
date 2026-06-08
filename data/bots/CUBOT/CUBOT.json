@@ -1,0 +1,231 @@
+{
+    "Bot Info" :
+    {
+        "BotName"                   : "CUBOT",
+        "Authors"                   : "Tommy Tang",
+        "PrintInfoOnStart"          : true
+    },
+    
+    "BWAPI" : 
+    {
+        "SetLocalSpeed"             : 1,
+        "SetFrameSkip"              : 0,
+        "UserInput"                 : false,
+        "CompleteMapInformation"    : false
+    },
+    
+    "Micro" :
+    {
+        "KiteWithRangedUnits"       : true,
+        "KiteLongerRangedUnits"     : ["Mutalisk", "Guardian", "Vulture"],
+        "WorkersDefendRush"         : true,
+        "RetreatMeleeUnitShields"   : 0,
+        "RetreatMeleeUnitHP"        : { "Zerg" : 3, "Protoss" : 18 },
+        "RegroupRadius"             : 500,
+        "UnitNearEnemyRadius"       : 500,
+		"ScoutDefenseRadius"		: { "Terran" : 500 }
+    },
+    
+    "Macro" :
+    {
+        "BOSSFrameLimit"            : 160,
+		"ProductionJamFrameLimit"	: 1800,
+        "WorkersPerRefinery"        : 3,
+		"WorkersPerPatch"			: { "Zerg" : 2.4, "Protoss" : 2.2, "Terran" : 1.6 },
+		"AbsoluteMaxWorkers"		: 75,
+        "BuildingSpacing"           : 1,
+        "PylonSpacing"              : 3
+    },
+
+    "Debug" :
+    {
+        "ErrorLogFilename"          : "bwapi-data/AI/CUBOT_ErrorLog.txt",
+        "LogAssertToErrorFile"      : false,
+		
+        "DrawGameInfo"              : false,   
+        "DrawUnitHealthBars"        : false,
+        "DrawProductionInfo"        : false,
+        "DrawBuildOrderSearchInfo"  : false,
+        "DrawScoutInfo"             : false,
+        "DrawEnemyUnitInfo"         : false,
+        "DrawModuleTimers"          : false,
+        "DrawResourceInfo"          : false,
+        "DrawCombatSimInfo"         : false,
+        "DrawUnitTargetInfo"        : false,
+       "DrawUnitOrders"			: false,
+        "DrawBWTAInfo"              : false,
+        "DrawMapGrid"               : false,
+		"DrawMapDistances"			: false,
+		"DrawBaseInfo"				: false,
+		"DrawStrategyBossInfo"		: false,
+        "DrawSquadInfo"             : false,
+        "DrawWorkerInfo"            : false,
+        "DrawMouseCursorInfo"       : false,
+        "DrawBuildingInfo"          : false,
+        "DrawReservedBuildingTiles" : false,
+        "DrawBOSSStateInfo"         : false
+    },
+    
+    "Tools" :
+    {
+        "MapGridSize"               : 320
+    },
+
+    "Scout" :
+    {
+    	"Must"						: ["UAlbertaBot"],
+    	"ScoutRound"				: 4
+    },
+
+    "AntiCannon" :
+    {
+    	"CannonProtoss"				: ["Ximp", "McRave"]
+    },
+    
+    "Strategy" :
+    {
+		"SelectStrategy"            : "ucb", 
+        "ScoutHarassEnemy"          : false,
+		"SurrenderWhenHopeIsLost"   : true,
+		"UseEnemySpecificStrategy"  : true,
+        
+        "ReadDirectory"             : "bwapi-data/read/",
+        "WriteDirectory"            : "bwapi-data/write/",
+
+		"ZvT" :
+			{ "Zerg" : [
+				{ "Weight" :  5, "Strategy" : "FastPool" },
+				{ "Weight" :  9, "Strategy" : "9PoolLing" },
+				{ "Weight" : 10, "Strategy" : "9PoolMuta" },
+				{ "Weight" : 20, "Strategy" : "5DTurtle"},
+				{ "Weight" : 25, "Strategy" :  "9DTurtle"},
+				{ "Weight" : 12, "Strategy" :  "9PoolLurker"},
+                                                                { "Weight" : 12, "Strategy" :  "9PoolHydra"},
+ 				{ "Weight" : 12, "Strategy" :   "9DWorkerRush"},  
+                                                                { "Weight" : 12, "Strategy" :   "ExpoLurker"}
+				
+			]},
+
+		"ZvP" :
+			{ "Zerg" : [
+				{ "Weight" :  5, "Strategy" : "FastPool" },
+				{ "Weight" :  9, "Strategy" : "9PoolLing" },
+				{ "Weight" : 10, "Strategy" : "9PoolMuta" },
+				{ "Weight" : 20, "Strategy" : "5DTurtle"},
+				{ "Weight" : 25, "Strategy" :  "9DTurtle"},
+				{ "Weight" : 12, "Strategy" :  "9PoolLurker"},
+                                                                { "Weight" : 12, "Strategy" :  "9PoolHydra"},
+ 				{ "Weight" : 12, "Strategy" :   "9DWorkerRush"},  
+                                                                { "Weight" : 12, "Strategy" :   "ExpoMuta"},
+                                                                { "Weight" : 12, "Strategy" :   "ExpoLurker"}
+			]},
+			
+		"ZvZ" :
+			{ "Zerg" : [
+				{ "Weight" :  5, "Strategy" : "FastPool" },
+				{ "Weight" :  9, "Strategy" : "9PoolLing" },
+				{ "Weight" : 10, "Strategy" : "9PoolMuta" },
+				{ "Weight" : 20, "Strategy" : "5DTurtle"},
+				{ "Weight" : 25, "Strategy" :  "9DTurtle"},
+				{ "Weight" : 12, "Strategy" :  "9PoolLurker"},
+                                                                { "Weight" : 12, "Strategy" :  "9PoolHydra"},
+ 				{ "Weight" : 12, "Strategy" :   "9DWorkerRush"},  
+                                                                { "Weight" : 12, "Strategy" :   "ExpoMuta"},
+                                                               { "Weight" : 12, "Strategy" :   "ExpoLurker"}
+			]},
+
+		"ZvU" :
+			{ "Zerg" : [
+				{ "Weight" :  5, "Strategy" : "FastPool", "Weight2" : 15 },
+				{ "Weight" : 15, "Strategy" : "9PoolHatch" },
+				{ "Weight" :  5, "Strategy" : "9PoolHatchSunk" },
+				{ "Weight" :  5, "Strategy" : "9PoolExpo" },
+				{ "Weight" : 20, "Strategy" : "9PoolSpeed" },
+				{ "Weight" : 20, "Strategy" : "OverpoolSpeed" },
+				{ "Weight" : 15, "Strategy" : "OverhatchMuta", "Weight2" : 5 },
+				{ "Weight" : 15, "Strategy" : "OverhatchLing", "Weight2" : 5 }
+			]},
+
+		
+        "EnemySpecificStrategy"     :
+        {
+			 
+
+			"McRave"			: "2HatchMutaMcRave"
+
+        },
+        
+		"StrategyCombos" :
+		{
+			"FastPool" : {
+				"Zerg" : [
+					{ "Weight" :  1, "Strategy" : "4PoolHard", "Weight2" :  5 },
+					{ "Weight" :  4, "Strategy" : "4PoolSoft", "Weight2" : 10 },
+					{ "Weight" : 80, "Strategy" : "5PoolHard" },
+					{ "Weight" :  5, "Strategy" : "5PoolSoft" }
+				]
+			},
+
+			"AntiMarine" : {
+				"Zerg" : [
+					{ "Weight" : 30, "Strategy" : "9PoolLurker" },
+					{ "Weight" : 35, "Strategy" : "OverpoolLurker" },
+					{ "Weight" : 35, "Strategy" : "11Gas10PoolLurker" }
+				]
+			},
+
+			"AntiZealot" : {
+				"Zerg" : "ZvP_10Hatch"
+			},
+
+			"Anti5Pool" : {
+				"Zerg" : [
+					{ "Weight" : 20, "Strategy" : "9PoolSpeed" },
+					{ "Weight" : 20, "Strategy" : "9PoolHatchSunk" },
+					{ "Weight" : 30, "Strategy" : "OverpoolSpeed" },
+					{ "Weight" : 30, "Strategy" : "OverpoolHatch" }
+				]
+			},
+
+			"AntiFastCheese" : { "Zerg" : "9PoolExpo" , "Protoss" : "9-9Gate", "Terran" : "8RaxAttack" },
+
+			"AntiSlowerCheese" : {
+				"Zerg" : [
+					{ "Weight" : 30, "Strategy" : "OverpoolSpeed" },
+					{ "Weight" : 70, "Strategy" : "OverhatchLing" }
+				]
+			}
+
+		},
+
+        "Strategies" :
+        {
+                                "9PoolLing"		: { "Race" : "Zerg",    "OpeningBuildOrder" : ["5 x drone", "go extractor trick drone", "spawning pool",   "extractor", "drone", "go gas until 400", "overlord", "evolution chamber", "drone", "3 x zergling", "metabolic boost", "zerg melee attacks",  "3 x zergling", "hatchery @ macro", "drone", "8 x zergling"] },		  
+		  
+		  "9PoolMuta"		: { "Race" : "Zerg",    "OpeningBuildOrder" : ["5 x drone", "go extractor trick drone", "spawning pool",   "extractor", "drone", "overlord", "go gas until 400", "3 x zergling", "metabolic boost", "3 x zergling", "lair", "3 x drone", "spire", "drone", "hatchery @ macro", "drone", "6 x mutalisk", "8 x zergling"] },
+		  
+		  "5DTurtle"		: { "Race" : "Zerg",    "OpeningBuildOrder" : ["drone", "spawning pool",  "2 x drone", "creep colony", "drone", "sunken colony", "creep colony", "drone", "sunken colony", "3 x drone", "extractor", "drone", "go gas until 450", "overlord", "3 x drone", "lair", "creep colony", "drone", "sunken colony", "spire", "hatchery @ macro", "creep colony", "drone", "sunken colony", "creep colony", "drone", "sunken colony", "5 x mutalisk", "creep colony", "drone", "sunken colony", "mutalisk", "8 x zergling" ] },
+		  
+		  "9DTurtle"		: { "Race" : "Zerg",    "OpeningBuildOrder" : ["5 x drone", "go extractor trick drone", "overlord", "spawning pool", "3 x drone", "extractor", "drone", "go gas until 450", "overlord", "lair", "spire", "hatchery @ macro", "go gas until 300", "5 x mutalisk"] },	 
+		  
+		  "9PoolLurker"			: { "Race" : "Zerg",    "OpeningBuildOrder" : ["5 x drone", "go extractor trick drone", "spawning pool", "extractor", "drone", "overlord", "go gas until 400", "drone", "2 x zergling", "lair", "2 x drone", "2 x zergling", "hydralisk den",  "lurker aspect",  "5 x hydralisk", "3 x lurker", "hatchery @ macro",  "3 x hydralisk", "2 x lurker", "grooved spines", "2 x zergling",  "metabolic boost", "8 x zergling"] },
+		  
+		  "9PoolHydra"			: { "Race" : "Zerg",    "OpeningBuildOrder" : ["5 x drone", "go extractor trick drone", "spawning pool", "extractor", "drone", "overlord", "go gas until 400", "3 x drone", "4 x zergling", "hydralisk den",  "grooved spines", "3 x hydralisk",  "hatchery @ macro", "3 x hydralisk", "muscular augments","3 x hydralisk"] },
+		   
+		   
+		  "9DWorkerRush"   : { "Race" : "Zerg",    "OpeningBuildOrder" : ["go gas until 400", "5 x drone", "go extractor trick drone", "spawning pool",  "overlord",  "3 x zergling", "creep colony", "sunken colony", "3 x zergling"] },
+		   
+		    
+		   "ExpoMuta"		: { "Race" : "Zerg",    "OpeningBuildOrder" : ["go gas until 400", "5 x drone", "go extractor trick drone", "spawning pool",  "overlord",  "2 x drone", "extractor", "3 x drone", "hatchery @ natural", "drone", "Lair", "3 x drone", "3 x drone", "spire", "2 x drone", "extractor", "3 x drone", "drone",  "4 x mutalisk", "zerg flyer attacks", "4 x mutalisk"] },
+		   
+		   "ExpoLurker"		: { "Race" : "Zerg",    "OpeningBuildOrder" : ["go gas until 400", "5 x drone", "go extractor trick drone", "spawning pool",  "overlord",  "2 x drone", "extractor", "3 x drone", "hatchery @ natural", "drone", "Lair", "4 x drone",  "hydralisk den", "2 x drone", "extractor", "3 x drone", "lurker aspect",  "drone", "5 x hydralisk",  "grooved spines", "2 x hydralisk", "5 x lurker", "2 x hydralisk", "lurker",  "4 x hydralisk", "3 x lurker"] }
+		   
+	
+
+			
+			
+			
+			
+		}
+	}
+}

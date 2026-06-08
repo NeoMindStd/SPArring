@@ -1,0 +1,43 @@
+Frame : 10945 7? 36?
+Map : (4)Fighting Spirit.scx
+Enemy Name : Hivemind
+My Starting Location (7, 116)
+Enemy Race : select-Protoss real-Protoss
+
+Initial Build History
+6648 4? 37? : Toss_1g_dragoon
+
+Main Build History
+6624 4? 36? : Toss_dark
+
+¡ñ My Unit Count
+Terran_Refinery               : 1/1
+
+¡ð Enemy Unit Count
+Protoss_Dark_Templar          : 9/9
+Protoss_Probe                 : 16/16
+Protoss_Zealot                : 2/2
+Protoss_Nexus                 : 1/1
+Protoss_Pylon                 : 3/3
+Protoss_Assimilator           : 1/1
+Protoss_Gateway               : 1/1
+Protoss_Citadel_of_Adun       : 1/1
+Protoss_Cybernetics_Core      : 1/1
+
+¡ñ My Destroyed Unit Count
+Terran_Marine                 : 11
+Terran_Vulture                : 3
+Terran_Siege_Tank_Tank_Mode   : 0
+Terran_SCV                    : 26
+Terran_Command_Center         : 2
+Terran_Comsat_Station         : 2
+Terran_Supply_Depot           : 4
+Terran_Barracks               : 1
+Terran_Academy                : 1
+Terran_Factory                : 1
+Terran_Machine_Shop           : 2
+Terran_Bunker                 : 2
+
+¡ð Enemy Destroyed Unit Count
+Protoss_Probe                 : 1
+Protoss_Zealot                : 2

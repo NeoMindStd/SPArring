@@ -1,0 +1,147 @@
+{
+    "Bot Info" :
+    {
+        "BotName"                   : "ReactiveAI",
+        "Authors"                   : "Lukáš Moravec",
+        "PrintInfoOnStart"          : false
+    },
+        
+    "BWAPI" : 
+    {
+        "SetLocalSpeed"             : 20,
+        "SetFrameSkip"              : 0,
+        "UserInput"                 : true,
+        "CompleteMapInformation"    : false
+    },                                                  
+    
+    "Micro" :                                                                                                    
+    {
+        "UseSparcraftSimulation"    : true,
+        "KiteWithRangedUnits"       : true,
+        "KiteLongerRangedUnits"     : ["Mutalisk", "Vulture"],
+        "WorkersDefendRush"         : true,
+        "RetreatMeleeUnitShields"   : 0,
+        "RetreatMeleeUnitHP"        : 0,
+        "InCombatRadius"            : 1500,
+        "RegroupRadius"             : 300,
+        "UnitNearEnemyRadius"       : 600
+    },
+    
+    "Macro" :
+    {
+        "BOSSFrameLimit"            : 160,
+        "WorkersPerRefinery"        : 3,
+        "BuildingSpacing"           : 1,
+        "PylonSpacing"              : 1
+    },
+
+    "Debug" :                                                             
+    {
+        "ErrorLogFilename"          : "bwapi-data/write/UAlbertaBot_ErrorLog.txt",
+        "LogAssertToErrorFile"      : false,
+        
+        "DrawGameInfo"              : false,   
+        "DrawUnitHealthBars"        : false,
+        "DrawProductionInfo"        : true, 
+        "DrawBuildOrderSearchInfo"  : false,
+        "DrawScoutInfo"             : false,
+        "DrawEnemyUnitInfo"         : false,
+        "DrawModuleTimers"          : false,
+        "DrawResourceInfo"          : false,
+        "DrawCombatSimInfo"         : false,
+        "DrawUnitTargetInfo"        : false,        
+        "DrawBWTAInfo"              : false,         
+        "DrawMapGrid"               : false,
+        "DrawSquadInfo"             : true,
+        "DrawWorkerInfo"            : true,
+        "DrawMouseCursorInfo"       : false,
+        "DrawBuildingInfo"          : false,
+        "DrawReservedBuildingTiles" : false,
+        "DrawBOSSStateInfo"         : false,
+        "PrintModuleTimeout"        : true
+    },
+    
+    "Modules" :
+    {
+        "UseGameCommander"          : true,
+        "UseScoutManager"           : true,
+        "UseCombatCommander"        : true,
+        "UseBuildOrderSearch"       : true,
+        "UseStrategyIO"             : true,
+        "UseAutoObserver"           : false
+    },
+    
+    "Tools" :
+    {
+        "MapGridSize"               : 320
+    },
+    
+    "Strategy" :
+    {
+        "Protoss"                   : "Protoss_3Gate",
+        "Terran"                    : "Terran_MarineRush",
+        "Zerg"                      : "Zerg_ZerglingRush",
+        
+        "ScoutGasSteal"             : false,
+        "ScoutHarassEnemy"          : true,
+        
+        "ReadDirectory"             : "bwapi-data/read/",
+        "WriteDirectory"            : "bwapi-data/write/",
+                
+        
+        "Strategies" :
+        {   
+                      "Protoss_3Gate_Forge"   : { "Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Pylon","Probe","Gateway","Probe","Gateway","Probe","Probe","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Probe","Zealot","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Gateway","Pylon","Probe","Zealot","Zealot","Probe","Zealot","Zealot","Probe","Pylon","Zealot","Zealot","Zealot","Probe","Pylon","Assimilator","Probe","Zealot","Zealot","Zealot","Probe","Pylon","Forge","Probe","Zealot","Zealot","Zealot","Probe","Pylon","Protoss Ground Weapons","Probe","Zealot","Zealot","Zealot","Probe","Pylon","Cybernetics Core","Probe","Zealot","Zealot","Zealot","Probe"]},
+        "Protoss_2Gate_Cyber"   : { "Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Pylon","Probe","Gateway","Probe","Gateway","Probe","Probe","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Pylon","Probe","Zealot","Zealot","Probe","Zealot","Zealot","Probe","Pylon","Assimilator","Probe","Zealot","Zealot","Probe","Probe","Pylon","Zealot","Zealot","Cybernetics Core","Probe","Zealot","Zealot","Probe","Pylon","Probe","Dragoon","Dragoon","Probe"]},
+              "Protoss_2Gate_Forge"   : { "Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Pylon","Probe","Gateway","Probe","Gateway","Probe","Probe","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Pylon","Probe","Zealot","Zealot","Probe","Zealot","Zealot","Probe","Pylon","Assimilator","Probe","Zealot","Zealot","Probe","Probe","Pylon","Forge","Zealot","Zealot","Probe","Protoss Ground Weapons","Zealot","Zealot","Probe","Pylon","Probe","Zealot","Zealot","Probe","Cybernetics Core"]},
+        "Protoss_DragoonRush"   : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Pylon","Probe","Probe","Probe","Gateway","Probe","Pylon","Probe","Assimilator","Probe","Zealot","Probe","Cybernetics Core","Probe","Probe","Zealot","Singularity_Charge","Dragoon","Pylon","Probe","Gateway","Dragoon"]} ,
+          "Protoss_DragoonFirst" : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Pylon","Probe","Probe","Gateway","Probe","Probe","Assimilator","Cybernetics Core","Probe","Probe","Pylon","Probe","Probe","Dragoon","Gateway","Singularity Charge","Dragoon","Probe","Pylon","Probe","Dragoon","Dragoon","Probe","Dragoon","Probe","Dragoon","Pylon","Robotics Facility","Dragoon"]},
+           "Protoss_DragoonFirst_3Gate" : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Pylon","Probe","Probe","Gateway","Probe","Probe","Assimilator","Cybernetics Core","Probe","Probe","Pylon","Probe","Probe","Dragoon","Gateway","Singularity Charge","Dragoon","Probe","Pylon","Probe","Dragoon","Dragoon","Probe","Dragoon","Probe","Dragoon","Pylon","Gateway","Dragoon"]},
+      
+       "Protoss_3Gate_Cyber"   : { "Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe", "Pylon","Probe", "Probe","Gateway","Probe","Gateway","Probe","Probe","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Probe","Zealot","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Gateway","Pylon","Probe","Zealot","Zealot","Probe","Zealot","Zealot","Probe","Pylon","Zealot","Zealot","Zealot","Probe","Pylon","Assimilator","Probe","Zealot","Zealot","Zealot","Probe","Pylon","Cybernetics Core","Probe","Zealot","Zealot","Zealot","Probe"]},
+           "Protoss_DTRush"        : { "Race" : "Protoss", "OpeningBuildOrder" : ["Probe", "Probe", "Probe",  "Pylon", "Probe", "Probe", "Gateway", "Probe","Pylon","Probe","Assimilator", "Probe", "Cybernetics_Core", "Probe","Zealot","Probe","Probe","Citadel_of_Adun","Zealot","Gateway",  "Probe","Zealot","Probe", "Templar_Archives","Pylon","Probe","Zealot","Probe",  "Dark_Templar", "Dark_Templar", "Pylon","Probe", "Gateway","Dark_Templar", "Dark_Templar", "Probe"]},
+            "Protoss_3Gate_DragoonRush" : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe", "Probe","Probe","Probe","Pylon","Probe","Probe","Gateway","Probe","Probe","Probe","Zealot","Pylon","Probe","Probe","Assimilator","Zealot","Cybernetics Core","Gateway","Zealot","Pylon","Gateway","Singularity Charge","Dragoon","Dragoon","Dragoon","Pylon","Dragoon","Dragoon","Dragoon" ]},
+             "Protoss_2Gate_ZealotRush_Dragoon" : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe", "Probe", "Probe", "Probe", "Pylon", "Probe", "Probe", "Gateway", "Probe","Probe","Gateway","Probe","Zealot","Probe","Pylon","Probe","Pylon","Zealot","Zealot","Probe","Assimilator","Zealot","Zealot","Cybernetics Core","Zealot","Zealot","Pylon","Singularity Charge","Dragoon","Dragoon","Gateway",
+                                                      "Dragoon","Dragoon","Pylon","Dragoon","Dragoon","Dragoon","Dragoon","Dragoon","Dragoon","Dragoon","Dragoon"]},
+                "Protoss_3Gate_ZealotRush_Dragoon" : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe", "Probe", "Probe", "Probe", "Pylon", "Probe", "Probe", "Gateway", "Probe","Probe","Pylon","Probe","Zealot","Probe","Gateway","Probe","Zealot","Probe","Pylon","Zealot","Zealot","Gateway","Zealot","Zealot","Pylon","Zealot","Zealot","Zealot","Zealot","Zealot","Zealot","Pylon","Zealot","Zealot","Zealot","Zealot","Zealot","Zealot",
+                                                              "Zealot","Zealot","Zealot","Assimilator","Cybernetics Core","Zealot","Zealot","Zealot","Zealot","Zealot","Zealot","Singularity Charge"]},
+        "Protoss_NexusFirst"    : { "Race" : "Protoss", "OpeningBuildOrder": ["Probe","Probe","Probe","Probe","Probe","Pylon","Probe","Probe","Probe","Nexus","Probe","Probe","Gateway","Probe","Pylon","Probe","Gateway","Probe","Zealot","Probe","Probe","Probe","Probe","Zealot","Zealot","Pylon","Probe","Probe","Zealot","Zealot","Probe","Probe","Probe","Probe","Assimilator","Cybernetics Core","Probe","Probe","Zealot","Zealot"]},
+             "Protoss_Forge_FastExpand"    : { "Race" : "Protoss", "OpeningBuildOrder": ["Probe","Probe","Pylon","Probe","Probe","Forge","Probe","Probe","Probe","Probe","Photon Cannon","Probe","Gateway","Probe","Probe","Nexus","Probe","Pylon","Probe","Assimilator","Zealot","Probe","Pylon","Probe","Zealot","Cybernetics Core","Probe","Probe","Probe","Probe","Zealot"]},
+             "Protoss_CorsairDT" : {"Race" : "Protoss", "OpeningBuildOrder": ["Probe","Probe","Pylon","Probe","Probe","Forge","Probe","Probe","Probe","Probe","Photon Cannon","Probe","Gateway","Probe","Probe","Nexus","Probe","Pylon","Probe","Assimilator","Zealot","Probe","Pylon","Probe","Zealot","Cybernetics Core","Probe","Probe","Probe","Probe","Zealot","Stargate","Probe","Assimilator","Probe","Probe","Zealot","Pylon","Stargate","Probe","Probe","Protoss Air Weapons","Zealot","Probe","Probe","Pylon","Citadel of Adun","Probe","Probe","Corsair","Corsair","Zealot","Pylon","Probe","Probe","Templar Archives","Gateway","Probe","Probe","Zealot","Corsair","Corsair","Pylon","Probe","Probe","Dark Templar","Dark Templar","Corsair","Corsair","Pylon","Probe","Probe","Dark Templar","Dark Templar","Corsair","Corsair","Gateway","Gateway","Pylon","Probe","Probe","Nexus","Dark Templar","Dark Templar","Corsair","Corsair","Pylon","Probe","Probe","Dark Templar","Dark Templar","Corsair",
+                                      "Corsair","Pylon","Zealot","Zealot","Probe","Probe","Corsair","Corsair","Dark Templar","Dark Templar","Pylon","Nexus","Dark Templar","Dark Templar"]},
+            "Pure_Zealot"   : { "Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Pylon","Probe","Gateway","Probe","Gateway","Probe","Probe","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Probe","Zealot","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Gateway"]},
+             "Protoss_Corsair_Reaver" : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Pylon","Probe","Probe","Forge","Probe","Probe","Probe","Photon Cannon","Probe","Probe","Probe","Nexus","Probe","Pylon","Probe","Gateway","Assimilator","Probe","Probe","Probe","Zealot","Cybernetics Core","Probe","Pylon",
+                                          "Probe","Assimilator","Probe","Probe","Zealot","Probe","Probe","Probe","Probe","Robotics Facility","Zealot","Probe","Probe","Stargate","Probe","Probe","Pylon","Zealot","Probe","Probe","Protoss Air Weapons","Probe","Probe","Pylon","Zealot","Robotics Support Bay","Probe","Corsair",
+                                          "Probe","Pylon","Robotics Facility","Reaver","Zealot","Probe","Corsair","Pylon","Probe","Probe","Stargate","Protoss Ground Weapons","Probe","Probe","Zealot","Pylon","Corsair","Reaver","Probe","Probe","Reaver","Pylon","Probe","Probe","Corsair","Corsair","Zealot","Gravitic Drive","Pylon","Shuttle","Corsair","Shuttle"]},
+            "Protoss_Corsair_Reaver3" : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Pylon","Probe","Probe","Forge","Probe","Probe","Probe","Photon Cannon","Probe","Probe","Probe","Nexus","Probe","Pylon","Probe","Gateway","Assimilator",
+                                          "Probe","Gateway","Probe","Pylon","Probe","Cybernetics Core","Zealot","Probe","Zealot","Probe","Probe","Zealot","Probe","Probe","Robotics Facility","Probe","Probe","Zealot","Zealot","Protoss Ground Weapons","Probe","Probe","Pylon",
+                                          "Probe","Probe","Zealot","Probe","Probe","Zealot","Assimilator","Pylon","Shuttle","Probe","Probe","Robotics Support Bay","Stargate","Protoss Air Weapons","Pylon","Probe","Probe","Zealot","Zealot","Gravitic Drive","Reaver","Probe","Probe","Pylon",
+                                          "Probe","Probe","Zealot","Zealot","Corsair","Stargate","Pylon","Zealot","Zealot","Shuttle","Robotics Facility","Pylon","Probe","Probe","Pylon","Corsair","Zealot","Zealot","Corsair","Reaver","Corsair","Probe","Probe","Zealot","Zealot","Shuttle"]},  
+              "Protoss_Corsair_Reaver2" : {"Race" : "Protoss", "OpeningBuildOrder": ["Probe","Probe","Pylon","Probe","Probe","Forge","Probe","Probe","Probe","Photon Cannon","Probe","Probe","Gateway","Probe","Probe","Nexus","Probe","Pylon","Probe","Assimilator","Zealot","Probe","Pylon","Probe","Zealot","Cybernetics Core","Probe","Probe","Probe","Probe","Zealot","Stargate","Probe","Assimilator","Probe","Probe","Zealot","Pylon","Robotics Facility","Probe","Probe","Protoss Air Weapons","Corsair","Zealot","Probe","Probe","Pylon","Robotics Facility","Corsair","Robotics Support Bay","Shuttle","Probe","Probe","Corsair","Stargate","Zealot","Pylon","Probe","Probe","Reaver","Reaver","Pylon","Gravitic Drive","Corsair","Corsair"]},
+                  "Protoss_DragoonRush_Reaver"   : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Probe","Pylon","Probe","Gateway","Probe","Probe","Assimilator","Probe","Cybernetics Core","Probe","Pylon","Probe","Probe","Dragoon","Probe","Singularity Charge","Probe","Dragoon","Probe","Pylon","Probe","Gateway","Probe","Dragoon","Probe","Probe","Pylon","Dragoon","Probe","Dragoon","Probe","Robotics Facility","Probe","Dragoon","Dragoon","Pylon","Probe","Probe","Dragoon","Dragoon","Pylon","Probe","Shuttle","Probe","Dragoon","Dragoon","Observatory","Probe","Robotics Support Bay","Probe","Pylon","Observer","Dragoon","Dragoon","Probe","Reaver","Dragoon","Dragoon","Gateway","Gateway","Pylon","Dragoon","Dragoon","Gravitic Drive","Dragoon","Dragoon","Dragoon","Dragoon"]},
+               "Protoss_3Gate_Robo" : {"Race" : "Protoss","OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Pylon","Probe","Probe","Gateway","Probe","Probe","Assimilator","Probe","Probe","Cybernetics Core","Zealot","Pylon","Probe","Probe","Dragoon","Singularity Charge","Probe","Pylon","Probe","Dragoon","Probe","Probe","Robotics Facility","Probe","Dragoon","Gateway","Gateway","Dragoon","Probe","Pylon","Observatory","Dragoon","Dragoon","Dragoon","Observer","Dragoon","Dragoon","Observer","Pylon","Dragoon","Dragoon","Dragoon","Pylon","Dragoon","Dragoon","Dragoon","Dragoon","Dragoon","Nexus","Dragoon","Dragoon","Dragoon","Pylon","Robotics Support Bay","Dragoon","Dragoon","Dragoon","Dragoon","Reaver",
+                                                        "Probe","Probe","Assimilator","Dragoon","Dragoon","Dragoon","Dragoon","Probe","Probe","Dragoon","Dragoon","Dragoon","Reaver","Probe","Probe","Pylon","Probe","Probe","Dragoon","Dragoon","Dragoon"]},                                                                                                                    
+                "Protoss_Dragoon_Nexus_Reaver"   : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Pylon","Probe","Probe","Probe","Gateway","Probe","Assimilator","Probe","Probe","Cybernetics Core","Probe","Probe","Pylon","Singularity Charge","Dragoon","Probe","Probe","Pylon","Probe","Dragoon","Dragoon","Nexus","Robotics Facility","Dragoon","Probe","Gateway","Dragoon","Probe","Shuttle","Observatory","Zealot","Zealot","Pylon","Probe","Probe","Observer"]},
+                 "Protoss_Dragoon_Nexus_ZealotDrop"   : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Pylon","Probe","Probe","Probe","Gateway","Probe","Assimilator","Probe","Probe","Cybernetics Core","Probe","Probe","Pylon","Singularity Charge","Dragoon","Probe","Probe","Pylon","Probe","Dragoon","Dragoon","Nexus","Probe","Gateway","Dragoon",
+                                                                  "Probe","Pylon","Probe","Probe","Dragoon","Dragoon","Probe","Robotics Facility","Probe","Probe","Zealot","Zealot","Probe","Probe","Pylon","Probe","Probe","Dragoon","Zealot","Shuttle","Observatory","Probe","Probe","Pylon","Dragoon","Dragoon","Probe","Probe","Gateway","Observer","Gateway","Pylon","Zealot",
+                                                                  "Zealot","Pylon","Shuttle","Probe","Probe","Dragoon","Dragoon","Probe","Probe","Dragoon","Dragoon","Probe","Probe","Shuttle","Zealot","Zealot","Pylon","Gateway","Zealot","Zealot","Probe","Probe","Observer","Pylon","Dragoon","Dragoon","Dragoon","Dragoon","Pylon","Zealot","Zealot","Zealot","Zealot","Dragoon","Dragoon","Dragoon","Dragoon","Dragoon","Dragoon"]}, 
+                "Protoss_MassDragoon_Nexus_Speedlot"   : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Pylon","Probe","Probe","Probe","Gateway","Probe","Assimilator","Probe","Probe","Probe","Probe","Cybernetics Core","Probe","Probe","Pylon","Singularity Charge","Dragoon","Probe","Probe","Pylon","Probe","Dragoon","Dragoon","Nexus","Gateway","Probe","Probe","Dragoon","Probe","Pylon","Probe","Dragoon","Gateway","Dragoon","Probe","Dragoon",
+                              "Probe","Probe","Probe","Probe","Dragoon","Dragoon","Dragoon","Probe","Probe","Pylon","Probe","Probe","Robotics Facility","Pylon","Dragoon","Dragoon","Dragoon","Citadel of Adun","Probe","Probe","Zealot","Zealot","Zealot","Probe","Probe","Pylon","Observatory","Dragoon","Dragoon","Dragoon","Leg Enhancements","Pylon","Probe","Probe","Observer"]}, 
+               "Protoss_21Nexus" : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Pylon","Probe","Probe","Gateway","Probe","Probe","Assimilator","Probe","Cybernetics Core","Probe","Probe","Pylon","Probe","Probe","Singularity Charge","Probe","Gateway","Probe","Probe","Nexus","Dragoon","Dragoon","Pylon","Probe","Dragoon","Dragoon","Probe","Probe","Robotics Facility"]},
+                   "Protoss_21Nexus_ZealotDrop" : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Pylon","Probe","Probe","Gateway","Probe","Probe","Assimilator","Probe","Cybernetics Core","Probe","Probe","Pylon","Probe","Probe","Singularity Charge","Probe","Gateway","Probe","Probe","Nexus","Dragoon","Dragoon","Pylon","Probe","Probe","Dragoon","Dragoon","Probe","Robotics Facility","Pylon","Probe","Dragoon",
+                                                    "Dragoon","Probe","Probe","Probe","Probe","Probe","Pylon","Shuttle","Dragoon","Dragoon","Observatory","Probe","Probe","Gateway","Probe","Probe","Observer","Zealot","Zealot","Probe","Probe","Pylon","Gateway","Probe","Probe","Observer","Pylon","Zealot","Zealot","Dragoon","Probe","Probe","Shuttle","Zealot","Zealot","Citadel of Adun","Pylon","Probe","Probe",
+                                                    "Dragoon","Dragoon","Gateway","Pylon","Observer","Dragoon","Dragoon","Leg Enhancements"]},
+              
+               "Protoss_Zealot_Archon"   : { "Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Probe","Pylon","Probe","Gateway","Probe","Gateway","Probe","Probe","Pylon","Zealot","Probe","Zealot","Zealot","Probe","Probe","Zealot","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Pylon","Zealot","Zealot","Probe","Zealot","Zealot","Probe","Nexus","Pylon","Probe","Zealot","Zealot","Assimilator","Pylon","Probe","Cybernetics Core","Probe","Zealot","Zealot","Probe","Zealot","Zealot","Probe","Assimilator","Citadel of Adun","Probe","Probe","Zealot","Zealot","Probe","Probe","Probe","Probe","Zealot","Zealot","Templar Archives","Leg Enhancements","Probe","Probe","Zealot","Zealot","Gateway"]},
+              "Protoss_ForgeFE_Archon"    : { "Race" : "Protoss", "OpeningBuildOrder": ["Probe","Probe","Pylon","Probe","Probe","Forge","Probe","Probe","Probe","Probe","Photon Cannon","Probe","Gateway","Probe","Probe","Nexus","Probe","Pylon","Probe","Assimilator","Zealot","Probe","Pylon","Probe","Zealot","Cybernetics Core","Probe","Probe","Protoss Ground Weapons","Probe","Probe","Zealot","Assimilator","Probe","Probe","Citadel of Adun","Probe","Probe","Zealot",
+                                                  "Probe","Probe","Gateway","Pylon","Zealot","Probe","Probe","Templar Archives","Probe","Probe","Zealot","Leg Enhancements"]},
+                 "Protoss_MassZealot_Archon"   : { "Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe", "Pylon","Probe", "Probe","Gateway","Probe","Gateway","Probe","Probe","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Probe","Zealot","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Gateway","Pylon","Probe","Zealot","Zealot","Probe","Zealot","Zealot","Probe","Pylon","Zealot","Zealot","Zealot","Probe","Pylon","Assimilator","Probe","Zealot","Zealot","Zealot","Probe","Pylon","Cybernetics Core","Probe","Zealot","Zealot","Zealot","Probe","Citadel of Adun","Probe",
+                                                    "Zealot","Zealot","Zealot","Pylon"]},
+               "Protoss_Zealot_Corsair" : {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Pylon","Probe","Probe","Gateway","Probe","Gateway","Probe","Probe","Zealot","Pylon","Probe","Zealot","Zealot","Probe","Probe","Zealot","Zealot","Pylon","Probe","Zealot","Zealot","Pylon","Probe","Assimilator","Cybernetics Core","Zealot","Zealot","Probe","Zealot","Probe","Zealot","Stargate",
+                                          "Probe","Zealot","Zealot","Protoss Air Weapons","Probe","Zealot","Zealot","Probe","Corsair","Pylon","Zealot","Zealot","Corsair","Probe","Stargate",
+                                          "Zealot","Zealot","Probe","Corsair","Probe","Zealot","Zealot","Probe","Corsair","Corsair","Probe","Zealot","Zealot","Corsair","Corsair"]},
+               "Nothing" :  {"Race" : "Protoss", "OpeningBuildOrder" : ["Probe","Probe","Probe","Pylon","Probe","Probe"]}
+       
+        }
+    }
+  }

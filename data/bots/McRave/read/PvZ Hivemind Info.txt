@@ -1,0 +1,1 @@
+CircuitBreaker,Hivemind,2HatchHydra,FFE,Forge,StormRush,Lost,11:47,52,Protoss_Probe,37,Protoss_Zealot,2,Protoss_High_Templar,2,Zerg_Larva,6,Zerg_Egg,67,Zerg_Hydralisk,12,Zerg_Drone,4,Zerg_Overlord,23,None

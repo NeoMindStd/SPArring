@@ -1,0 +1,45 @@
+1754823495 0(0:00): Microwave (v2.32) vs Hivemind on 8Big_Game_Hunters.scm (fb98f70052bd29c0cfea343cf9608a5790a21d8b) (LF: 3)
+1754823495 0(0:00): Initial Expected Plan: Unknown
+1754823495 0(0:00): 5 games or less: 
+1754823495 0(0:00): Human Specific Strategy
+1754823495 0(0:00): Strategy: 3HatchHydraBust  games: 0  winrate: 0
+1754823495 0(0:00): Started morping Zerg_Drone
+1754823509 331(0:13): Started morping Zerg_Drone
+1754823518 538(0:22): Started morping Zerg_Drone
+1754823529 810(0:33): Started morping Zerg_Drone
+1754823536 977(0:40): Started morping Zerg_Drone
+1754823548 1259(0:52): Started morping Zerg_Overlord
+1754823575 1896(1:19): Started morping Zerg_Drone
+1754823575 1897(1:19): Started morping Zerg_Drone
+1754823579 1999(1:23): Summary: 2 combat units, 9 workers, 176 minerals, 0 gas
+1754823580 2034(1:24): Started morping Zerg_Drone
+1754823601 2519(1:44): Started building Zerg_Hatchery @ (61,67)
+1754823618 2938(2:02): Started building Zerg_Spawning_Pool @ (111,77)
+1754823621 3006(2:05): Started morping Zerg_Drone
+1754823627 3138(2:10): Started morping Zerg_Drone
+1754823632 3267(2:16): Started morping Zerg_Drone
+1754823638 3394(2:21): Started morping Zerg_Drone
+1754823663 3999(2:46): Summary: 2 combat units, 14 workers, 314 minerals, 0 gas
+1754823667 4104(2:51): Started building Zerg_Hatchery @ (64,45)
+1754823669 4146(2:52): Started morping Zerg_Zergling
+1754823669 4155(2:53): Started morping Zerg_Zergling
+1754823677 4327(3:00): Started morping Zerg_Drone
+1754823680 4398(3:03): Started morping Zerg_Drone
+1754823691 4666(3:14): Started morping Zerg_Overlord
+1754823694 4741(3:17): Started morping Zerg_Drone
+1754823718 5303(3:40): Started morping Zerg_Drone
+1754823722 5414(3:45): Started building Zerg_Creep_Colony @ (65,65)
+1754823735 5722(3:58): Started morping Zerg_Sunken_Colony
+1754823735 5723(3:58): Started morping Zerg_Overlord
+1754823735 5725(3:58): Started morping Zerg_Drone
+1754823735 5726(3:58): Started morping Zerg_Drone
+1754823736 5727(3:58): Started morping Zerg_Drone
+1754823737 5770(4:00): Started morping Zerg_Drone
+1754823741 5869(4:04): Started building Zerg_Extractor @ (111,86)
+1754823743 5912(4:06): Started morping Zerg_Drone
+1754823747 5999(4:09): Summary: 6 combat units, 15 workers, 337 minerals, 0 gas
+1754823750 6068(4:12): Started morping Zerg_Drone
+1754823752 6108(4:14): Started morping Zerg_Drone
+1754823758 6259(4:20): Started morping Zerg_Drone
+1754823783 6850(4:45): Started morping Zerg_Drone
+1754823783 6851(4:45): Started morping Zerg_Drone

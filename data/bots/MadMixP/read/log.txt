@@ -1,0 +1,814 @@
+2025-09-08 19:10:39 [main] botte.Main.main()
+INFO: MadMix started.
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: onStart started.
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Map is: (4)Fighting Spirit.scx | iCCup | Fighting Spirit 1.3
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Analyzing map...
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Map data ready.
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Map has 4 startLocations. BWTA says 4 startLocations and 13 baseLocations.
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: getLatency=LanLow
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: getLatencyFrames=3
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: onStart ended.
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.getCentralIntelligence()
+INFO: Creating CentralIntelligence.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4671.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=3668.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4200.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=2663.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=3676.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=5583.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=0.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4353.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=967.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4577.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4342.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=2694.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=2373.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initialize()
+INFO: Found 0 stupid minerals on the map.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initialize()
+INFO: Found 4 travel minerals on the map.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralRegionHandler.initIsMoney()
+INFO: Map has 153507 minerals in 108 units.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralRegionHandler initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Playing on SCHNAIL!
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: NORMAL_PLAY + NOTHING
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: CAUTIOUS_PLAY + NOTHING
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: ACTIVE_BRAVE_PLAY + NOTHING
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: PASSIVE_BRAVE_PLAY + NOTHING
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_CANNON_RUSH + PvA_CANNON_RUSH_2
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_CANNON_RUSH + PvA_CANNON_RUSH_B
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_CARRIER_RUSH + PvA_FORGE_FIRST
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_CARRIERS + PvA_FORGE_FIRST
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_DT_RUSH + NOTHING
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_DT_RUSH + PvA_FASTER_CORE
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_DRAGOONS + NOTHING
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_DRAGOONS_MACRO + NOTHING
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_FORGE_FIRST + PvA_FORGE_FIRST
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_CHEESE_GATES_RUSH + PvA_CHEESE_GATES
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_ZEALOT_RUSH + PvA_ANTI_RUSH_CANNONS
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_ZEALOT_RUSH + PvA_FASTER_GATES
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_ZEALOTS + NOTHING
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_BIG_MACRO + NOTHING
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MEGA_MACRO + NOTHING
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpponentModeler.getResultsFromFile()
+INFO: Reading results from bwapi-data\read\gamelog.csv
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Old sort:
+OPEN_DT_RUSH + PvA_FASTER_CORE (1 wins, 0 losses) [1-0 1-0 1-0 1-0 1-0 1-0] testScore=0.9010000891 combinedScore=142.54500000000002 notPlayedTime=0
+PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_ZEALOT_RUSH + PvA_ANTI_RUSH_CANNONS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_DRAGOONS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_DT_RUSH + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+ACTIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CANNON_RUSH + PvA_CANNON_RUSH_2 (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_DRAGOONS_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_FORGE_FIRST + PvA_FORGE_FIRST (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CARRIER_RUSH + PvA_FORGE_FIRST (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+CAUTIOUS_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CARRIERS + PvA_FORGE_FIRST (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_BIG_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CANNON_RUSH + PvA_CANNON_RUSH_B (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_ZEALOTS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_ZEALOT_RUSH + PvA_FASTER_GATES (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CHEESE_GATES_RUSH + PvA_CHEESE_GATES (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+NORMAL_PLAY + NOTHING (0 wins, 1 losses) [0-0 0-1 0-0 0-0 0-0 0-1] testScore=0.8997390089999999 combinedScore=138.98850000000002 notPlayedTime=1
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Test sort:
+OPEN_DT_RUSH + PvA_FASTER_CORE (1 wins, 0 losses) [1-0 1-0 1-0 1-0 1-0 1-0] testScore=0.9010000891 combinedScore=142.54500000000002 notPlayedTime=0
+OPEN_DRAGOONS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_BIG_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_ZEALOT_RUSH + PvA_ANTI_RUSH_CANNONS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_DT_RUSH + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_DRAGOONS_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+CAUTIOUS_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CHEESE_GATES_RUSH + PvA_CHEESE_GATES (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_FORGE_FIRST + PvA_FORGE_FIRST (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CARRIERS + PvA_FORGE_FIRST (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+ACTIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CARRIER_RUSH + PvA_FORGE_FIRST (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CANNON_RUSH + PvA_CANNON_RUSH_B (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CANNON_RUSH + PvA_CANNON_RUSH_2 (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_ZEALOT_RUSH + PvA_FASTER_GATES (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_ZEALOTS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+NORMAL_PLAY + NOTHING (0 wins, 1 losses) [0-0 0-1 0-0 0-0 0-0 0-1] testScore=0.8997390089999999 combinedScore=138.98850000000002 notPlayedTime=1
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: New sort:
+OPEN_DT_RUSH + PvA_FASTER_CORE (1 wins, 0 losses) [1-0 1-0 1-0 1-0 1-0 1-0] testScore=0.9010000891 combinedScore=142.54500000000002 notPlayedTime=0
+OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_ZEALOT_RUSH + PvA_ANTI_RUSH_CANNONS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CHEESE_GATES_RUSH + PvA_CHEESE_GATES (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_DRAGOONS_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_DT_RUSH + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_DRAGOONS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+ACTIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_ZEALOTS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_ZEALOT_RUSH + PvA_FASTER_GATES (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_BIG_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CARRIERS + PvA_FORGE_FIRST (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+CAUTIOUS_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CARRIER_RUSH + PvA_FORGE_FIRST (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CANNON_RUSH + PvA_CANNON_RUSH_2 (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_CANNON_RUSH + PvA_CANNON_RUSH_B (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+OPEN_FORGE_FIRST + PvA_FORGE_FIRST (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+NORMAL_PLAY + NOTHING (0 wins, 1 losses) [0-0 0-1 0-0 0-0 0-0 0-1] testScore=0.8997390089999999 combinedScore=138.98850000000002 notPlayedTime=1
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Old top 3 openings:
+1st: OPEN_DT_RUSH + PvA_FASTER_CORE (1 wins, 0 losses) [1-0 1-0 1-0 1-0 1-0 1-0] testScore=0.9010000891 combinedScore=142.54500000000002 notPlayedTime=0
+2nd: PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+3rd: OPEN_ZEALOT_RUSH + PvA_ANTI_RUSH_CANNONS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Test top 3 openings:
+1st: OPEN_DT_RUSH + PvA_FASTER_CORE (1 wins, 0 losses) [1-0 1-0 1-0 1-0 1-0 1-0] testScore=0.9010000891 combinedScore=142.54500000000002 notPlayedTime=0
+2nd: OPEN_DRAGOONS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+3rd: OPEN_BIG_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: New top 3 openings:
+1st: OPEN_DT_RUSH + PvA_FASTER_CORE (1 wins, 0 losses) [1-0 1-0 1-0 1-0 1-0 1-0] testScore=0.9010000891 combinedScore=142.54500000000002 notPlayedTime=0
+2nd: OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+3rd: OPEN_ZEALOT_RUSH + PvA_ANTI_RUSH_CANNONS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8999640899963999 combinedScore=141.11 notPlayedTime=2
+2025-09-08 19:10:53 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Best opening: OPEN_DT_RUSH + PvA_FASTER_CORE (1 wins, 0 losses) [1-0 1-0 1-0 1-0 1-0 1-0]
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: OpponentModeler initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_Citadel_of_Adun : 0.05
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_Stargate : -0.1
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Disruption_Web : 0.1
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Psionic_Storm : 0.9
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_High_Templar : 0.1
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_Robotics_Support_Bay : 0.01
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_Nexus : -2.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_Citadel_of_Adun : 4.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_Templar_Archives : 8.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_Dark_Templar : 15.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_High_Templar : -1.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_Dragoon : 2.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Protoss_Forge : -1.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Psionic_Storm : -0.1
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralStrategyHandler initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: allManagers initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralClusterHandler initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralMapHandler initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralBuildingPlacer initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: CombatSim initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralChatter initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralProductionTracker initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralTaxiHandler initialized.
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.getCentralIntelligence()
+INFO: CentralIntelligence created.
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralIntelligence.addOwnBase()
+INFO: New own base added!
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 0 started 
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 0 ended 
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 1 started 
+2025-09-08 19:10:53 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #5_Nexus told to chill forever.
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 1 ended 
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 2 started 
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 2 ended 
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 3 started 
+2025-09-08 19:10:53 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 3 buildPoints=-1.0
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 3 ended 
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 4 started 
+2025-09-08 19:10:53 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 4 ended 
+2025-09-08 19:10:54 [JBWAPI Client] botte.BotteBWListener.onReceiveText()
+INFO: Player chat: bwapi.Player@1f said BWAPI 4.4.0.5018 Tournament Mode Engaged!
+2025-09-08 19:11:07 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 333 buildPoints=0.0
+2025-09-08 19:11:21 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 663 buildPoints=0.0
+2025-09-08 19:11:30 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.56ms at radius 5.
+2025-09-08 19:11:30 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 872 buildPoints=-1.0
+2025-09-08 19:11:40 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 1114 buildPoints=0.0
+2025-09-08 19:11:56 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Gateway in 0.49ms at radius 2.
+2025-09-08 19:11:56 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Gateway at 1488 buildPoints=-1.0
+2025-09-08 19:11:56 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #9_Pylon told to chill forever.
+2025-09-08 19:12:04 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 1675 buildPoints=0.0
+2025-09-08 19:12:12 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Assimilator at 1884 buildPoints=-1.0
+2025-09-08 19:12:14 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Failed to find morphing Protoss_Assimilator in allBotUnits!
+2025-09-08 19:12:14 [JBWAPI Client] botte.BotteBWListener.onUnitRenegade()
+INFO: Unit renegaded: Protoss_Assimilator player=true neutral=false enemy=false
+2025-09-08 19:12:21 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 2082 buildPoints=0.0
+2025-09-08 19:12:35 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 2412 buildPoints=0.0
+2025-09-08 19:12:42 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Cybernetics_Core in 0.33ms at radius 2.
+2025-09-08 19:12:42 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Cybernetics_Core at 2577 buildPoints=-1.0
+2025-09-08 19:12:42 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #11_Gateway told to chill forever.
+2025-09-08 19:12:42 [JBWAPI Client] botte.opening.BuildOrder.update()
+INFO: Fixed build order done.
+2025-09-08 19:12:43 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #14_Assimilator told to chill forever.
+2025-09-08 19:12:51 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 2808 buildPoints=205.0020091232544
+2025-09-08 19:13:04 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 3105 buildPoints=9.592319999999999
+2025-09-08 19:13:16 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 3402 buildPoints=9.592319999999999
+2025-09-08 19:13:17 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.11ms at radius 5.
+2025-09-08 19:13:17 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 3424 buildPoints=1.772119649117704
+2025-09-08 19:13:27 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dragoon at 3666 buildPoints=6.242102320000001
+2025-09-08 19:13:27 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #17_Cybernetics_Core told to chill forever.
+2025-09-08 19:13:30 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 3743 buildPoints=36.297433890512494
+2025-09-08 19:13:38 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Citadel_of_Adun in 0.04ms at radius 3.
+2025-09-08 19:13:38 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Citadel_of_Adun at 3919 buildPoints=106.42377726911036
+2025-09-08 19:13:42 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #21_Pylon told to chill forever.
+2025-09-08 19:13:45 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 4095 buildPoints=79.7203530849892
+2025-09-08 19:13:51 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [2656, 400] at squared-distance 1.197736E7
+2025-09-08 19:13:53 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #19_Probe to [224, 192] lastDistance=2.5047056E7 lastUpdate=4272 timeSinceCloser=132 mission=null
+2025-09-08 19:13:55 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #19_Probe
+2025-09-08 19:13:56 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Pylon at DefencePoint for [115, 99] which has 1.1974509199301058 defense already.
+2025-09-08 19:13:56 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.03ms at radius 2.
+2025-09-08 19:13:56 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 4348 buildPoints=73.15586106049196
+2025-09-08 19:13:59 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 4425 buildPoints=60.624992570516945
+2025-09-08 19:14:05 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Dragoon to [224, 3712] lastDistance=1.1024704E7 lastUpdate=4572 timeSinceCloser=135 mission=null
+2025-09-08 19:14:07 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #22_Dragoon to [224, 3712] lastDistance=1.1024704E7 lastUpdate=4622 timeSinceCloser=185 mission=null
+2025-09-08 19:14:08 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dragoon at 4645 buildPoints=137.90979362892443
+2025-09-08 19:14:10 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #22_Dragoon
+2025-09-08 19:14:13 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 4744 buildPoints=151.9717214471815
+2025-09-08 19:14:23 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #24_Citadel_of_Adun told to chill forever.
+2025-09-08 19:14:23 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #27_Pylon told to chill forever.
+2025-09-08 19:14:24 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Gateway in 0.34ms at radius 2.
+2025-09-08 19:14:24 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Gateway at 5019 buildPoints=17.601773933625985
+2025-09-08 19:14:33 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Templar_Archives in 0.07ms at radius 2.
+2025-09-08 19:14:33 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Templar_Archives at 5228 buildPoints=209.97402095054926
+2025-09-08 19:14:38 [JBWAPI Client] botte.CentralScoutManager.manageScouting()
+INFO: Deduced enemy base location!
+2025-09-08 19:14:38 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 5360 buildPoints=331.96744571911
+2025-09-08 19:14:49 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dragoon at 5602 buildPoints=275.8591107337046
+2025-09-08 19:14:54 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3824] at squared-distance 22265.0
+2025-09-08 19:14:57 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 5811 buildPoints=142.17323779347723
+2025-09-08 19:15:07 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Gateway in 0.28ms at radius 5.
+2025-09-08 19:15:07 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Gateway at 6031 buildPoints=5.566391640202736
+2025-09-08 19:15:10 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #30_Gateway told to chill forever.
+2025-09-08 19:15:10 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 6108 buildPoints=19.65838789824
+2025-09-08 19:15:11 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dragoon at 6119 buildPoints=21.575674597114638
+2025-09-08 19:15:13 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3696] at squared-distance 43218.0
+2025-09-08 19:15:14 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.26ms at radius 11.
+2025-09-08 19:15:14 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 6196 buildPoints=84.80262405213104
+2025-09-08 19:15:18 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #31_Templar_Archives told to chill forever.
+2025-09-08 19:15:25 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dark_Templar at 6460 buildPoints=397.2549656005845
+2025-09-08 19:15:32 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 6625 buildPoints=228.84386167030917
+2025-09-08 19:15:35 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.04ms at radius 5.
+2025-09-08 19:15:35 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 6702 buildPoints=104.4062975203321
+2025-09-08 19:15:44 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dark_Templar at 6900 buildPoints=465.604570819877
+2025-09-08 19:15:44 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #38_Pylon told to chill forever.
+2025-09-08 19:15:48 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 6999 buildPoints=292.7386092243289
+2025-09-08 19:15:53 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #37_Gateway told to chill forever.
+2025-09-08 19:15:54 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dragoon at 7142 buildPoints=498.4371450740196
+2025-09-08 19:15:56 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Pylon at DefencePoint for [115, 99] which has 2.541684999103944 defense already.
+2025-09-08 19:15:56 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.18ms at radius 10.
+2025-09-08 19:15:56 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 7197 buildPoints=35.447101412971904
+2025-09-08 19:16:01 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 7307 buildPoints=94.97764052475853
+2025-09-08 19:16:01 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #41_Pylon told to chill forever.
+2025-09-08 19:16:03 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3696] at squared-distance 43513.0
+2025-09-08 19:16:04 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 7384 buildPoints=49.27006547778598
+2025-09-08 19:16:11 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Gateway in 0.09ms at radius 5.
+2025-09-08 19:16:11 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Gateway at 7560 buildPoints=9.908804945881979
+2025-09-08 19:16:16 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dark_Templar at 7681 buildPoints=792.2839035232936
+2025-09-08 19:16:25 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 7879 buildPoints=223.08443719607942
+2025-09-08 19:16:25 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 7890 buildPoints=93.19002247123598
+2025-09-08 19:16:30 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #47_Pylon told to chill forever.
+2025-09-08 19:16:31 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 8022 buildPoints=63.72796681189137
+2025-09-08 19:16:35 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Nexus at 8132 buildPoints=63.35263974091937
+2025-09-08 19:16:51 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_High_Templar at 8495 buildPoints=293.27518880446183
+2025-09-08 19:16:51 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Research first: Singularity_Charge buildPoints=2.2088602679660068
+2025-09-08 19:16:56 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #48_Gateway told to chill forever.
+2025-09-08 19:16:57 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 8660 buildPoints=352.19668174980666
+2025-09-08 19:17:03 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dark_Templar at 8803 buildPoints=466.55027240176753
+2025-09-08 19:17:04 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #39_Dark_Templar to [96, 3856] lastDistance=8397545.0 lastUpdate=8822 timeSinceCloser=142 mission=null
+2025-09-08 19:17:06 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 8869 buildPoints=187.4717677736229
+2025-09-08 19:17:06 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #39_Dark_Templar to [96, 3856] lastDistance=8397545.0 lastUpdate=8872 timeSinceCloser=192 mission=null
+2025-09-08 19:17:08 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #39_Dark_Templar to [96, 3856] lastDistance=8397545.0 lastUpdate=8922 timeSinceCloser=242 mission=null
+2025-09-08 19:17:11 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #39_Dark_Templar
+2025-09-08 19:17:13 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dragoon at 9023 buildPoints=397.2205549613673
+2025-09-08 19:17:17 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 9122 buildPoints=261.5150903610361
+2025-09-08 19:17:19 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.44ms at radius 11.
+2025-09-08 19:17:19 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 9177 buildPoints=333.91965615930883
+2025-09-08 19:17:24 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 9287 buildPoints=139.93934775137507
+2025-09-08 19:17:34 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dark_Templar at 9529 buildPoints=609.6847414533817
+2025-09-08 19:17:35 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 9562 buildPoints=190.7082866410365
+2025-09-08 19:17:39 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 9639 buildPoints=120.95831048530047
+2025-09-08 19:17:44 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.06ms at radius 6.
+2025-09-08 19:17:44 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 9771 buildPoints=55.527595277704684
+2025-09-08 19:17:53 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dark_Templar at 9980 buildPoints=522.8442156331699
+2025-09-08 19:17:54 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #61_Pylon told to chill forever.
+2025-09-08 19:17:56 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 10046 buildPoints=98.07335179279478
+2025-09-08 19:17:59 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 10134 buildPoints=74.52240381900494
+2025-09-08 19:18:03 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Gateway in 0.10ms at radius 3.
+2025-09-08 19:18:03 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Gateway at 10222 buildPoints=36.712626173669186
+2025-09-08 19:18:07 [JBWAPI Client] botte.CentralIntelligence.addOwnBase()
+INFO: New own base added!
+2025-09-08 19:18:07 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #53_Nexus told to chill forever.
+2025-09-08 19:18:13 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #65_Pylon told to chill forever.
+2025-09-08 19:18:13 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dark_Templar at 10464 buildPoints=479.582844080878
+2025-09-08 19:18:14 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 10486 buildPoints=160.38750391870045
+2025-09-08 19:18:18 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 10574 buildPoints=79.61458738425861
+2025-09-08 19:18:21 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 10640 buildPoints=81.9978490221786
+2025-09-08 19:18:26 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 10772 buildPoints=57.32330253578147
+2025-09-08 19:18:30 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 10860 buildPoints=80.29094356172733
+2025-09-08 19:18:33 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 10937 buildPoints=55.69702853379282
+2025-09-08 19:18:36 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 11003 buildPoints=66.94777747110697
+2025-09-08 19:18:38 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3696] at squared-distance 24692.0
+2025-09-08 19:18:42 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 11157 buildPoints=153.83390458056567
+2025-09-08 19:18:43 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Assimilator at 11168 buildPoints=72.35849233015107
+2025-09-08 19:18:45 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Failed to find morphing Protoss_Assimilator in allBotUnits!
+2025-09-08 19:18:45 [JBWAPI Client] botte.BotteBWListener.onUnitRenegade()
+INFO: Unit renegaded: Protoss_Assimilator player=true neutral=false enemy=false
+2025-09-08 19:18:46 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 11256 buildPoints=83.3721954179032
+2025-09-08 19:18:47 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #71_Probe to [3744, 2704] lastDistance=75269.0 lastUpdate=11272 timeSinceCloser=129 mission=null
+2025-09-08 19:18:49 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #71_Probe to [3744, 2704] lastDistance=75269.0 lastUpdate=11322 timeSinceCloser=179 mission=null
+2025-09-08 19:18:50 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dark_Templar at 11344 buildPoints=176.66410537130508
+2025-09-08 19:18:51 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #69_Gateway told to chill forever.
+2025-09-08 19:18:51 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #71_Probe
+2025-09-08 19:18:53 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 11421 buildPoints=173.18529211734057
+2025-09-08 19:18:57 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 11498 buildPoints=93.6770699072009
+2025-09-08 19:19:00 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #40_Probe to [3776, 2864] lastDistance=60545.0 lastUpdate=11572 timeSinceCloser=106 mission=null
+2025-09-08 19:19:01 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3808, 2768] at squared-distance 1087442.0
+2025-09-08 19:19:02 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #40_Probe to [3776, 2864] lastDistance=60545.0 lastUpdate=11622 timeSinceCloser=156 mission=null
+2025-09-08 19:19:02 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #18_Probe to [3808, 2896] lastDistance=84881.0 lastUpdate=11622 timeSinceCloser=136 mission=null
+2025-09-08 19:19:03 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dark_Templar at 11652 buildPoints=368.6613413476336
+2025-09-08 19:19:04 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #40_Probe to [3776, 2864] lastDistance=60545.0 lastUpdate=11672 timeSinceCloser=206 mission=null
+2025-09-08 19:19:04 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #18_Probe to [3808, 2896] lastDistance=84881.0 lastUpdate=11672 timeSinceCloser=186 mission=null
+2025-09-08 19:19:05 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 11696 buildPoints=158.71425889086083
+2025-09-08 19:19:06 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3776, 2960] at squared-distance 67097.0
+2025-09-08 19:19:06 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 11718 buildPoints=103.89453893672507
+2025-09-08 19:19:06 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #40_Probe to [3776, 2864] lastDistance=60545.0 lastUpdate=11722 timeSinceCloser=256 mission=null
+2025-09-08 19:19:06 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #18_Probe to [3808, 2896] lastDistance=84881.0 lastUpdate=11722 timeSinceCloser=236 mission=null
+2025-09-08 19:19:08 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #40_Probe
+2025-09-08 19:19:08 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #18_Probe
+2025-09-08 19:19:10 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3776, 2864] at squared-distance 1465.0
+2025-09-08 19:19:10 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3696] at squared-distance 818666.0
+2025-09-08 19:19:11 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3776, 2960] at squared-distance 44893.0
+2025-09-08 19:19:11 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3696] at squared-distance 596122.0
+2025-09-08 19:19:11 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3696] at squared-distance 573833.0
+2025-09-08 19:19:12 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3696] at squared-distance 507124.0
+2025-09-08 19:19:12 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Pylon at DefencePoint for [105, 90] which has 0.390625 defense already.
+2025-09-08 19:19:12 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.15ms at radius 6.
+2025-09-08 19:19:12 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 11861 buildPoints=175.16937942146984
+2025-09-08 19:19:12 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #75_Probe to [3808, 3616] lastDistance=741940.0 lastUpdate=11872 timeSinceCloser=111 mission=null
+2025-09-08 19:19:13 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3696] at squared-distance 538189.0
+2025-09-08 19:19:14 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #80_Assimilator told to chill forever.
+2025-09-08 19:19:14 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #75_Probe
+2025-09-08 19:19:15 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Protoss_Pylon
+2025-09-08 19:19:15 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Forge in 0.05ms at radius 2.
+2025-09-08 19:19:15 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Forge at 11938 buildPoints=198.10090097032585
+2025-09-08 19:19:17 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #3_Probe to [3808, 3616] lastDistance=308314.0 lastUpdate=11972 timeSinceCloser=101 mission=null
+2025-09-08 19:19:18 [JBWAPI Client] botte.BuildMission.updateUnit()
+WARNING: #40_Probe failed to begin warp-in of Protoss_Forge after 4 re-ordering.
+2025-09-08 19:19:19 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #43_Probe
+2025-09-08 19:19:19 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #3_Probe to [3808, 3616] lastDistance=308314.0 lastUpdate=12022 timeSinceCloser=151 mission=null
+2025-09-08 19:19:19 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #75_Probe to [3808, 3616] lastDistance=649874.0 lastUpdate=12022 timeSinceCloser=123 mission=null
+2025-09-08 19:19:20 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3776, 2960] at squared-distance 291969.0
+2025-09-08 19:19:20 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 12059 buildPoints=156.6781649757064
+2025-09-08 19:19:20 [JBWAPI Client] botte.BuildMission.updateUnit()
+WARNING: #40_Probe failed to begin warp-in of Protoss_Forge after 13 re-ordering.
+2025-09-08 19:19:21 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #3_Probe to [3808, 3616] lastDistance=308314.0 lastUpdate=12072 timeSinceCloser=201 mission=null
+2025-09-08 19:19:21 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #75_Probe to [3808, 3616] lastDistance=649874.0 lastUpdate=12072 timeSinceCloser=173 mission=null
+2025-09-08 19:19:23 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dark_Templar at 12114 buildPoints=664.6291266020321
+2025-09-08 19:19:23 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #3_Probe to [3808, 3616] lastDistance=308314.0 lastUpdate=12122 timeSinceCloser=251 mission=null
+2025-09-08 19:19:23 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #75_Probe to [3808, 3616] lastDistance=649874.0 lastUpdate=12122 timeSinceCloser=223 mission=null
+2025-09-08 19:19:23 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3696] at squared-distance 225010.0
+2025-09-08 19:19:25 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [3744, 2704] at squared-distance 490450.0
+2025-09-08 19:19:25 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 3696] at squared-distance 138272.0
+2025-09-08 19:19:25 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #3_Probe
+2025-09-08 19:19:25 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #75_Probe to [3808, 3616] lastDistance=649874.0 lastUpdate=12172 timeSinceCloser=273 mission=null
+2025-09-08 19:19:27 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #75_Probe to [3808, 3616] lastDistance=649874.0 lastUpdate=12222 timeSinceCloser=323 mission=null
+2025-09-08 19:19:29 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.33ms at radius 5.
+2025-09-08 19:19:29 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 12268 buildPoints=138.53142395853317
+2025-09-08 19:19:29 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #84_Zealot to [3926, 3771] lastDistance=36040.0 lastUpdate=12272 timeSinceCloser=143 mission=null
+2025-09-08 19:19:29 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #75_Probe to [3808, 3616] lastDistance=649874.0 lastUpdate=12267 timeSinceCloser=368 mission=null
+2025-09-08 19:19:31 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #84_Zealot
+2025-09-08 19:19:31 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #75_Probe
+2025-09-08 19:19:34 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 12378 buildPoints=163.951658605661
+2025-09-08 19:19:35 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #82_Dark_Templar to [4032, 336] lastDistance=7776005.0 lastUpdate=12422 timeSinceCloser=121 mission=null
+2025-09-08 19:19:38 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #82_Dark_Templar to [4032, 336] lastDistance=7776005.0 lastUpdate=12472 timeSinceCloser=171 mission=null
+2025-09-08 19:19:38 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Nexus at 12477 buildPoints=196.86582298283682
+2025-09-08 19:19:40 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #82_Dark_Templar to [4032, 336] lastDistance=7776005.0 lastUpdate=12522 timeSinceCloser=221 mission=null
+2025-09-08 19:19:41 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Protoss_Nexus
+2025-09-08 19:19:41 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 12543 buildPoints=109.61422334015478
+2025-09-08 19:19:42 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #82_Dark_Templar
+2025-09-08 19:19:44 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 12620 buildPoints=95.21765272397026
+2025-09-08 19:19:45 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 12653 buildPoints=73.40831323480442
+2025-09-08 19:19:46 [JBWAPI Client] botte.CentralProductionManager.checkCompleteMissions()
+INFO: Warning, failed to complete building Protoss_Zealot
+2025-09-08 19:19:46 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 12675 buildPoints=32.74429849255222
+2025-09-08 19:19:50 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #89_Forge told to chill forever.
+2025-09-08 19:19:50 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Photon_Cannon at DefencePoint for [105, 90] which has 0.02 defense already.
+2025-09-08 19:19:50 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+WARNING: Failed to find build-location for Protoss_Photon_Cannon in 0.69ms at maxRadius 7!
+Second search: Failed to find build-location for Protoss_Photon_Cannon in 1.16ms at maxRadius 12!
+2025-09-08 19:19:50 [JBWAPI Client] botte.CentralProductionManager.update()
+WARNING: Unable to find build-position for Protoss_Photon_Cannon so build a pylon instead.
+2025-09-08 19:19:50 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Photon_Cannon at DefencePoint for [115, 96] which has 0.02978243352135375 defense already.
+2025-09-08 19:19:50 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Failed to find build-location for Protoss_Pylon in 0.19ms at maxRadius 12!
+Second search: Found build-location for Protoss_Pylon in 0.00ms at radius 2.
+2025-09-08 19:19:50 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 12774 buildPoints=306.0507160698624
+2025-09-08 19:19:51 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Protoss_Pylon
+2025-09-08 19:19:51 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Photon_Cannon at DefencePoint for [115, 99] which has 0.040734690081088785 defense already.
+2025-09-08 19:19:51 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Failed to find build-location for Protoss_Photon_Cannon in 0.99ms at maxRadius 7!
+Second search: Found build-location for Protoss_Photon_Cannon in 0.14ms at radius 4.
+2025-09-08 19:19:51 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Photon_Cannon at 12796 buildPoints=296.7876092769978
+2025-09-08 19:19:52 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Protoss_Photon_Cannon
+2025-09-08 19:19:52 [JBWAPI Client] botte.CentralProductionManager.checkCompleteMissions()
+INFO: Warning, failed to complete building Protoss_Pylon
+2025-09-08 19:19:52 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Photon_Cannon at DefencePoint for [112, 89] which has 0.06 defense already.
+2025-09-08 19:19:52 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+WARNING: Failed to find build-location for Protoss_Photon_Cannon in 0.14ms at maxRadius 7!
+Second search: Failed to find build-location for Protoss_Photon_Cannon in 0.36ms at maxRadius 12!
+2025-09-08 19:19:52 [JBWAPI Client] botte.CentralProductionManager.update()
+WARNING: Warning, failed to find build-tile for Protoss_Photon_Cannon
+2025-09-08 19:19:52 [JBWAPI Client] botte.CentralProductionManager.update()
+WARNING: No build-mission to produce: Protoss_Photon_Cannon
+2025-09-08 19:19:52 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #91_Pylon told to chill forever.
+2025-09-08 19:19:53 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Photon_Cannon at DefencePoint for [119, 118] which has 0.19892535105382092 defense already.
+2025-09-08 19:19:53 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Photon_Cannon in 0.02ms at radius 3.
+2025-09-08 19:19:53 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Photon_Cannon at 12829 buildPoints=376.2097596960841
+2025-09-08 19:19:56 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Photon_Cannon at DefencePoint for [105, 90] which has 0.84 defense already.
+2025-09-08 19:19:56 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+WARNING: Failed to find build-location for Protoss_Photon_Cannon in 0.32ms at maxRadius 7!
+Second search: Failed to find build-location for Protoss_Photon_Cannon in 0.52ms at maxRadius 12!
+2025-09-08 19:19:56 [JBWAPI Client] botte.CentralProductionManager.update()
+WARNING: Warning, failed to find build-tile for Protoss_Photon_Cannon
+2025-09-08 19:19:56 [JBWAPI Client] botte.CentralProductionManager.update()
+WARNING: No build-mission to produce: Protoss_Photon_Cannon
+2025-09-08 19:19:56 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Photon_Cannon at DefencePoint for [115, 99] which has 0.9258336999820789 defense already.
+2025-09-08 19:19:56 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Failed to find build-location for Protoss_Photon_Cannon in 0.30ms at maxRadius 7!
+Second search: Found build-location for Protoss_Photon_Cannon in 0.07ms at radius 4.
+2025-09-08 19:19:56 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Photon_Cannon at 12917 buildPoints=904.9700219347433
+2025-09-08 19:20:05 [JBWAPI Client] botte.CentralIntelligence.removeOwnBase()
+INFO: Existing own base removed!
+2025-09-08 19:20:05 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 13137 buildPoints=136.5033936423118
+2025-09-08 19:20:06 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Protoss_Photon_Cannon
+2025-09-08 19:20:06 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 13148 buildPoints=81.91174605624845
+2025-09-08 19:20:06 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.29ms at radius 7.
+2025-09-08 19:20:06 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 13159 buildPoints=268.4013896424217
+2025-09-08 19:20:09 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Protoss_Pylon at DefencePoint for [115, 99] which has 1.7270473179445238 defense already.
+2025-09-08 19:20:09 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.36ms at radius 6.
+2025-09-08 19:20:09 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 13214 buildPoints=169.51262673428636
+2025-09-08 19:20:11 [JBWAPI Client] botte.CentralProductionManager.checkCompleteMissions()
+INFO: Warning, failed to complete building Protoss_Zealot
+2025-09-08 19:20:11 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Pylon in 0.08ms at radius 11.
+2025-09-08 19:20:11 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Pylon at 13269 buildPoints=52.26887148654447
+2025-09-08 19:20:15 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Protoss_Pylon
+2025-09-08 19:20:15 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 13368 buildPoints=35.50989839745615
+2025-09-08 19:20:17 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Protoss_Pylon
+2025-09-08 19:20:17 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Zealot at 13401 buildPoints=20.526045029574092
+2025-09-08 19:20:25 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 13610 buildPoints=5.085794299200442
+2025-09-08 19:20:27 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Cybernetics_Core in 0.04ms at radius 4.
+2025-09-08 19:20:27 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Cybernetics_Core at 13654 buildPoints=21.74894998325463
+2025-09-08 19:20:30 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #97_Photon_Cannon told to chill forever.
+2025-09-08 19:20:31 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #100_Pylon told to chill forever.
+2025-09-08 19:20:33 [JBWAPI Client] botte.CentralProductionManager.checkBuildMissions()
+INFO: Warning, failed to move to build Protoss_Cybernetics_Core
+2025-09-08 19:20:34 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Protoss_Cybernetics_Core in 0.08ms at radius 4.
+2025-09-08 19:20:34 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Cybernetics_Core at 13808 buildPoints=0.33307221146702815
+2025-09-08 19:20:34 [JBWAPI Client] botte.BotteBWListener.onUnitCreate()
+INFO: Neutral unit created: Resource_Vespene_Geyser
+2025-09-08 19:20:34 [JBWAPI Client] botte.ResourceUnit.handleGeyserCreated()
+INFO: Replaced geyser 73 with 328
+2025-09-08 19:20:34 [JBWAPI Client] botte.BotteBWListener.onUnitComplete()
+INFO: Neutral unit completed: Resource_Vespene_Geyser
+2025-09-08 19:20:37 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #101_Pylon told to chill forever.
+2025-09-08 19:20:38 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Assimilator at 13907 buildPoints=2.839149490016727
+2025-09-08 19:20:43 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Assimilator at 14028 buildPoints=0.32781784430674754
+2025-09-08 19:20:44 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Failed to find morphing Protoss_Assimilator in allBotUnits!
+2025-09-08 19:20:44 [JBWAPI Client] botte.BotteBWListener.onUnitRenegade()
+INFO: Unit renegaded: Protoss_Assimilator player=true neutral=false enemy=false
+2025-09-08 19:20:49 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #102_Zealot
+2025-09-08 19:20:49 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #103_Zealot
+2025-09-08 19:21:07 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Probe at 14611 buildPoints=0.9367947624527879
+2025-09-08 19:21:13 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #107_Assimilator told to chill forever.
+2025-09-08 19:21:16 [JBWAPI Client] botte.CentralIntelligence.removeOwnBase()
+INFO: Existing own base removed!
+2025-09-08 19:21:16 [JBWAPI Client] botte.CentralProductionManager.checkCompleteMissions()
+INFO: Warning, failed to complete building Protoss_Probe
+2025-09-08 19:21:18 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Protoss_Dragoon at 14875 buildPoints=0.44244066432966855
+2025-09-08 19:21:19 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #105_Cybernetics_Core told to chill forever.
+2025-09-08 19:21:19 [JBWAPI Client] botte.BotteBWListener.onUnitCreate()
+INFO: Neutral unit created: Resource_Vespene_Geyser
+2025-09-08 19:21:19 [JBWAPI Client] botte.BotteBWListener.onUnitComplete()
+INFO: Neutral unit completed: Resource_Vespene_Geyser
+2025-09-08 19:21:41 [JBWAPI Client] botte.CentralProductionManager.checkCompleteMissions()
+INFO: Warning, failed to complete building Protoss_Dragoon
+2025-09-08 19:21:47 [JBWAPI Client] botte.BotteBWListener.onUnitCreate()
+INFO: Neutral unit created: Resource_Vespene_Geyser
+2025-09-08 19:21:47 [JBWAPI Client] botte.BotteBWListener.onUnitComplete()
+INFO: Neutral unit completed: Resource_Vespene_Geyser

@@ -5,6 +5,53 @@ namespace StarAI.PracticeClient.Tests;
 public sealed class SchnailCatalogReaderTests
 {
     [Fact]
+    public void PracticeAssetCatalogReaderReadsBundledStarAiAssetRoot()
+    {
+        var mapId = Guid.NewGuid();
+        var botId = Guid.NewGuid();
+        using var fixture = CatalogFixture.Create(
+            $$"""
+            [
+              {
+                "name": "Dragon",
+                "guid": "{{botId}}",
+                "enabled": true,
+                "race": "Terran",
+                "botExecutable": "dragon.dll",
+                "botType": "DLL",
+                "bwapiVersion": "4.4.0",
+                "enabledByUser": true,
+                "practiceOnly": false,
+                "elo": "1081",
+                "mapGuids": ["{{mapId}}"]
+              }
+            ]
+            """,
+            $$"""
+            [
+              {
+                "name": "(4)Fighting Spirit",
+                "fileName": "(4)Fighting Spirit.scx",
+                "guid": "{{mapId}}",
+                "enabled": true
+              }
+            ]
+            """,
+            createSchnailLayout: true);
+        Directory.CreateDirectory(Path.Combine(fixture.Root, "bots", "Dragon"));
+        File.WriteAllText(Path.Combine(fixture.Root, "bots", "Dragon", "dragon.dll"), "bot");
+        File.WriteAllText(Path.Combine(fixture.Root, "maps", "(4)Fighting Spirit.scx"), "map");
+
+        var catalog = PracticeAssetCatalogReader.Read(fixture.Root);
+
+        var bot = Assert.Single(catalog.Bots);
+        var map = Assert.Single(catalog.Maps);
+        Assert.Equal("Dragon", bot.Name);
+        Assert.Equal(Path.Combine(fixture.Root, "bots", "Dragon"), bot.SourceDirectory);
+        Assert.Equal(Path.Combine(fixture.Root, "maps", "(4)Fighting Spirit.scx"), map.SourcePath);
+    }
+
+    [Fact]
     public void ReadFilesParsesEnabledBotsAndMaps()
     {
         var mapId = Guid.NewGuid();

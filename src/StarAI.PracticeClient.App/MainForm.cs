@@ -110,7 +110,7 @@ public sealed class MainForm : Form
 
         var subtitle = new Label
         {
-            Text = "SCHNAIL 봇/맵을 읽어 로컬 1.16.1 + BWAPI 스파링을 준비합니다.",
+            Text = "StarAI 내장 봇/맵으로 로컬 1.16.1 + BWAPI 스파링을 준비합니다.",
             AutoSize = true,
             Font = new Font(Font.FontFamily, 10),
             ForeColor = Color.FromArgb(128, 218, 93),
@@ -249,7 +249,7 @@ public sealed class MainForm : Form
         {
             $"사람: {_paths.PlayerRuntimeRoot}",
             $"AI: {_paths.AiRuntimeRoot}",
-            "원본 SCHNAIL은 읽기 전용"
+            "StarAI 내장 자산 사용"
         });
 
         page.Controls.Add(CreateLabel("모드", 16, 26));
@@ -369,7 +369,7 @@ public sealed class MainForm : Form
         };
         AddHotkeyFilterButtons(page, _hotkeyCategoryFilter, _hotkeyCategoryButtons, 342, 58, 82, 30);
 
-        var importButton = CreateButton("SCHNAIL 원본", 752, 18, 110, 32);
+        var importButton = CreateButton("StarAI 기본값", 752, 18, 110, 32);
         importButton.Click += (_, _) => ImportHotkeys();
         var importBattleNetButton = CreateButton("Battle.net", 872, 18, 110, 32);
         importBattleNetButton.Click += (_, _) => ImportRemasteredHotkeysFromDetectedLocation();
@@ -469,7 +469,7 @@ public sealed class MainForm : Form
             370,
             366,
             142,
-            "선택한 항목은 3x3 게임 명령 카드로 표시합니다.\r\nSCHNAIL 원본은 원본 CSV를 사람 런타임으로 복사합니다.\r\nBattle.net/폴더 지정은 Remastered STR_* 핫키를 현재 작업 CSV에 반영합니다.\r\nCSV 저장은 작업 파일만 갱신합니다.\r\n런타임 반영은 사람 런타임 patch_rt.mpq에만 적용합니다."));
+            "선택한 항목은 3x3 게임 명령 카드로 표시합니다.\r\nStarAI 기본값은 내장 CSV를 사람 런타임으로 복사합니다.\r\nBattle.net/폴더 지정은 Remastered STR_* 핫키를 현재 작업 CSV에 반영합니다.\r\nCSV 저장은 작업 파일만 갱신합니다.\r\n런타임 반영은 사람 런타임 patch_rt.mpq에만 적용합니다."));
         page.Controls.Add(CreateReadOnlyBlock(
             18,
             580,
@@ -585,16 +585,17 @@ public sealed class MainForm : Form
     {
         try
         {
-            var schnailCatalog = SchnailCatalogReader.Read(_paths.SchnailRoot);
+            var baseCatalog = PracticeAssetCatalogReader.Read(_paths);
             var userMaps = UserMapCatalogReader.ReadDirectory(_settings.UserMapRoot);
             var ladderMapRoot = string.IsNullOrWhiteSpace(_settings.LadderMapRoot)
                 ? RemasteredLadderMapCatalogReader.DefaultDirectory()
                 : _settings.LadderMapRoot;
-            var ladderMaps = RemasteredLadderMapCatalogReader.ReadDirectory(ladderMapRoot, schnailCatalog);
+            var ladderMaps = RemasteredLadderMapCatalogReader.ReadDirectory(ladderMapRoot, baseCatalog);
             _catalog = UserMapCatalogReader.Merge(
-                UserMapCatalogReader.Merge(schnailCatalog, ladderMaps),
+                UserMapCatalogReader.Merge(baseCatalog, ladderMaps),
                 userMaps);
-            _statusLabel.Text = $"SCHNAIL 카탈로그 로드 완료: 봇 {_catalog.Bots.Count}개, 맵 {_catalog.Maps.Count}개 (래더맵 {ladderMaps.Count}개, 사용자 맵 {userMaps.Count}개)";
+            _statusLabel.Text = $"StarAI 카탈로그 로드 완료: 봇 {_catalog.Bots.Count}개, 맵 {_catalog.Maps.Count}개 (래더맵 {ladderMaps.Count}개, 사용자 맵 {userMaps.Count}개)";
+            RefreshRatingUi();
             ApplyBotFilters();
         }
         catch (Exception ex)
@@ -686,8 +687,8 @@ public sealed class MainForm : Form
         var workingCsv = Path.Combine(_paths.PlayerRuntimeRoot, HotkeyCsvStore.RelativeWorkingCsvPath);
         var sourceCsv = File.Exists(workingCsv)
             ? workingCsv
-            : Path.Combine(_paths.SchnailRoot, "res", "sc_hotkeys.csv");
-        var messages = Path.Combine(_paths.SchnailRoot, "res", "messages_kr.properties");
+            : PracticeAssetPaths.DefaultHotkeyCsv(_paths);
+        var messages = PracticeAssetPaths.Messages(_paths);
         _hotkeyEntries = _hotkeyStore.Load(sourceCsv, messages);
         RefreshHotkeyObjects();
     }
@@ -1021,7 +1022,7 @@ public sealed class MainForm : Form
 
     private Image? LoadHotkeyIcon(HotkeyEntry entry)
     {
-        var iconRoot = Path.Combine(_paths.SchnailRoot, "res", "hotkey_icons");
+        var iconRoot = PracticeAssetPaths.HotkeyIconRoot(_paths);
         foreach (var relativePath in HotkeyIconCandidates(entry))
         {
             if (_hotkeyIconCache.TryGetValue(relativePath, out var cached))
@@ -1272,9 +1273,9 @@ public sealed class MainForm : Form
     {
         try
         {
-            _hotkeyStore.ImportFromSchnail(_paths, _paths.PlayerRuntimeRoot);
+            _hotkeyStore.ImportFromDefaultAssets(_paths, _paths.PlayerRuntimeRoot);
             LoadHotkeys();
-            MessageBox.Show(this, "SCHNAIL 핫키 CSV를 작업 런타임으로 가져왔습니다.", "핫키");
+            MessageBox.Show(this, "StarAI 기본 핫키 CSV를 작업 런타임으로 가져왔습니다.", "핫키");
         }
         catch (Exception ex)
         {
@@ -1558,7 +1559,7 @@ public sealed class MainForm : Form
             $"환산 주의: {difficulty?.Disclaimer ?? "ELO 정보가 없어 환산하지 않았습니다."}",
             $"호환 맵: {compatibleMapCount}개",
             $"선택 맵: {(map is null ? "Random" : $"{map.Name} ({map.FileName})")}",
-            $"맵 종류: {(map?.IsUserMap == true ? "사용자 추가 맵 (호환성 제약 미확인)" : "SCHNAIL 맵")}",
+            $"맵 종류: {(map?.IsUserMap == true ? "사용자 추가 맵 (호환성 제약 미확인)" : "StarAI 내장 맵")}",
             "빌드: 봇 기본 빌드 (공통 BWAPI 빌드 선택 규격이 없어 아직 봇별 강제 선택은 보류)",
             $"봇 원본 폴더: {bot.SourceDirectory ?? "미확인"}",
             $"맵 원본 파일: {map?.SourcePath ?? "미확인"}",
@@ -1655,7 +1656,7 @@ public sealed class MainForm : Form
         {
             yield return Path.IsPathRooted(map.ImagePath)
                 ? map.ImagePath
-                : Path.Combine(_paths.SchnailRoot, map.ImagePath);
+                : Path.Combine(_paths.AssetRoot, map.ImagePath);
         }
 
         if (!string.IsNullOrWhiteSpace(map.SourcePath))
@@ -1665,7 +1666,7 @@ public sealed class MainForm : Form
 
         if (!string.IsNullOrWhiteSpace(map.FileName))
         {
-            yield return Path.Combine(_paths.SchnailRoot, "maps", map.FileName + ".jpg");
+            yield return Path.Combine(_paths.AssetRoot, "maps", map.FileName + ".jpg");
         }
     }
 
@@ -1705,6 +1706,7 @@ public sealed class MainForm : Form
         }
 
         var enemyRace = SelectedEnemyRace();
+        var playerRating = _ratingStore.Load().PlayerRating;
         if (map is null)
         {
             var compatibleMaps = _catalog.Maps
@@ -1712,17 +1714,32 @@ public sealed class MainForm : Form
                 .Where(candidate => LadderBotSelector.CandidatesForMap(_catalog, candidate.Id, enemyRace).Count > 0)
                 .OrderBy(candidate => candidate.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
+            var weightedCandidates = LadderBotSelector.CandidatesForEnabledMaps(_catalog, enemyRace);
+            var randomMapPreview = weightedCandidates
+                .OrderBy(bot => Math.Abs((bot.Elo ?? EloRatingCalculator.DefaultRating) - playerRating))
+                .ThenBy(bot => bot.Name, StringComparer.OrdinalIgnoreCase)
+                .Take(12)
+                .Select(bot =>
+                {
+                    var difficulty = LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo);
+                    return $"- {bot.Name} / {bot.Race} / {difficulty?.Label ?? $"ELO {bot.Elo?.ToString() ?? "?"}"}";
+                });
             _difficultyLabel.Text = compatibleMaps.Count == 0
                 ? "래더\r\n후보 없음"
-                : $"래더\r\n랜덤 맵 {compatibleMaps.Count}개";
+                : $"래더\r\nMMR 후보 {weightedCandidates.Count}개";
             _detailsText.Text = string.Join(Environment.NewLine, new[]
             {
                 "모드: 래더",
                 $"내 종족: {(_playerRaceCombo.SelectedItem is StarCraftRace selectedRace ? selectedRace : StarCraftRace.Terran)}",
                 $"상대 종족: {RaceFilterLabel(enemyRace)}",
                 "선택 맵: Random",
+                $"현재 MMR: {playerRating}",
                 $"호환 맵 후보: {compatibleMaps.Count}개",
-                "시작 시점에 호환 가능한 맵과 봇을 무작위로 선택합니다."
+                $"래더 봇 후보: {weightedCandidates.Count}개",
+                "매칭: 현재 MMR 근처 봇을 먼저 가중 선택한 뒤, 해당 봇의 호환 맵을 선택합니다.",
+                "",
+                "MMR 근접 후보 미리보기",
+                string.Join(Environment.NewLine, randomMapPreview)
             });
             return;
         }
@@ -1735,11 +1752,15 @@ public sealed class MainForm : Form
             : $"래더\r\n후보 {candidates.Count}개";
 
         var difficultyRange = FormatDifficultyRange(candidates);
-        var preview = candidates.Take(12).Select(bot =>
-        {
-            var difficulty = LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo);
-            return $"- {bot.Name} / {bot.Race} / {difficulty?.Label ?? $"ELO {bot.Elo?.ToString() ?? "?"}"}";
-        });
+        var preview = candidates
+            .OrderBy(bot => Math.Abs((bot.Elo ?? EloRatingCalculator.DefaultRating) - playerRating))
+            .ThenBy(bot => bot.Name, StringComparer.OrdinalIgnoreCase)
+            .Take(12)
+            .Select(bot =>
+            {
+                var difficulty = LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo);
+                return $"- {bot.Name} / {bot.Race} / {difficulty?.Label ?? $"ELO {bot.Elo?.ToString() ?? "?"}"}";
+            });
 
         _detailsText.Text = string.Join(Environment.NewLine, new[]
         {
@@ -1747,12 +1768,14 @@ public sealed class MainForm : Form
             $"내 종족: {(_playerRaceCombo.SelectedItem is StarCraftRace race ? race : StarCraftRace.Terran)}",
             $"상대 종족: {RaceFilterLabel(enemyRace)}",
             $"선택 맵: {(map is null ? "없음" : $"{map.Name} ({map.FileName})")}",
-            $"랜덤 후보: {candidates.Count}개",
+            $"현재 MMR: {playerRating}",
+            $"래더 봇 후보: {candidates.Count}개",
             $"난이도 범위: {difficultyRange}",
+            "매칭: 선택 맵 안에서 현재 MMR 근처 봇을 높은 확률로 선택합니다.",
             "빌드: 선택된 봇의 기본 빌드 (봇별 빌드 선택 API 조사/구현 전)",
             $"맵 원본 파일: {map?.SourcePath ?? "미확인"}",
             "",
-            "후보 미리보기",
+            "MMR 근접 후보 미리보기",
             string.Join(Environment.NewLine, preview)
         });
     }
@@ -1884,25 +1907,39 @@ public sealed class MainForm : Form
         }
 
         var enemyRace = SelectedEnemyRace();
-        var map = mapItem.Map ?? PickRandomLadderMap(enemyRace);
-        var bot = LadderBotSelector.PickRandom(_catalog, map.Id, enemyRace, _random);
+        var playerRating = _ratingStore.Load().PlayerRating;
+        if (mapItem.Map is { } selectedMap)
+        {
+            var selectedMapBot = LadderBotSelector.PickForRating(
+                _catalog,
+                selectedMap.Id,
+                enemyRace,
+                playerRating,
+                _random);
+            return (selectedMapBot, selectedMap);
+        }
+
+        var bot = LadderBotSelector.PickForRatingAcrossEnabledMaps(
+            _catalog,
+            enemyRace,
+            playerRating,
+            _random);
+        var map = PickRandomLadderMapForBot(bot);
         return (bot, map);
     }
 
-    private PracticeMap PickRandomLadderMap(StarCraftRace? enemyRace)
+    private PracticeMap PickRandomLadderMapForBot(PracticeBot bot)
     {
         if (_catalog is null)
         {
             throw new InvalidOperationException("카탈로그를 먼저 로드해주세요.");
         }
 
-        var maps = _catalog.Maps
-            .Where(map => map.Enabled)
-            .Where(map => LadderBotSelector.CandidatesForMap(_catalog, map.Id, enemyRace).Count > 0)
+        var maps = PracticeCatalogCompatibility.MapsForBot(_catalog, bot.Id)
             .ToList();
         if (maps.Count == 0)
         {
-            throw new InvalidOperationException("래더에 사용할 수 있는 호환 맵이 없습니다.");
+            throw new InvalidOperationException($"래더에 사용할 수 있는 '{bot.Name}' 호환 맵이 없습니다.");
         }
 
         return maps[_random.Next(maps.Count)];
@@ -2195,8 +2232,9 @@ public sealed class MainForm : Form
         _finalizingSession = true;
         _sessionLifecycleTimer?.Stop();
         var result = FindBotResult(session);
-        var outcome = PracticeSessionOutcomeResolver.Resolve(session.Mode, result, reason);
-        CompleteActiveSessionHistory(outcome, result?.SourcePath ?? reason);
+        var gameStateResult = FindPlayerGameStateResult(session);
+        var outcome = PracticeSessionOutcomeResolver.Resolve(session.Mode, result, gameStateResult, reason);
+        CompleteActiveSessionHistory(outcome, result?.SourcePath ?? gameStateResult?.SourcePath ?? reason);
         DisposePracticeOverlay();
 
         var stopped = await Task.Run(() =>
@@ -2232,6 +2270,14 @@ public sealed class MainForm : Form
 
         roots.Add(Path.Combine(session.Plan.Ai.RuntimeRoot, "bwapi-data", "logs"));
         return BotResultLogReader.FindLatestPlayerOutcome(roots, session.StartedAtUtc);
+    }
+
+    private static TournamentGameStateObservation? FindPlayerGameStateResult(ActivePracticeSession session)
+    {
+        return TournamentGameStateReader.FindPlayerOutcome(
+            session.Plan.Player.RuntimeRoot,
+            session.StartedAtUtc,
+            session.Plan.Player.CharacterName);
     }
 
     private void CompleteActiveSessionHistory(PracticeSessionOutcome outcome, string resultSource)

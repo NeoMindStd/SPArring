@@ -12,17 +12,18 @@
 
 - Windows 10/11 64비트
 - StarCraft 1.16.1 + BWAPI 런타임: `C:\starai\SC116AI`
-- SCHNAIL Client 기본 설치 위치: `C:\Program Files (x86)\SCHNAIL Client`
+- StarAI 릴리즈 ZIP에 포함된 `data` 폴더
 
 ## 설치 후 생성되는 실행 진입점
 
 - `C:\starai\Start-StarAI-PracticeClient.cmd`
 - `C:\starai\StarAI.PracticeClient\StarAI.PracticeClient.App.exe`
+- `C:\starai\StarAI.PracticeClient\data`
 
 ## 참고
 
 - 사람용 런타임은 `C:\starai\SC116AI`, AI용 런타임은 `C:\starai\SC116AI_ai`를 사용합니다.
-- SCHNAIL 원본 설치 폴더는 수정하지 않습니다.
+- 봇/맵/핫키 기본 자산은 StarAI `data` 폴더에서 읽습니다. SCHNAIL Client 설치는 최종 사용자 필수 조건이 아닙니다.
 - 핫키를 `런타임 반영`까지 적용하려면 Java 11 이상이 필요할 수 있습니다.
 
 ## English Install Guide
@@ -37,4 +38,4 @@ Requirements:
 
 - Windows 10/11 64-bit
 - StarCraft 1.16.1 + BWAPI runtime: `C:\starai\SC116AI`
-- SCHNAIL Client default folder: `C:\Program Files (x86)\SCHNAIL Client`
+- Bundled StarAI `data` folder included in the release ZIP

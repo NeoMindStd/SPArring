@@ -21,7 +21,8 @@ docs/
 주요 책임:
 
 - 경로 정책: `PracticePaths`, `RuntimeWritePolicy`
-- SCHNAIL 카탈로그 파싱: `SchnailCatalogReader`
+- StarAI 내장 자산 카탈로그 로딩: `PracticeAssetCatalogReader`
+- SCHNAIL 호환 JSON 파싱: `SchnailCatalogReader`
 - 봇/맵 모델: `Models`
 - 봇-맵 호환성: `PracticeCatalogCompatibility`
 - 실행 계획 생성: `PracticeLaunchPlanBuilder`
@@ -36,6 +37,37 @@ docs/
 - 세션 기록/APM/결과/MMR 계산: `SessionHistory`, `SessionMetrics`, `SessionResults`
 
 Core는 가능한 한 테스트 가능해야 하며, WinForms UI에 의존하지 않는다.
+
+## 래더 매칭
+
+- 래더 후보는 `LadderBotSelector`가 고른다.
+- 먼저 봇-맵 호환성, DLL 봇 여부, 상대 종족 필터를 적용한다.
+- 맵이 지정된 경우 해당 맵의 호환 봇 중 현재 사람 MMR과 봇 ELO/MMR이 가까운 봇을 거리 기반 가중 랜덤으로 선택한다.
+- 맵이 `Random`인 경우 모든 활성 호환 맵을 대상으로 현재 사람 MMR에 가까운 봇을 먼저 가중 선택하고, 그 봇이 지원하는 맵 중 하나를 고른다.
+- 따라서 낮은 MMR 봇이 완전히 배제되지는 않지만, 현재 MMR과 멀수록 매칭 확률은 급격히 낮아진다.
+
+## 내장 자산
+
+제품 실행 시 봇/맵/핫키 기본값은 레포/설치 폴더의 `data` 아래에서 읽는다.
+
+```text
+data/
+  bots/
+    bots.dat
+    <BotName>/
+  maps/
+    maps.dat
+    *.scm / *.scx / preview images
+  res/
+    sc_hotkeys.csv
+    messages_kr.properties
+    hotkey_data/
+    hotkey_icons/
+  tools/
+    mpq/
+```
+
+`scripts\import-schnail-assets.ps1`는 릴리즈 준비 또는 개발 마이그레이션 시 로컬 SCHNAIL 설치본에서 위 구조로 자산을 복사한다. 이 스크립트는 원본 SCHNAIL 폴더를 수정하지 않으며, 최종 사용자 실행 경로는 SCHNAIL 설치 여부와 무관해야 한다.
 
 ## App 프로젝트
 
@@ -71,7 +103,7 @@ C:\starai\SC116AI_ai   AI 클라이언트
 | 화면 | borderless/fullscreen 지향 | 창모드/관찰 가능 지향 |
 | 사용 목적 | 플레이어 조작 | 봇 실행 |
 
-원본 SCHNAIL/Remastered 폴더는 런타임 자산의 읽기 전용 출처이며 실행 중 쓰기 대상이 아니다.
+StarAI `data` 폴더는 런타임 자산의 읽기 전용 출처이며 실행 중 쓰기 대상이 아니다. SCHNAIL 설치본은 개발/릴리즈 준비 시 import 소스로만 사용할 수 있고, 제품 실행 필수 조건이 아니다.
 
 ## 실행 계획 생성
 
@@ -101,7 +133,7 @@ C:\starai\SC116AI_ai   AI 클라이언트
 
 ## 런타임 자산 흐름
 
-1. SCHNAIL 카탈로그에서 봇/맵 원본 경로를 읽는다.
+1. StarAI `data` 카탈로그에서 봇/맵 원본 경로를 읽는다.
 2. 맵은 두 런타임의 `maps\StarAI`로 복사한다.
 3. 봇은 AI 런타임의 `bwapi-data\AI\StarAI\Bots\<BotName>`로 복사한다.
 4. 사람/AI 각각 `bwapi.ini`, `wmode.ini`, `ddraw.ini` 등을 생성/갱신한다.
@@ -128,22 +160,22 @@ C:\starai\SC116AI_ai   AI 클라이언트
 
 ## 핫키 적용 구조
 
-1. SCHNAIL 또는 작업 CSV를 읽는다.
-2. Battle.net/Remastered 가져오기는 `STR_* = key` 파일을 탐지해 SCHNAIL command id로 매핑한 뒤 작업 CSV 엔트리의 핫키만 갱신한다.
+1. StarAI 기본 CSV 또는 작업 CSV를 읽는다.
+2. Battle.net/Remastered 가져오기는 `STR_* = key` 파일을 탐지해 StarAI command id로 매핑한 뒤 작업 CSV 엔트리의 핫키만 갱신한다.
 3. `stat_txt.txt`의 명령 문자열을 패치한다.
 4. `sctblcmp.exe`로 `stat_txt.tbl`을 컴파일한다.
-5. SCHNAIL과 같은 SFmpq 기반 writer로 사람 런타임 `patch_rt.mpq`에 `rez\stat_txt.tbl`을 삽입한다.
+5. StarAI에 포함된 SFmpq 기반 writer로 사람 런타임 `patch_rt.mpq`에 `rez\stat_txt.tbl`을 삽입한다.
 
 금지:
 
-- 원본 SCHNAIL MPQ 수정.
+- StarAI 내장 `data` 수정.
 - 원본 Remastered/Battle.net 설치 폴더 수정.
 - `JMpqEditor` 직접 쓰기 방식.
 - AI 런타임에 사람 핫키 패치를 우선 적용하는 흐름.
 
 UI:
 
-- 핫키 탭은 SCHNAIL 원본 `res\hotkey_icons` 이미지를 읽기 전용으로 로드한다.
+- 핫키 탭은 StarAI 내장 `data\res\hotkey_icons` 이미지를 읽기 전용으로 로드한다.
 - 선택 항목 목록은 대표 아이콘을 표시하고, 선택된 항목의 명령은 StarCraft 명령 카드에 맞춘 3x3 슬롯으로 표시한다.
 - CSV/MPQ 쓰기 대상은 계속 사람 런타임뿐이다.
 
@@ -161,14 +193,16 @@ UI:
 ## 결과와 래더 점수
 
 - 결과 판정은 AI 봇 로그(`.txt`, `.log`, `.json`)에서 `WIN/LOSS/DRAW`, `is_winner`, `result` 패턴을 찾는 것을 우선한다.
-- 봇 로그가 없는 래더 세션은 플레이어 이탈/프로세스 종료만으로 승패를 추정하지 않고 `미확인`으로 둔다.
+- 봇 로그가 없으면 사람 런타임 TournamentModule의 `bwapi-data\gameState.txt`가 해당 세션 중 갱신됐는지 확인하고, `gameOver`, `victorious`, `defeated` 플래그로 승패를 판정한다.
+- 봇 로그와 TournamentModule 결과가 모두 없는 래더 세션은 플레이어 이탈/프로세스 종료만으로 승패를 추정하지 않고 `미확인`으로 둔다.
 - 스파링 세션의 같은 이탈은 래더 점수를 건드리지 않고 `중단`으로 기록한다.
 - 사람 래더 점수만 ELO 공식으로 갱신한다. AI의 ELO/MMR은 카탈로그 값을 고정 상대 점수로 사용한다.
+- StarAI 커스텀 래더 룰로 승리 시 점수 변화가 0으로 반올림되면 최소 +1점을 보장한다.
 - 전적 탭은 시작 시각, 모드, 결과, AI, 맵, 종족, APM, 액션, 시간, 래더 점수, 판정 근거를 표시한다.
 
 ## 봇-맵 호환성 예외
 
-- 기본 호환성은 SCHNAIL `maps.dat` / `bots.dat` 선언과 Remastered 래더맵의 `EffectiveCompatibilityMapIds`를 따른다.
+- 기본 호환성은 StarAI 내장 `maps.dat` / `bots.dat` 선언과 Remastered 래더맵의 `EffectiveCompatibilityMapIds`를 따른다.
 - 단, 실제 런타임 로그/관찰로 깨지는 조합은 `PracticeCatalogCompatibility`의 known-bad 예외로 막는다.
 - 2026-06-07 확인된 예외:
   - `Feint` + `(4)Fighting Spirit` / `(4)Fighting Spirit 1.4 [Remastered Ladder]`: AI 런타임 `Steamhammer.dll` 접근 위반 크래시 확인.

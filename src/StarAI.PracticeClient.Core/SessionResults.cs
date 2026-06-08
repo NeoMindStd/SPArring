@@ -64,6 +64,11 @@ public static class EloRatingCalculator
 
         var expected = 1.0 / (1.0 + Math.Pow(10.0, (opponentRating - playerRating) / 400.0));
         var after = (int)Math.Round(playerRating + kFactor * (score - expected), MidpointRounding.AwayFromZero);
+        if (outcome == PracticeSessionOutcome.PlayerWin && after <= playerRating)
+        {
+            after = playerRating + 1;
+        }
+
         return new EloRatingChange(playerRating, opponentRating, Math.Max(0, after));
     }
 }
@@ -128,6 +133,11 @@ public sealed record BotResultLogObservation(
     string SourcePath,
     DateTime LastWriteTimeUtc);
 
+public sealed record TournamentGameStateObservation(
+    PracticeSessionOutcome PlayerOutcome,
+    string SourcePath,
+    DateTime LastWriteTimeUtc);
+
 public static class PracticeSessionOutcomeResolver
 {
     public static PracticeSessionOutcome Resolve(
@@ -135,9 +145,23 @@ public static class PracticeSessionOutcomeResolver
         BotResultLogObservation? botResult,
         string reason)
     {
+        return Resolve(mode, botResult, null, reason);
+    }
+
+    public static PracticeSessionOutcome Resolve(
+        PracticeSessionMode mode,
+        BotResultLogObservation? botResult,
+        TournamentGameStateObservation? gameStateResult,
+        string reason)
+    {
         if (botResult is not null)
         {
             return botResult.PlayerOutcome;
+        }
+
+        if (gameStateResult is not null)
+        {
+            return gameStateResult.PlayerOutcome;
         }
 
         if (mode == PracticeSessionMode.Sparring && IsPlayerQuitReason(reason))
@@ -152,6 +176,108 @@ public static class PracticeSessionOutcomeResolver
     {
         return reason.StartsWith("player-left-ingame:", StringComparison.OrdinalIgnoreCase) ||
                reason.StartsWith("player-process-exited", StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+public static class TournamentGameStateReader
+{
+    public const string RelativeGameStatePath = "bwapi-data/gameState.txt";
+
+    private const int SelfNameLineIndex = 1;
+    private const int DefeatedLineIndex = 8;
+    private const int VictoriousLineIndex = 9;
+    private const int GameOverLineIndex = 10;
+    private const int MinimumLineCount = GameOverLineIndex + 1;
+
+    public static TournamentGameStateObservation? FindPlayerOutcome(
+        string runtimeRoot,
+        DateTime sessionStartedAtUtc,
+        string expectedSelfName = "StarAIHuman")
+    {
+        if (string.IsNullOrWhiteSpace(runtimeRoot))
+        {
+            return null;
+        }
+
+        var path = Path.Combine(runtimeRoot, RelativeGameStatePath);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        var file = new FileInfo(path);
+        if (file.LastWriteTimeUtc < sessionStartedAtUtc.AddSeconds(-2))
+        {
+            return null;
+        }
+
+        try
+        {
+            var lines = ReadAllLinesShared(path);
+            var outcome = ParsePlayerOutcome(lines, expectedSelfName);
+            return outcome is null
+                ? null
+                : new TournamentGameStateObservation(outcome.Value, path, file.LastWriteTimeUtc);
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    public static PracticeSessionOutcome? ParsePlayerOutcome(
+        IReadOnlyList<string> lines,
+        string expectedSelfName = "StarAIHuman")
+    {
+        if (lines.Count < MinimumLineCount)
+        {
+            return null;
+        }
+
+        var selfName = lines[SelfNameLineIndex].Trim();
+        if (!string.IsNullOrWhiteSpace(expectedSelfName) &&
+            !string.Equals(selfName, expectedSelfName, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        if (!TryReadFlag(lines[DefeatedLineIndex], out var defeated) ||
+            !TryReadFlag(lines[VictoriousLineIndex], out var victorious) ||
+            !TryReadFlag(lines[GameOverLineIndex], out var gameOver) ||
+            !gameOver)
+        {
+            return null;
+        }
+
+        return (defeated, victorious) switch
+        {
+            (false, true) => PracticeSessionOutcome.PlayerWin,
+            (true, false) => PracticeSessionOutcome.PlayerLoss,
+            _ => null
+        };
+    }
+
+    private static bool TryReadFlag(string text, out bool value)
+    {
+        value = false;
+        if (!int.TryParse(text.Trim(), out var number))
+        {
+            return false;
+        }
+
+        value = number != 0;
+        return true;
+    }
+
+    private static string[] ReadAllLinesShared(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd().Split(["\r\n", "\n"], StringSplitOptions.None);
     }
 }
 

@@ -1,0 +1,21 @@
+{
+    "bwapiConfig": {
+        "localSpeed": -1,
+        "frameSkip": 0,
+        "userInput": false,
+        "completeMapInformation": false
+    },
+    "ecgConfig": {
+        "debugConsole": false,
+        "debugScreen": false,
+        "debugText": false,
+        "enableLatCom": true,
+        "sounds": false,
+        "sscait": false,
+        "enableSkyCladObserver": false,
+        "forceStrat": "",
+        "enableCherryVisDump": false,
+        "debugDisableAttack": false,
+        "humanMode": true
+    }
+}

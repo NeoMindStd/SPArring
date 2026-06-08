@@ -1,0 +1,505 @@
+2026-05-27 16:34:25 [main] botte.Main.main()
+INFO: MadMix started.
+2026-05-27 16:34:38 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: onStart started.
+2026-05-27 16:34:38 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Map is: (4)Fighting Spirit.scx | iCCup | Fighting Spirit 1.3
+2026-05-27 16:34:38 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Analyzing map...
+2026-05-27 16:34:38 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Map data ready.
+2026-05-27 16:34:38 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: Map has 4 startLocations. BWTA says 4 startLocations and 13 baseLocations.
+2026-05-27 16:34:38 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: getLatency=LanLow
+2026-05-27 16:34:38 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: getLatencyFrames=3
+2026-05-27 16:34:38 [JBWAPI Client] botte.BotteBWListener.onStart()
+INFO: onStart ended.
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.getCentralIntelligence()
+INFO: Creating CentralIntelligence.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=3760.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=928.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4221.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=2223.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4307.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4672.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4342.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=2667.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=3551.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=5208.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=0.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=2510.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initBase()
+INFO:  groundDistanceToMainBase=4209.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initialize()
+INFO: Found 0 stupid minerals on the map.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initialize()
+INFO: Found 4 travel minerals on the map.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralRegionHandler.initIsMoney()
+INFO: Map has 153507 minerals in 108 units.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralRegionHandler initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Playing on SCHNAIL!
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: NORMAL_PLAY + TvA_STRANGE_2_FACTORY
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: NORMAL_PLAY + TvA_2_RAX
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: NORMAL_PLAY + NOTHING
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: CAUTIOUS_PLAY + TvA_STRANGE_2_FACTORY
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: CAUTIOUS_PLAY + TvA_2_RAX
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: CAUTIOUS_PLAY + NOTHING
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: ACTIVE_BRAVE_PLAY + TvA_STRANGE_2_FACTORY
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: ACTIVE_BRAVE_PLAY + TvA_2_RAX
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: ACTIVE_BRAVE_PLAY + NOTHING
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: PASSIVE_BRAVE_PLAY + TvA_STRANGE_2_FACTORY
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: PASSIVE_BRAVE_PLAY + TvA_2_RAX
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: PASSIVE_BRAVE_PLAY + NOTHING
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_BATTLE_CRUISERS + TvA_2_RAX
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_BATTLE_CRUISERS + TvA_FAST_BUNKER
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_BATTLE_CRUISERS + NOTHING
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MARINE_RUSH + TvA_BBS
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MARINE_RUSH + TvA_FASTER_RAX
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MARINES + TvA_2_RAX
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MARINES + TvA_BBS
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MARINES + TvA_FAST_BUNKER
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MARINES + NOTHING
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MECH + TvA_STRANGE_2_FACTORY
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MECH + NOTHING
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_CHEESE_SCV_RUSH + NOTHING
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_BIG_MACRO + NOTHING
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpeningCombo.<init>()
+INFO: Possible opening: OPEN_MEGA_MACRO + NOTHING
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpponentModeler.getResultsFromFile()
+INFO: Reading results from bwapi-data\read\gamelog.csv
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Old sort:
+OPEN_MECH + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + TvA_FAST_BUNKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+PASSIVE_BRAVE_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+ACTIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BATTLE_CRUISERS + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BIG_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+ACTIVE_BRAVE_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_CHEESE_SCV_RUSH + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BATTLE_CRUISERS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BATTLE_CRUISERS + TvA_FAST_BUNKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+CAUTIOUS_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+CAUTIOUS_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+PASSIVE_BRAVE_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+CAUTIOUS_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+NORMAL_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MECH + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+NORMAL_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + TvA_BBS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINE_RUSH + TvA_FASTER_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+ACTIVE_BRAVE_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+NORMAL_PLAY + NOTHING (0 wins, 1 losses) [0-0 0-1 0-0 0-1 0-0 0-1] testScore=0.8980239743556502 combinedScore=138.776 notPlayedTime=0
+OPEN_MARINE_RUSH + TvA_BBS (5 wins, 1 losses) [5-1 5-1 5-1 5-1 5-1 5-1] testScore=0.8958527382440196 combinedScore=140.2608443609375 notPlayedTime=1
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Test sort:
+OPEN_BATTLE_CRUISERS + TvA_FAST_BUNKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + TvA_BBS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MECH + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + TvA_FAST_BUNKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+CAUTIOUS_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BIG_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+ACTIVE_BRAVE_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+CAUTIOUS_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MECH + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINE_RUSH + TvA_FASTER_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+CAUTIOUS_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+ACTIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_CHEESE_SCV_RUSH + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BATTLE_CRUISERS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+NORMAL_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BATTLE_CRUISERS + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+PASSIVE_BRAVE_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+ACTIVE_BRAVE_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+PASSIVE_BRAVE_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+NORMAL_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+NORMAL_PLAY + NOTHING (0 wins, 1 losses) [0-0 0-1 0-0 0-1 0-0 0-1] testScore=0.8980239743556502 combinedScore=138.776 notPlayedTime=0
+OPEN_MARINE_RUSH + TvA_BBS (5 wins, 1 losses) [5-1 5-1 5-1 5-1 5-1 5-1] testScore=0.8958527382440196 combinedScore=140.2608443609375 notPlayedTime=1
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: New sort:
+ACTIVE_BRAVE_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+NORMAL_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+PASSIVE_BRAVE_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+ACTIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BATTLE_CRUISERS + TvA_FAST_BUNKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+ACTIVE_BRAVE_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+PASSIVE_BRAVE_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + TvA_BBS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MECH + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINE_RUSH + TvA_FASTER_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MECH + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BATTLE_CRUISERS + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+CAUTIOUS_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BATTLE_CRUISERS + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_CHEESE_SCV_RUSH + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+NORMAL_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+PASSIVE_BRAVE_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_BIG_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+CAUTIOUS_PLAY + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINES + TvA_FAST_BUNKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+CAUTIOUS_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+OPEN_MARINE_RUSH + TvA_BBS (5 wins, 1 losses) [5-1 5-1 5-1 5-1 5-1 5-1] testScore=0.8958527382440196 combinedScore=140.2608443609375 notPlayedTime=1
+NORMAL_PLAY + NOTHING (0 wins, 1 losses) [0-0 0-1 0-0 0-1 0-0 0-1] testScore=0.8980239743556502 combinedScore=138.776 notPlayedTime=0
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Old top 3 openings:
+1st: OPEN_MECH + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+2nd: OPEN_MEGA_MACRO + NOTHING (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+3rd: OPEN_MARINES + TvA_FAST_BUNKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Test top 3 openings:
+1st: OPEN_BATTLE_CRUISERS + TvA_FAST_BUNKER (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+2nd: OPEN_MARINES + TvA_BBS (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+3rd: OPEN_MECH + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: New top 3 openings:
+1st: ACTIVE_BRAVE_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+2nd: NORMAL_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+3rd: PASSIVE_BRAVE_PLAY + TvA_STRANGE_2_FACTORY (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0] testScore=0.8998243430098751 combinedScore=141.13500000000002 notPlayedTime=7
+2026-05-27 16:34:39 [JBWAPI Client] botte.opening.OpponentModeler.initialize()
+INFO: Best opening: ACTIVE_BRAVE_PLAY + TvA_2_RAX (0 wins, 0 losses) [0-0 0-0 0-0 0-0 0-0 0-0]
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: OpponentModeler initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Terran_Academy : -4.5
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Spider_Mines : 1.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Stim_Packs : 1.4
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Tank_Siege_Mode : 1.5
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.addBoostRecursive()
+INFO: Adding boost-recursive for Terran_Nuclear_Missile
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Terran_Nuclear_Missile : 2.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.addBoostRecursive()
+INFO: Adding boost-recursive for Terran_Nuclear_Silo
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Terran_Nuclear_Silo : 0.1
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.addBoostRecursive()
+INFO: Adding boost-recursive for Terran_Covert_Ops
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Terran_Covert_Ops : 0.1
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.addBoostRecursive()
+INFO: Adding boost-recursive for Terran_Science_Facility
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Terran_Science_Facility : 0.1
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.addBoostRecursive()
+INFO: Adding boost-recursive for Terran_Starport
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Terran_Starport : 0.1
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.addBoostRecursive()
+INFO: Adding boost-recursive for Terran_Factory
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Terran_Factory : 0.1
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.addBoostRecursive()
+INFO: Adding boost-recursive for Terran_Barracks
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Terran_Barracks : 0.1
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.addBoostRecursive()
+INFO: Adding boost-recursive for Terran_Science_Facility
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.addBoostRecursive()
+INFO: Adding boost-recursive for Terran_Science_Facility
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.addBoostRecursive()
+INFO: Adding boost-recursive for Terran_Nuclear_Silo
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Optical_Flare : 0.2
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Restoration : 0.1
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Lockdown : 0.2
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Personnel_Cloaking : 0.2
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Moebius_Reactor : 0.1
+2026-05-27 16:34:39 [JBWAPI Client] botte.Weights.changeBoostFirst()
+INFO: Put boostFirstMap Ocular_Implants : 0.1
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralStrategyHandler initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: allManagers initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralClusterHandler initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralMapHandler initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralBuildingPlacer initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: CombatSim initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralChatter initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralProductionTracker initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.<init>()
+INFO: centralTaxiHandler initialized.
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.getCentralIntelligence()
+INFO: CentralIntelligence created.
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralIntelligence.addOwnBase()
+INFO: New own base added!
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 0 started 
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 0 ended 
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 1 started 
+2026-05-27 16:34:39 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #5_Command_Center told to chill forever.
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 1 ended 
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 2 started 
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 2 ended 
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 3 started 
+2026-05-27 16:34:39 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 3 buildPoints=-1.0
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 3 ended 
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 4 started 
+2026-05-27 16:34:39 [JBWAPI Client] botte.BotteBWListener.onFrame()
+INFO: onFrame 4 ended 
+2026-05-27 16:34:40 [JBWAPI Client] botte.BotteBWListener.onReceiveText()
+INFO: Player chat: bwapi.Player@20 said BWAPI 4.4.0.5018 Tournament Mode Engaged!
+2026-05-27 16:34:54 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 366 buildPoints=0.0
+2026-05-27 16:35:08 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 696 buildPoints=0.0
+2026-05-27 16:35:09 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4032, 272] at squared-distance 34138.0
+2026-05-27 16:35:22 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 1026 buildPoints=0.0
+2026-05-27 16:35:35 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 1356 buildPoints=0.0
+2026-05-27 16:35:36 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Supply_Depot in 0.10ms at radius 4.
+2026-05-27 16:35:36 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Supply_Depot at 1367 buildPoints=-1.0
+2026-05-27 16:35:49 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 1686 buildPoints=0.0
+2026-05-27 16:35:55 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Barracks in 0.12ms at radius 4.
+2026-05-27 16:35:55 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Barracks at 1818 buildPoints=-1.0
+2026-05-27 16:36:05 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #11_Supply_Depot told to chill forever.
+2026-05-27 16:36:05 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 2071 buildPoints=0.0
+2026-05-27 16:36:19 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 2401 buildPoints=0.0
+2026-05-27 16:36:22 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Barracks in 0.13ms at radius 4.
+2026-05-27 16:36:22 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Barracks at 2467 buildPoints=0.0
+2026-05-27 16:36:23 [JBWAPI Client] botte.opening.BuildOrder.update()
+INFO: Fixed build order done.
+2026-05-27 16:36:32 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 2698 buildPoints=9.302551999999999
+2026-05-27 16:36:35 [JBWAPI Client] botte.TravelMission.checkForTravelAssistanceMinerals()
+INFO: Found travel mineral at [4000, 304] at squared-distance 21177.0
+2026-05-27 16:36:43 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Refinery at 2962 buildPoints=4.122312134560426
+2026-05-27 16:36:45 [JBWAPI Client] botte.CentralIntelligence.handleUnitMorph()
+INFO: Failed to find morphing Terran_Refinery in allBotUnits!
+2026-05-27 16:36:45 [JBWAPI Client] botte.BotteBWListener.onUnitRenegade()
+INFO: Unit renegaded: Terran_Refinery player=true neutral=false enemy=false
+2026-05-27 16:36:49 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 3105 buildPoints=118.04273252203198
+2026-05-27 16:36:51 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #13_Barracks told to chill forever.
+2026-05-27 16:36:54 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 3215 buildPoints=26.94065183995029
+2026-05-27 16:37:00 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Supply_Depot in 0.07ms at radius 4.
+2026-05-27 16:37:00 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Supply_Depot at 3369 buildPoints=114.17333699130563
+2026-05-27 16:37:08 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 3545 buildPoints=174.57460939385058
+2026-05-27 16:37:10 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #19_Refinery told to chill forever.
+2026-05-27 16:37:13 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 3666 buildPoints=170.09162878328314
+2026-05-27 16:37:15 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #21_Marine to [3744, 3744] lastDistance=1.087616E7 lastUpdate=3722 timeSinceCloser=132 mission=null
+2026-05-27 16:37:17 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #21_Marine to [3744, 3744] lastDistance=1.087616E7 lastUpdate=3772 timeSinceCloser=182 mission=null
+2026-05-27 16:37:19 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: TaxiCaller taking #21_Marine to [3744, 3744] lastDistance=1.087616E7 lastUpdate=3822 timeSinceCloser=232 mission=null
+2026-05-27 16:37:21 [JBWAPI Client] botte.CentralTaxiHandler.update()
+INFO: Stale taxi-caller removed for #21_Marine
+2026-05-27 16:37:22 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #16_Barracks told to chill forever.
+2026-05-27 16:37:24 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 3941 buildPoints=101.33582037606858
+2026-05-27 16:37:30 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #22_Supply_Depot told to chill forever.
+2026-05-27 16:37:36 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Factory in 0.03ms at radius 3.
+2026-05-27 16:37:36 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Factory at 4216 buildPoints=129.777011378359
+2026-05-27 16:37:43 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 4381 buildPoints=148.49352841600694
+2026-05-27 16:37:43 [JBWAPI Client] botte.CentralScoutManager.manageScouting()
+INFO: Deduced enemy base location!
+2026-05-27 16:37:45 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 4447 buildPoints=148.79537383631933
+2026-05-27 16:37:51 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Terran_Bunker at DefencePoint for [101, 11] which has 0.0 defense already.
+2026-05-27 16:37:51 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Bunker in 0.02ms at radius 2.
+2026-05-27 16:37:51 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Bunker at 4568 buildPoints=178.69360725554145
+2026-05-27 16:37:56 [JBWAPI Client] botte.BotteBWListener.onUnitRenegade()
+INFO: Unit renegaded: Protoss_Assimilator player=false neutral=false enemy=true
+2026-05-27 16:37:58 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 4744 buildPoints=278.7843537562455
+2026-05-27 16:38:03 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 4876 buildPoints=225.00602070837735
+2026-05-27 16:38:09 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Supply_Depot in 0.03ms at radius 2.
+2026-05-27 16:38:09 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Supply_Depot at 5008 buildPoints=133.9160830397039
+2026-05-27 16:38:16 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #29_Bunker told to chill forever.
+2026-05-27 16:38:17 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 5206 buildPoints=192.54120507404792
+2026-05-27 16:38:20 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 5272 buildPoints=209.30259867382142
+2026-05-27 16:38:25 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 5393 buildPoints=113.08430188362405
+2026-05-27 16:38:30 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Supply_Depot in 0.03ms at radius 3.
+2026-05-27 16:38:30 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Supply_Depot at 5514 buildPoints=44.53711301092501
+2026-05-27 16:38:30 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #26_Factory told to chill forever.
+2026-05-27 16:38:37 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 5679 buildPoints=155.11675394912325
+2026-05-27 16:38:39 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #32_Supply_Depot told to chill forever.
+2026-05-27 16:38:41 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 5778 buildPoints=93.7458564790667
+2026-05-27 16:38:45 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 5855 buildPoints=57.69007463265634
+2026-05-27 16:38:49 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Machine_Shop at 5954 buildPoints=67.6550748325726
+2026-05-27 16:38:52 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 6020 buildPoints=67.9138185076842
+2026-05-27 16:38:57 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 6141 buildPoints=45.00998323270088
+2026-05-27 16:38:57 [JBWAPI Client] botte.CentralRegionHandler.findDefenseBuildLocation()
+INFO: Building Terran_Bunker at DefencePoint for [101, 11] which has 1.0 defense already.
+2026-05-27 16:38:57 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Bunker in 0.06ms at radius 4.
+2026-05-27 16:38:57 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Bunker at 6152 buildPoints=29.580652705979855
+2026-05-27 16:39:04 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 6317 buildPoints=72.27347204173209
+2026-05-27 16:39:06 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 6372 buildPoints=57.75170009720693
+2026-05-27 16:39:10 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #38_Supply_Depot told to chill forever.
+2026-05-27 16:39:13 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Starport in 0.07ms at radius 5.
+2026-05-27 16:39:13 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Starport at 6537 buildPoints=30.606600251249628
+2026-05-27 16:39:15 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Research first: Tank_Siege_Mode buildPoints=1.4988
+2026-05-27 16:39:15 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #40_Machine_Shop told to chill forever.
+2026-05-27 16:39:22 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #43_Bunker told to chill forever.
+2026-05-27 16:39:25 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Siege_Tank_Siege_Mode at 6823 buildPoints=338.7526948922764
+2026-05-27 16:39:26 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 6834 buildPoints=262.5711857064941
+2026-05-27 16:39:29 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Siege_Tank_Tank_Mode at 6911 buildPoints=195.08771163780966
+2026-05-27 16:39:38 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 7120 buildPoints=184.27438713307717
+2026-05-27 16:39:41 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 7208 buildPoints=90.90939730091439
+2026-05-27 16:39:43 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 7241 buildPoints=92.34617352014207
+2026-05-27 16:39:46 [JBWAPI Client] botte.CentralBuildingPlacer.findBuildPosition()
+INFO: Found build-location for Terran_Supply_Depot in 0.06ms at radius 4.
+2026-05-27 16:39:46 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Supply_Depot at 7307 buildPoints=145.49146760831988
+2026-05-27 16:39:53 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Starting research: Tank_Siege_Mode buildPoints=121.8092841053297
+2026-05-27 16:39:53 [JBWAPI Client] botte.CentralProductionPlanner.updateFirstResearch()
+INFO: Started research: Tank_Siege_Mode
+2026-05-27 16:39:53 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 7494 buildPoints=119.2161185205528
+2026-05-27 16:39:54 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Research first: Spider_Mines buildPoints=1.9976006400000001
+2026-05-27 16:40:01 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 7681 buildPoints=168.6169599480403
+2026-05-27 16:40:04 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #46_Starport told to chill forever.
+2026-05-27 16:40:05 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Siege_Tank_Tank_Mode at 7758 buildPoints=166.16300233401012
+2026-05-27 16:40:13 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Command_Center at 7956 buildPoints=196.60625258669734
+2026-05-27 16:40:15 [JBWAPI Client] botte.BoringUnitsManager.getMission()
+INFO: #52_Supply_Depot told to chill forever.
+2026-05-27 16:40:34 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 8462 buildPoints=352.50365016942925
+2026-05-27 16:40:35 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_SCV at 8473 buildPoints=352.00105101260937
+2026-05-27 16:40:37 [JBWAPI Client] botte.BotteBWListener.onPlayerLeft()
+INFO: Player left: bwapi.Player@20
+2026-05-27 16:40:37 [JBWAPI Client] botte.CentralProductionManager.update()
+INFO: Producing: Terran_Marine at 8517 buildPoints=144.20674652601417

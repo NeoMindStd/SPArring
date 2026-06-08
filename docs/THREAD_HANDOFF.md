@@ -1,19 +1,21 @@
 # StarAI Practice Client Thread Handoff
 
-Last updated: 2026-06-07
+Last updated: 2026-06-08
 
 ## Repository
 
 - Repo: `C:\starai\StarAI.PracticeClient`
 - User taskbar entrypoint: `C:\starai\Start-StarAI-PracticeClient.cmd`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.1.0`
-- Last verified implementation state: 1.1.0 minor release candidate for HUD-gated timer/APM, game-end cleanup, random/ladder matching, Remastered ladder maps, result/MMR history, runtime compatibility audit, AI-name hiding, and hotkey import/UI.
+- Current version: `1.2.0`
+- Last verified implementation state: 1.2.0 minor release candidate for StarAI-bundled assets, SCHNAIL-independent product packaging, MMR-weighted ladder matching, TournamentModule result fallback, and win-floor ladder scoring.
+- Current WIP after 1.2.0: none. Do not reset uncommitted changes unless the user explicitly asks.
 
 ## Hard Rules
 
 - 답변과 보고는 한국어 존댓말로 한다.
 - release/tag/push/installer 배포는 사용자가 명시적으로 요청할 때만 한다.
+- StarAI 제품 실행은 `C:\starai\StarAI.PracticeClient\data` 내장 자산을 사용해야 한다. SCHNAIL은 개발/릴리즈 import 소스일 뿐 최종 사용자 필수 조건이 아니다.
 - SCHNAIL/Remastered 원본은 읽기 전용이다.
 - 사람 런타임: `C:\starai\SC116AI`
 - AI 런타임: `C:\starai\SC116AI_ai`
@@ -27,21 +29,21 @@ Last updated: 2026-06-07
 
 - Core:
   - `PracticePaths` / `RuntimeWritePolicy`
-  - SCHNAIL `bots.dat` / `maps.dat` parser
+  - StarAI `data` asset catalog loader and SCHNAIL-compatible `bots.dat` / `maps.dat` parser
   - bot-map compatibility filter
   - initial `PracticeLaunchPlanBuilder`
   - hotkey CSV editor model, `stat_txt.txt` patcher, TBL compiler integration, SFmpq runtime MPQ insert helper
   - Remastered/Battle.net `STR_*` hotkey importer for working CSV entries
   - SCHNAIL ELO -> SCR MMR/grade reference estimator
   - player-only ladder rating store and ELO result calculator
-  - runtime provisioning for SCHNAIL maps/bots into player/AI runtime folders
+  - runtime provisioning for StarAI bundled maps/bots into player/AI runtime folders
   - user map catalog reader for `.scm`/`.scx`
   - Remastered ladder map reader with SCHNAIL compatibility map IDs
   - player/AI `bwapi.ini` and `wmode.ini` generation
   - session history store for launch/APM/result/MMR records
 - App:
   - SCHNAIL-inspired Korean WinForms UI with Game/Settings/Hotkeys/History tabs
-  - Hotkeys tab can import SCHNAIL CSV, import Battle.net/Remastered key-value hotkeys, save working CSV, and apply to `C:\starai\SC116AI\patch_rt.mpq`
+  - Hotkeys tab can import StarAI default CSV, import Battle.net/Remastered key-value hotkeys, save working CSV, and apply to `C:\starai\SC116AI\patch_rt.mpq`
   - Game tab shows ladder rating controls in ladder mode. Settings tab stores replay root, user map folder, Remastered ladder map folder, and the `AI 이름 가리기` option under `%APPDATA%\StarAI.PracticeClient\settings.json`
   - History tab reads `%APPDATA%\StarAI.PracticeClient\history.json` and displays mode/result/MMR delta/result source with a dark table style
   - Launch flow starts player StarCraft with cnc-ddraw borderless/fullscreen settings and starts the AI client muted, then minimizes it after join/start timing
@@ -237,3 +239,51 @@ Important observations:
   - `Stone` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
   - `Stone` + `(4)Jade`
 - This is exhaustive static/log auditing, not exhaustive dynamic boot testing for all 1041 compatible pairs.
+
+## 2026-06-08 StarAI Bundled Asset Follow-up
+
+- User clarified that SCHNAIL was only a development reference and must not be a product/runtime dependency.
+- Added `PracticeAssetCatalogReader` and `PracticeAssetPaths`.
+- Product catalog/hotkey/map preview loading now uses `C:\starai\StarAI.PracticeClient\data`.
+- Added `scripts\import-schnail-assets.ps1` to copy local SCHNAIL assets into StarAI-owned `data` during development/release preparation.
+- Imported current local assets:
+  - `data\bots`: 100 bot folders plus `bots.dat`
+  - `data\maps`: 59 map/preview files plus `maps.dat`
+  - `data\res`: hotkey CSV, messages, icon assets, TBL compiler data
+  - `data\tools\mpq\schnail-client.exe`: MPQ writer classpath used by the hotkey patcher
+- `scripts\build-release.ps1` now fails if `data` is missing and includes it in the release ZIP/install copy.
+- Final user install docs must not list SCHNAIL as a requirement.
+
+## 2026-06-08 Ladder Result GameState Follow-up
+
+- Reproduced the user-reported Halo ladder match result issue from local evidence before editing:
+  - `%APPDATA%\StarAI.PracticeClient\history.json` had the latest Halo ladder match as `Outcome=Unknown` with `ResultSource=player-left-ingame:GameRoom`.
+  - `C:\starai\SC116AI\bwapi-data\gameState.txt` was written during the same match and reported `defeated=0`, `victorious=1`, `gameOver=1` for `StarAIHuman`.
+  - The AI runtime did not have a fresh bot result log for that match, so the previous resolver could not confirm the result.
+- Added `TournamentGameStateReader` as a second result source after bot result logs and before quit/process-exit fallback.
+- Ladder result precedence is now:
+  - bot result log if present
+  - human runtime TournamentModule `bwapi-data\gameState.txt` if it is fresh for the session
+  - existing conservative fallback (`Unknown` for ladder player quit/process exit)
+- Corrected the latest local Halo history record to `PlayerWin`, based on the gameState evidence.
+- Follow-up scoring rule: 1453 beating Halo 692 produced a zero-point rounded Elo change with the original formula, so StarAI now applies a custom ladder floor where every win grants at least +1 point.
+- The same local Halo record and current rating were adjusted to `PlayerRatingAfter=1454`, `RatingDelta=+1`, `RatingText=1454 (+1)`.
+
+## 2026-06-08 Ladder MMR Matching Follow-up
+
+- Reproduced the user's matchmaking concern from code:
+  - `LadderBotSelector.PickRandom` selected uniformly from compatible candidates.
+  - `MainForm.ResolveLadderSelection` used that uniform random selector, so a 1453 MMR player could still draw Halo 692 at the same per-candidate probability as near-MMR bots.
+- Implemented MMR-aware ladder matching:
+  - fixed-map ladder: pick a compatible bot with distance-based weight around the current player MMR.
+  - random-map ladder: pick the bot first with current-MMR weighting across all enabled compatible maps, then pick one compatible map for that bot.
+  - low-MMR bots are not hard-blocked, but their probability drops sharply as rating distance grows.
+- Updated the ladder details UI to say MMR-weighted matching and show MMR-nearest candidates first.
+- Added regression tests in `LadderBotSelectorTests` to verify near-MMR bots dominate the selection distribution and random-map ladder still uses rating weight.
+
+## 2026-06-08 Ladder Win Floor Follow-up
+
+- Added `EloCalculatorGuaranteesAtLeastOnePointForAnyWin`.
+- `EloRatingCalculator.Calculate` still uses the Elo expected-score formula, but if a `PlayerWin` rounds to no gain, it forces `after = playerRating + 1`.
+- Loss and draw calculations remain unchanged.
+- `LoadCatalog()` now also calls `RefreshRatingUi()` so the Game tab refresh button picks up rating file changes.

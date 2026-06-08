@@ -39,14 +39,14 @@ internal static class CompatibilityAuditCommand
 
     private static PracticeCatalog LoadCatalog(PracticePaths paths, PracticeClientSettings settings)
     {
-        var schnailCatalog = SchnailCatalogReader.Read(paths.SchnailRoot);
+        var baseCatalog = PracticeAssetCatalogReader.Read(paths);
         var ladderMapRoot = string.IsNullOrWhiteSpace(settings.LadderMapRoot)
             ? RemasteredLadderMapCatalogReader.DefaultDirectory()
             : settings.LadderMapRoot;
-        var ladderMaps = RemasteredLadderMapCatalogReader.ReadDirectory(ladderMapRoot, schnailCatalog);
+        var ladderMaps = RemasteredLadderMapCatalogReader.ReadDirectory(ladderMapRoot, baseCatalog);
         var userMaps = UserMapCatalogReader.ReadDirectory(settings.UserMapRoot);
         return UserMapCatalogReader.Merge(
-            UserMapCatalogReader.Merge(schnailCatalog, ladderMaps),
+            UserMapCatalogReader.Merge(baseCatalog, ladderMaps),
             userMaps);
     }
 

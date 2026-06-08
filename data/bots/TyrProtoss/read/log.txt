@@ -1,0 +1,5 @@
+
+STARTING NEW GAME.
+2025-9-8 04:25:07 Game started against Hivemind(Zerg)
+Map analyzed: (4)Circuit Breaker.scx
+Chosen strategy: PvR

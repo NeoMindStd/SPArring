@@ -51,12 +51,12 @@ public sealed partial class HotkeyCsvStore
         return path;
     }
 
-    public string ImportFromSchnail(PracticePaths paths, string runtimeRoot)
+    public string ImportFromDefaultAssets(PracticePaths paths, string runtimeRoot)
     {
-        var source = Path.Combine(paths.SchnailRoot, "res", "sc_hotkeys.csv");
+        var source = PracticeAssetPaths.DefaultHotkeyCsv(paths);
         if (!File.Exists(source))
         {
-            throw new FileNotFoundException("SCHNAIL hotkey CSV was not found.", source);
+            throw new FileNotFoundException("StarAI bundled hotkey CSV was not found.", source);
         }
 
         var target = Path.Combine(runtimeRoot, RelativeWorkingCsvPath);
@@ -629,16 +629,16 @@ public sealed class HotkeyPatchApplier
 
     public static string BuildPatchedTbl(PracticePaths paths, IReadOnlyList<HotkeyEntry> entries)
     {
-        var sourceStatText = Path.Combine(paths.SchnailRoot, "res", "hotkey_data", "stat_txt.txt");
-        var compiler = Path.Combine(paths.SchnailRoot, "res", "hotkey_data", "sctblcmp.exe");
+        var sourceStatText = PracticeAssetPaths.StatText(paths);
+        var compiler = PracticeAssetPaths.TblCompiler(paths);
         if (!File.Exists(sourceStatText))
         {
-            throw new FileNotFoundException("SCHNAIL stat_txt.txt was not found.", sourceStatText);
+            throw new FileNotFoundException("StarAI bundled stat_txt.txt was not found.", sourceStatText);
         }
 
         if (!File.Exists(compiler))
         {
-            throw new FileNotFoundException("SCHNAIL TBL compiler was not found.", compiler);
+            throw new FileNotFoundException("StarAI bundled TBL compiler was not found.", compiler);
         }
 
         var workDir = Path.Combine(Path.GetTempPath(), "StarAI.PracticeClient", "hotkeys", Guid.NewGuid().ToString("N"));
@@ -683,10 +683,10 @@ public sealed class HotkeyPatchApplier
 
         var javaExe = ResolveJavaExe();
         var helperPath = WriteJavaHelper();
-        var classPath = $"{paths.SchnailRoot}\\schnail-client.exe";
+        var classPath = PracticeAssetPaths.MpqWriterClasspath(paths);
         if (!File.Exists(classPath))
         {
-            throw new FileNotFoundException("SCHNAIL client executable was not found.", classPath);
+            throw new FileNotFoundException("StarAI bundled MPQ writer classpath was not found.", classPath);
         }
 
         var args = $"-cp \"{classPath}\" \"{helperPath}\" \"{patchRtMpqPath}\" \"{statTxtTblPath}\" \"{MpqTargetName}\"";

@@ -21,7 +21,7 @@ internal static class SmokeChecks
             return 1;
         }
 
-        var catalog = SchnailCatalogReader.Read(paths.SchnailRoot);
+        var catalog = PracticeAssetCatalogReader.Read(paths);
         if (catalog.Bots.Count == 0 || catalog.Maps.Count == 0)
         {
             return 1;
@@ -366,15 +366,15 @@ internal static class SmokeChecks
 
     private static PracticeCatalog LoadSmokeStartCatalog(PracticePaths paths)
     {
-        var schnailCatalog = SchnailCatalogReader.Read(paths.SchnailRoot);
+        var baseCatalog = PracticeAssetCatalogReader.Read(paths);
         var settings = PracticeClientSettingsStore.Default().Load();
         var ladderMapRoot = string.IsNullOrWhiteSpace(settings.LadderMapRoot)
             ? RemasteredLadderMapCatalogReader.DefaultDirectory()
             : settings.LadderMapRoot;
-        var ladderMaps = RemasteredLadderMapCatalogReader.ReadDirectory(ladderMapRoot, schnailCatalog);
+        var ladderMaps = RemasteredLadderMapCatalogReader.ReadDirectory(ladderMapRoot, baseCatalog);
         var userMaps = UserMapCatalogReader.ReadDirectory(settings.UserMapRoot);
         return UserMapCatalogReader.Merge(
-            UserMapCatalogReader.Merge(schnailCatalog, ladderMaps),
+            UserMapCatalogReader.Merge(baseCatalog, ladderMaps),
             userMaps);
     }
 

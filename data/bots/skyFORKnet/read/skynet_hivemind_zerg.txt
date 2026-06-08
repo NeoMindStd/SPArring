@@ -1,0 +1,6 @@
+build_0_21 4 3
+build_0_6 14 2
+build_12_5 2 2
+build_21_12 2 2
+build_6_7 8 2
+build_7_5 5 2

@@ -87,6 +87,86 @@ public sealed class LadderBotSelectorTests
     }
 
     [Fact]
+    public void PickForRatingStronglyPrefersBotsNearPlayerRating()
+    {
+        var mapId = Guid.NewGuid();
+        var nearId = Guid.NewGuid();
+        var middleId = Guid.NewGuid();
+        var lowId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(nearId, "Near", StarCraftRace.Terran, 1450, mapId),
+                Bot(middleId, "Middle", StarCraftRace.Terran, 1080, mapId),
+                Bot(lowId, "Low", StarCraftRace.Terran, 692, mapId)
+            ],
+            [
+                new PracticeMap(mapId, "Fighting Spirit", "Fighting.scx", null, true)
+            ]);
+        var random = new Random(42);
+        var counts = new Dictionary<Guid, int>
+        {
+            [nearId] = 0,
+            [middleId] = 0,
+            [lowId] = 0
+        };
+
+        for (var i = 0; i < 2000; i++)
+        {
+            var bot = LadderBotSelector.PickForRating(
+                catalog,
+                mapId,
+                StarCraftRace.Terran,
+                playerRating: 1453,
+                random);
+            counts[bot.Id]++;
+        }
+
+        Assert.True(counts[nearId] > counts[middleId], $"near={counts[nearId]}, middle={counts[middleId]}");
+        Assert.True(counts[middleId] > counts[lowId], $"middle={counts[middleId]}, low={counts[lowId]}");
+        Assert.True(counts[lowId] < 80, $"low={counts[lowId]}");
+    }
+
+    [Fact]
+    public void PickForRatingAcrossEnabledMapsStillUsesRatingWeight()
+    {
+        var nearMapId = Guid.NewGuid();
+        var lowMapId = Guid.NewGuid();
+        var nearId = Guid.NewGuid();
+        var lowId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(nearId, "Near", StarCraftRace.Terran, 1450, nearMapId),
+                Bot(lowId, "Low", StarCraftRace.Terran, 692, lowMapId)
+            ],
+            [
+                new PracticeMap(nearMapId, "Fighting Spirit", "Fighting.scx", null, true),
+                new PracticeMap(lowMapId, "Python", "Python.scx", null, true)
+            ]);
+        var random = new Random(7);
+        var nearCount = 0;
+        var lowCount = 0;
+
+        for (var i = 0; i < 1000; i++)
+        {
+            var bot = LadderBotSelector.PickForRatingAcrossEnabledMaps(
+                catalog,
+                StarCraftRace.Terran,
+                playerRating: 1453,
+                random);
+            if (bot.Id == nearId)
+            {
+                nearCount++;
+            }
+            else if (bot.Id == lowId)
+            {
+                lowCount++;
+            }
+        }
+
+        Assert.True(nearCount > 950, $"near={nearCount}, low={lowCount}");
+    }
+
+    [Fact]
     public void CandidatesForMapExcludesKnownBadRuntimePairsOnRemasteredCompatibilityMap()
     {
         var schnailFightingSpiritId = Guid.NewGuid();

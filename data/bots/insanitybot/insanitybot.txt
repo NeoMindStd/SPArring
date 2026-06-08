@@ -1,0 +1,2 @@
+insanitybot is a c++, logic based bot that plays Terran. Building placement logic borrowed from Jay Scott's Steamhammer and Martin Rooijackers' Letabot.
+Built by the author, (Joshua Nestman), from the ground up. Previous Elo on Basil 2285
