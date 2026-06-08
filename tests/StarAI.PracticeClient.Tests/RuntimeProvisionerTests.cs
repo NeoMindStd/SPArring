@@ -69,6 +69,37 @@ public sealed class RuntimeProvisionerTests
         Assert.True(File.Exists(provisioned.FullMapPath));
     }
 
+    [Fact]
+    public void ProvisionBotMirrorsConfigSidecarsToLegacyBwapiAiRoot()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "starai-provision-tests", Guid.NewGuid().ToString("N"));
+        var aiRoot = Path.Combine(root, "ai");
+        var botSource = Path.Combine(root, "schnail", "bots", "Sapphire");
+        Directory.CreateDirectory(botSource);
+        File.WriteAllText(Path.Combine(botSource, "Gems.dll"), "bot");
+        File.WriteAllText(Path.Combine(botSource, "Gems_config.json"), "{}");
+        File.WriteAllText(Path.Combine(botSource, "Sapphire.zip"), "archive");
+        var bot = new PracticeBot(
+            Guid.NewGuid(),
+            "Sapphire",
+            StarCraftRace.Terran,
+            "Gems.dll",
+            BotExecutableKind.Dll,
+            "4.4.0",
+            457,
+            false,
+            new HashSet<Guid> { Guid.NewGuid() },
+            null,
+            null,
+            botSource);
+
+        RuntimeProvisioner.ProvisionBot(bot, aiRoot);
+
+        Assert.True(File.Exists(Path.Combine(aiRoot, "bwapi-data", "AI", "StarAI", "Bots", "Sapphire", "Gems_config.json")));
+        Assert.True(File.Exists(Path.Combine(aiRoot, "bwapi-data", "AI", "Gems_config.json")));
+        Assert.False(File.Exists(Path.Combine(aiRoot, "bwapi-data", "AI", "Sapphire.zip")));
+    }
+
     private static ClientLaunchSettings Client(string root, ClientRuntimeRole role, string aiModule, string map)
     {
         return new ClientLaunchSettings(

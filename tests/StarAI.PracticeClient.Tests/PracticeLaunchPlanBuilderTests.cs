@@ -38,6 +38,47 @@ public sealed class PracticeLaunchPlanBuilderTests
     }
 
     [Fact]
+    public void BuildHidesAiCharacterNameByDefault()
+    {
+        var botId = Guid.NewGuid();
+        var mapId = Guid.NewGuid();
+        var catalog = Catalog(botId, mapId, mapId);
+        var selection = new PracticeSelection(
+            botId,
+            mapId,
+            StarCraftRace.Terran,
+            "StarAI Practice",
+            PlayerBorderless: true,
+            ClipCursor: false,
+            AllowApmAlert: false);
+
+        var plan = PracticeLaunchPlanBuilder.Build(catalog, SafePaths(), selection);
+
+        Assert.Equal("StarAIBot", plan.Ai.CharacterName);
+    }
+
+    [Fact]
+    public void BuildCanRevealSelectedBotNameAsAiCharacterName()
+    {
+        var botId = Guid.NewGuid();
+        var mapId = Guid.NewGuid();
+        var catalog = Catalog(botId, mapId, mapId);
+        var selection = new PracticeSelection(
+            botId,
+            mapId,
+            StarCraftRace.Terran,
+            "StarAI Practice",
+            PlayerBorderless: true,
+            ClipCursor: false,
+            AllowApmAlert: false,
+            HideAiName: false);
+
+        var plan = PracticeLaunchPlanBuilder.Build(catalog, SafePaths(), selection);
+
+        Assert.Equal("BananaBrain", plan.Ai.CharacterName);
+    }
+
+    [Fact]
     public void BuildRejectsUnsupportedBotMapCombination()
     {
         var botId = Guid.NewGuid();

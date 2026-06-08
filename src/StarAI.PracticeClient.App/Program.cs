@@ -7,7 +7,12 @@ static class Program
     {
         if (args.Any(arg => string.Equals(arg, "--smoke-start", StringComparison.OrdinalIgnoreCase)))
         {
-            return SmokeChecks.RunStart();
+            return SmokeChecks.RunStart(args);
+        }
+
+        if (args.Any(arg => string.Equals(arg, "--audit-compatibility", StringComparison.OrdinalIgnoreCase)))
+        {
+            return CompatibilityAuditCommand.Run();
         }
 
         if (args.Any(arg => string.Equals(arg, "--smoke", StringComparison.OrdinalIgnoreCase)))

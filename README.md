@@ -6,7 +6,7 @@ StarAI Practice Client는 StarCraft 1.16.1 + BWAPI 기반의 로컬 AI 스파링
 
 아래 안내가 기본 설치 방법입니다. 영어 안내가 필요하면 바로 아래의 `English Install Guide`를 참고하세요.
 
-1. GitHub Releases에서 최신 `StarAI-PracticeClient-1.0.0-win-x64.zip`을 다운로드합니다.
+1. GitHub Releases에서 최신 `StarAI-PracticeClient-1.1.0-win-x64.zip`을 다운로드합니다.
 2. ZIP 파일의 압축을 풉니다.
 3. 압축을 푼 폴더 안의 `install.cmd`를 더블클릭합니다.
 4. 설치가 끝나면 바탕화면의 `StarAI Practice Client` 바로가기를 실행합니다.
@@ -29,7 +29,7 @@ SCHNAIL은 봇과 맵 목록을 읽는 기준 데이터로만 사용합니다. S
 
 ## English Install Guide
 
-1. Download `StarAI-PracticeClient-1.0.0-win-x64.zip` from GitHub Releases.
+1. Download `StarAI-PracticeClient-1.1.0-win-x64.zip` from GitHub Releases.
 2. Extract the ZIP file.
 3. Double-click `install.cmd` in the extracted folder.
 4. Run the desktop shortcut named `StarAI Practice Client`.

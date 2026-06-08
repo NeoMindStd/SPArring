@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text;
 
 namespace StarAI.PracticeClient.Core;
 
@@ -77,7 +79,8 @@ public sealed class PracticeSessionLauncher
         var beforeStarCraftProcessIds = CurrentStarCraftProcessIds();
         var before = ChaosLauncherLog.CountCompletedStarts(settings.RuntimeRoot);
         var requestedAt = DateTime.UtcNow;
-            var run = _chaos.Start(new ChaosLauncherRequest(
+        using var tournamentEnvironment = TournamentModuleEnvironment.ApplyFor(settings.Role);
+        var run = _chaos.Start(new ChaosLauncherRequest(
             settings.RuntimeRoot,
             RunStarCraftOnStartup: true,
             EnableWMode: settings.EnableWModePlugin,
@@ -93,7 +96,8 @@ public sealed class PracticeSessionLauncher
         {
             run.RestorePoint.Restore();
         }
-        var starCraftProcessId = WaitForNewStarCraftProcess(beforeStarCraftProcessIds, TimeSpan.FromSeconds(3));
+        var processDetectionTimeout = TimeSpan.FromSeconds(Math.Min(15, Math.Max(5, timeout.TotalSeconds / 2)));
+        var starCraftProcessId = WaitForNewStarCraftProcess(beforeStarCraftProcessIds, processDetectionTimeout);
 
         return new PracticeClientLaunchReport(
             settings.Role,
@@ -120,21 +124,64 @@ public sealed class PracticeSessionLauncher
     private static int? WaitForNewStarCraftProcess(IReadOnlySet<int> beforeProcessIds, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
+        int? latestProcessCandidate = null;
         while (DateTime.UtcNow < deadline)
         {
+            var windowProcessId = FindNewBroodWarWindowProcessId(beforeProcessIds);
+            if (windowProcessId is not null)
+            {
+                return windowProcessId;
+            }
+
             var current = CurrentStarCraftProcessIds()
                 .Where(id => !beforeProcessIds.Contains(id))
                 .OrderBy(id => id)
                 .ToList();
             if (current.Count > 0)
             {
-                return current[0];
+                latestProcessCandidate = current[0];
             }
 
             Thread.Sleep(100);
         }
 
-        return null;
+        return latestProcessCandidate;
+    }
+
+    private static int? FindNewBroodWarWindowProcessId(IReadOnlySet<int> beforeProcessIds)
+    {
+        int? result = null;
+        EnumWindows((handle, _) =>
+        {
+            if (!IsWindowVisible(handle))
+            {
+                return true;
+            }
+
+            var title = new StringBuilder(256);
+            GetWindowText(handle, title, title.Capacity);
+            if (!IsBroodWarWindowTitle(title.ToString()))
+            {
+                return true;
+            }
+
+            GetWindowThreadProcessId(handle, out var processId);
+            if (beforeProcessIds.Contains(processId))
+            {
+                return true;
+            }
+
+            result = processId;
+            return false;
+        }, IntPtr.Zero);
+
+        return result;
+    }
+
+    internal static bool IsBroodWarWindowTitle(string title)
+    {
+        return title.Equals("Brood War", StringComparison.OrdinalIgnoreCase) ||
+               title.StartsWith("Brood War Instance ", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void CloseLauncherWindow(Process process)
@@ -159,6 +206,20 @@ public sealed class PracticeSessionLauncher
             // A stale ChaosLauncher UI should not block the already-started StarCraft process.
         }
     }
+
+    private delegate bool EnumWindowsProc(IntPtr handle, IntPtr lParam);
+
+    [DllImport("user32.dll")]
+    private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr lParam);
+
+    [DllImport("user32.dll")]
+    private static extern bool IsWindowVisible(IntPtr handle);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern int GetWindowText(IntPtr handle, StringBuilder text, int maxCount);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(IntPtr handle, out int processId);
 }
 
 public sealed class LocalRuntimeProcessCleaner
@@ -192,6 +253,39 @@ public sealed class LocalRuntimeProcessCleaner
         return stopped;
     }
 
+    public int StopKnown(params int?[] processIds)
+    {
+        var stopped = 0;
+        var knownProcessIds = processIds
+            .Where(processId => processId is not null)
+            .Select(processId => processId!.Value)
+            .Distinct()
+            .ToArray();
+
+        foreach (var processId in knownProcessIds)
+        {
+            try
+            {
+                using var process = Process.GetProcessById(processId);
+                if (!IsKnownLaunchedRuntimeProcess(process.ProcessName, process.Id, knownProcessIds))
+                {
+                    continue;
+                }
+
+                if (StopProcess(process))
+                {
+                    stopped++;
+                }
+            }
+            catch
+            {
+                // The captured process may already have exited by the time cleanup runs.
+            }
+        }
+
+        return stopped;
+    }
+
     public static bool IsLocalRuntimeProcess(string processName, string? executablePath, IReadOnlyCollection<string> runtimeRoots)
     {
         if (!IsTargetProcessName(processName) || string.IsNullOrWhiteSpace(executablePath))
@@ -200,6 +294,14 @@ public sealed class LocalRuntimeProcessCleaner
         }
 
         return runtimeRoots.Any(root => RuntimeWritePolicy.IsSameOrUnder(executablePath, root));
+    }
+
+    public static bool IsKnownLaunchedRuntimeProcess(
+        string processName,
+        int processId,
+        IReadOnlyCollection<int> knownProcessIds)
+    {
+        return IsTargetProcessName(processName) && knownProcessIds.Contains(processId);
     }
 
     private static bool IsTargetProcessName(string processName)
@@ -225,16 +327,42 @@ public sealed class LocalRuntimeProcessCleaner
         try
         {
             process.Refresh();
+        }
+        catch
+        {
+            // Continue to a direct close/kill attempt; some 1.16.1 processes deny metadata access.
+        }
+
+        try
+        {
             if (process.HasExited)
             {
                 return false;
             }
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+        catch
+        {
+            // If the process exists but denies HasExited, still try to close the captured local PID.
+        }
 
+        try
+        {
             if (process.CloseMainWindow() && process.WaitForExit(1500))
             {
                 return true;
             }
+        }
+        catch
+        {
+            // Fall through to Kill.
+        }
 
+        try
+        {
             process.Kill(entireProcessTree: true);
             process.WaitForExit(3000);
             return true;

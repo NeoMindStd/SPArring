@@ -30,4 +30,27 @@ public sealed class LocalRuntimeProcessCleanerTests
             @"C:\starai\SC116AI\Battle.net.exe",
             roots));
     }
+
+    [Fact]
+    public void IsKnownLaunchedRuntimeProcessMatchesOnlyCapturedTargetPids()
+    {
+        var knownProcessIds = new[] { 1234, 5678 };
+
+        Assert.True(LocalRuntimeProcessCleaner.IsKnownLaunchedRuntimeProcess(
+            "StarCraft",
+            1234,
+            knownProcessIds));
+        Assert.True(LocalRuntimeProcessCleaner.IsKnownLaunchedRuntimeProcess(
+            "Chaoslauncher - MultiInstance",
+            5678,
+            knownProcessIds));
+        Assert.False(LocalRuntimeProcessCleaner.IsKnownLaunchedRuntimeProcess(
+            "StarCraft",
+            9999,
+            knownProcessIds));
+        Assert.False(LocalRuntimeProcessCleaner.IsKnownLaunchedRuntimeProcess(
+            "Battle.net",
+            1234,
+            knownProcessIds));
+    }
 }

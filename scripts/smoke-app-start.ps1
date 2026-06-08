@@ -1,3 +1,13 @@
+param(
+    [string]$BotName,
+    [string]$MapName,
+    [string]$Mode,
+    [string]$PlayerRace,
+    [string]$EnemyRace,
+    [switch]$DryRun,
+    [switch]$PrepareOnly
+)
+
 $ErrorActionPreference = 'Stop'
 
 $repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
@@ -13,7 +23,30 @@ function Get-ScreenSignature {
 $screenBefore = Get-ScreenSignature
 
 try {
-    dotnet run --project $appProject -c Release -- --smoke-start
+    $smokeArgs = @('--smoke-start')
+    if (-not [string]::IsNullOrWhiteSpace($BotName)) {
+        $smokeArgs += @('--bot', $BotName)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($MapName)) {
+        $smokeArgs += @('--map', $MapName)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Mode)) {
+        $smokeArgs += @('--mode', $Mode)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($PlayerRace)) {
+        $smokeArgs += @('--player-race', $PlayerRace)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($EnemyRace)) {
+        $smokeArgs += @('--enemy-race', $EnemyRace)
+    }
+    if ($DryRun) {
+        $smokeArgs += '--dry-run'
+    }
+    if ($PrepareOnly) {
+        $smokeArgs += '--prepare-only'
+    }
+
+    dotnet run --project $appProject -c Release -- $smokeArgs
     $exitCode = $LASTEXITCODE
 }
 finally {

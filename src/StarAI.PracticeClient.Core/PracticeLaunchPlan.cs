@@ -13,7 +13,8 @@ public sealed record PracticeSelection(
     string GameName,
     bool PlayerBorderless,
     bool ClipCursor,
-    bool AllowApmAlert);
+    bool AllowApmAlert,
+    bool HideAiName = true);
 
 public sealed record ClientLaunchSettings(
     ClientRuntimeRole Role,
@@ -89,7 +90,9 @@ public static class PracticeLaunchPlanBuilder
         var ai = new ClientLaunchSettings(
             Role: ClientRuntimeRole.AiOpponent,
             RuntimeRoot: paths.AiRuntimeRoot,
-            CharacterName: "StarAIBot",
+            CharacterName: selection.HideAiName
+                ? "StarAIBot"
+                : PracticeCharacterName.FromBotName(bot.Name),
             Race: bot.Race,
             EnemyRace: selection.PlayerRace,
             MapFileName: string.Empty,
@@ -106,5 +109,27 @@ public static class PracticeLaunchPlanBuilder
             CncDdrawMode: CncDdrawMode.Windowed);
 
         return new PracticeLaunchPlan(player, ai, bot, map);
+    }
+}
+
+public static class PracticeCharacterName
+{
+    private const int MaxCharacterNameLength = 24;
+
+    public static string FromBotName(string botName)
+    {
+        var sanitized = new string((botName ?? string.Empty)
+            .Where(character => !char.IsControl(character))
+            .ToArray())
+            .Trim();
+
+        if (string.IsNullOrWhiteSpace(sanitized))
+        {
+            return "StarAIBot";
+        }
+
+        return sanitized.Length <= MaxCharacterNameLength
+            ? sanitized
+            : sanitized[..MaxCharacterNameLength].Trim();
     }
 }

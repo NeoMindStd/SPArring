@@ -24,6 +24,7 @@ public sealed record WModeSettings(
 public static class PracticeIniConfigurator
 {
     public const string BwapiIniRelativePath = @"bwapi-data\bwapi.ini";
+    public const string PlayerTournamentModule = @"bwapi-data\TM\TournamentModule.dll";
 
     public static string Apply(ClientLaunchSettings settings, PracticeRuntimeOptions options)
     {
@@ -31,7 +32,16 @@ public static class PracticeIniConfigurator
         EnsureBackup(iniPath);
 
         var ini = IniDocument.LoadOrCreate(iniPath, "ai");
-        ini.Set("ai", "ai", settings.AiModule);
+        if (settings.Role == ClientRuntimeRole.PlayerHost && string.IsNullOrWhiteSpace(settings.AiModule))
+        {
+            ini.Remove("ai", "ai");
+            ini.Set("ai", "tournament", PlayerTournamentModule);
+        }
+        else
+        {
+            ini.Set("ai", "ai", settings.AiModule);
+            ini.Set("ai", "tournament", string.Empty);
+        }
         ini.Set("auto_menu", "auto_menu", "LAN");
         ini.Set("auto_menu", "character_name", settings.CharacterName);
         ini.Set("auto_menu", "lan_mode", "Local PC");
@@ -47,6 +57,17 @@ public static class PracticeIniConfigurator
         ini.Set("window", "windowed", settings.WindowedMode ? "ON" : "OFF");
         ini.Set("starcraft", "sound", settings.SoundEnabled ? "ON" : "OFF");
         ini.Set("starcraft", "speed_override", options.SpeedOverrideMs.ToString());
+        ini.Save(iniPath);
+        return iniPath;
+    }
+
+    public static string DisableAutoMenu(string runtimeRoot)
+    {
+        var iniPath = Path.Combine(runtimeRoot, BwapiIniRelativePath);
+        var ini = IniDocument.LoadOrCreate(iniPath, "auto_menu");
+        ini.Set("auto_menu", "auto_menu", "OFF");
+        ini.Set("auto_menu", "map", string.Empty);
+        ini.Set("auto_menu", "game", string.Empty);
         ini.Save(iniPath);
         return iniPath;
     }
@@ -172,6 +193,12 @@ public static class PracticeRuntimeConfigurator
             MuteNotFocused: true,
             WindowX: 32,
             WindowY: 32));
+    }
+
+    public static void DisableAutoMenuAfterGameStart(PracticeLaunchPlan plan)
+    {
+        PracticeIniConfigurator.DisableAutoMenu(plan.Player.RuntimeRoot);
+        PracticeIniConfigurator.DisableAutoMenu(plan.Ai.RuntimeRoot);
     }
 }
 

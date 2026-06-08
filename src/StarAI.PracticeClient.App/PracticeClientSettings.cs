@@ -1,17 +1,28 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using StarAI.PracticeClient.Core;
 
 namespace StarAI.PracticeClient.App;
 
 internal sealed record PracticeClientSettings(
     string ReplayRoot,
-    string UserMapRoot)
+    string UserMapRoot,
+    string LadderMapRoot = "",
+    bool HideAiName = true,
+    bool? UseBotNameAsAiCharacter = null)
 {
+    [JsonIgnore]
+    public bool EffectiveHideAiName => UseBotNameAsAiCharacter is { } showBotName
+        ? !showBotName
+        : HideAiName;
+
     public static PracticeClientSettings Defaults()
     {
         return new PracticeClientSettings(
             PracticeRuntimeOptions.Defaults().ReplayRoot,
-            string.Empty);
+            string.Empty,
+            RemasteredLadderMapCatalogReader.DefaultDirectory(),
+            HideAiName: true);
     }
 }
 
@@ -19,7 +30,8 @@ internal sealed class PracticeClientSettingsStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        WriteIndented = true
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     public PracticeClientSettingsStore(string settingsPath)

@@ -4,6 +4,10 @@ namespace StarAI.PracticeClient.Core;
 
 public static partial class RuntimeProvisioner
 {
+    private static readonly HashSet<string> LegacyAiSidecarExtensions = new(
+        [".cfg", ".csv", ".dat", ".ini", ".json", ".txt", ".xml"],
+        StringComparer.OrdinalIgnoreCase);
+
     public static PracticeLaunchPlan PrepareRuntimeAssets(PracticeLaunchPlan plan)
     {
         Directory.CreateDirectory(plan.Player.RuntimeRoot);
@@ -82,6 +86,8 @@ public static partial class RuntimeProvisioner
             CopyIfDifferent(sourcePath, Path.Combine(targetDirectory, relative));
         }
 
+        MirrorLegacyAiSidecars(bot, aiRuntimeRoot);
+
         var relativeExecutable = Path.Combine(relativeDirectory, bot.ExecutableName);
         var executablePath = Path.Combine(aiRuntimeRoot, relativeExecutable);
         if (!File.Exists(executablePath))
@@ -90,6 +96,31 @@ public static partial class RuntimeProvisioner
         }
 
         return new ProvisionedBot(relativeDirectory, relativeExecutable, executablePath);
+    }
+
+    private static void MirrorLegacyAiSidecars(PracticeBot bot, string aiRuntimeRoot)
+    {
+        var legacyAiRoot = Path.Combine(aiRuntimeRoot, "bwapi-data", "AI");
+        foreach (var sourcePath in Directory.EnumerateFiles(bot.SourceDirectory!, "*", SearchOption.TopDirectoryOnly))
+        {
+            if (!IsLegacyAiSidecar(sourcePath, bot.ExecutableName))
+            {
+                continue;
+            }
+
+            CopyIfDifferent(sourcePath, Path.Combine(legacyAiRoot, Path.GetFileName(sourcePath)));
+        }
+    }
+
+    private static bool IsLegacyAiSidecar(string sourcePath, string executableName)
+    {
+        var fileName = Path.GetFileName(sourcePath);
+        if (string.Equals(fileName, executableName, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return LegacyAiSidecarExtensions.Contains(Path.GetExtension(sourcePath));
     }
 
     private static bool ShouldSkipRuntimeCopy(string relativePath)

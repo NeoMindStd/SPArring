@@ -14,7 +14,70 @@ public sealed record PracticeSessionRecord(
     string ReplayRoot,
     int ActionCount,
     int ActionsPerMinute,
-    double DurationSeconds);
+    double DurationSeconds,
+    PracticeSessionMode Mode = PracticeSessionMode.Sparring,
+    PracticeSessionOutcome Outcome = PracticeSessionOutcome.InProgress,
+    int? PlayerRatingBefore = null,
+    int? OpponentRating = null,
+    int? PlayerRatingAfter = null,
+    int? RatingDelta = null,
+    string? ResultSource = null)
+{
+    public string StartedLocalText => StartedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+
+    public string ModeText => Mode == PracticeSessionMode.Ladder ? "래더" : "스파링";
+
+    public string OutcomeText => PracticeSessionOutcomeText.ToDisplayText(Outcome);
+
+    public string MatchupText => $"{PlayerRace} vs {BotRace}";
+
+    public string DurationText
+    {
+        get
+        {
+            var duration = TimeSpan.FromSeconds(Math.Max(0, DurationSeconds));
+            return duration.TotalHours >= 1
+                ? duration.ToString(@"h\:mm\:ss")
+                : duration.ToString(@"m\:ss");
+        }
+    }
+
+    public string RatingText => PlayerRatingAfter is null
+        ? string.Empty
+        : RatingDelta is null
+            ? PlayerRatingAfter.Value.ToString()
+            : $"{PlayerRatingAfter.Value} ({RatingDelta.Value:+#;-#;0})";
+
+    public string ResultSourceText
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(ResultSource))
+            {
+                return string.Empty;
+            }
+
+            if (ResultSource.StartsWith("player-left-ingame:", StringComparison.OrdinalIgnoreCase))
+            {
+                return "플레이어 나가기";
+            }
+
+            if (ResultSource.StartsWith("player-process-exited", StringComparison.OrdinalIgnoreCase))
+            {
+                return "플레이어 종료";
+            }
+
+            if (ResultSource.StartsWith("ai-process-exited", StringComparison.OrdinalIgnoreCase))
+            {
+                return "AI 종료";
+            }
+
+            return Path.IsPathFullyQualified(ResultSource)
+                ? Path.GetFileName(ResultSource)
+                : ResultSource;
+        }
+    }
+}
 
 public sealed class PracticeSessionHistoryStore
 {

@@ -1,4 +1,5 @@
 using StarAI.PracticeClient.Core;
+using System.Runtime.InteropServices;
 
 namespace StarAI.PracticeClient.App;
 
@@ -6,7 +7,7 @@ internal sealed class PracticeOverlayForm : Form
 {
     private readonly Label _label;
     private readonly System.Windows.Forms.Timer _timer;
-    private DateTime _startedAtUtc;
+    private PracticeSessionClock? _clock;
     private ActionRateCounter? _counter;
 
     public PracticeOverlayForm()
@@ -49,12 +50,33 @@ internal sealed class PracticeOverlayForm : Form
 
     public void StartSession(Rectangle screenBounds, DateTime startedAtUtc, ActionRateCounter counter)
     {
-        _startedAtUtc = startedAtUtc;
+        _clock = new PracticeSessionClock(startedAtUtc);
         _counter = counter;
         Location = new Point(screenBounds.Left + 18, screenBounds.Top + 18);
         RefreshText();
         Show();
+        KeepAboveGame();
         _timer.Start();
+    }
+
+    public void KeepAboveGame()
+    {
+        const int hwndTopmost = -1;
+        const uint swpNoSize = 0x0001;
+        const uint swpNoMove = 0x0002;
+        const uint swpNoActivate = 0x0010;
+        const uint swpShowWindow = 0x0040;
+        if (IsHandleCreated)
+        {
+            _ = SetWindowPos(
+                Handle,
+                new IntPtr(hwndTopmost),
+                0,
+                0,
+                0,
+                0,
+                swpNoMove | swpNoSize | swpNoActivate | swpShowWindow);
+        }
     }
 
     protected override void Dispose(bool disposing)
@@ -69,15 +91,23 @@ internal sealed class PracticeOverlayForm : Form
 
     private void RefreshText()
     {
-        var elapsed = DateTime.UtcNow - _startedAtUtc;
-        if (elapsed < TimeSpan.Zero)
+        if (_clock is not { } clock || _counter is not { } counter)
         {
-            elapsed = TimeSpan.Zero;
+            _label.Text = "00:00  APM 0";
+            return;
         }
 
-        var minutes = (int)elapsed.TotalMinutes;
-        var seconds = elapsed.Seconds;
-        var apm = _counter?.ActionsPerMinute(elapsed) ?? 0;
-        _label.Text = $"{minutes:00}:{seconds:00}  APM {apm}";
+        _label.Text = clock.FormatOverlayText(DateTime.UtcNow, counter);
+        KeepAboveGame();
     }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetWindowPos(
+        IntPtr hWnd,
+        IntPtr hWndInsertAfter,
+        int x,
+        int y,
+        int cx,
+        int cy,
+        uint flags);
 }

@@ -73,6 +73,24 @@ public sealed class IniDocument
         _lines.Insert(range.End, $"{key} = {value}");
     }
 
+    public void Remove(string section, string key)
+    {
+        var range = FindSection(section);
+        if (range.Start < 0)
+        {
+            return;
+        }
+
+        var regex = KeyRegex(key);
+        for (var i = range.End - 1; i > range.Start; i--)
+        {
+            if (regex.IsMatch(_lines[i]))
+            {
+                _lines.RemoveAt(i);
+            }
+        }
+    }
+
     public void Save(string path)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);

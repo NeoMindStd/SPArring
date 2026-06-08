@@ -118,6 +118,19 @@ Last updated: 2026-06-05
 
 선택: 맵은 양쪽 런타임 `maps\StarAI`, 봇은 AI 런타임 `bwapi-data\AI\StarAI\Bots\<봇명>`에 복사한다. DLL 봇은 복사된 DLL 상대 경로를 AI `bwapi.ini`의 `ai` 값으로 쓴다.
 
+## 봇-맵 런타임 예외
+
+상태: 결정
+
+선택: SCHNAIL 카탈로그가 호환으로 선언하더라도, 실제 1.16.1/BWAPI 로컬 런타임에서 크래시나 장시간 정지가 확인된 조합은 `PracticeCatalogCompatibility`에서 known-bad 조합으로 차단한다.
+
+현재 예외:
+
+- `Feint` + Fighting Spirit 계열: AI 런타임 `Steamhammer.dll` 접근 위반 크래시 로그 확인.
+- `ICELab` + Fighting Spirit 계열: 실제 플레이에서 상대 정지 관찰. 원인 확정 전까지 실전 매칭에서 제외한다.
+
+검증 기준: 차단 조합은 특정 봇을 고르면 맵 목록에서 사라지고, 특정 맵을 고르면 봇 목록/래더 후보에서 사라져야 한다.
+
 ## 사용자 맵 / 리플레이 / 전적
 
 상태: 결정
@@ -135,3 +148,150 @@ Last updated: 2026-06-05
 
 - 봇 빌드 선택: 봇마다 설정 파일과 지원 방식이 달라 공통 UI를 바로 적용하기 어렵다. 특정 봇별 설정 파일 구조를 확인한 뒤 지원한다.
 - Remastered 직접 실행: BWAPI 기반 1.16.1 스파링과 기술 기반이 다르므로 현재 필수 목표 범위 밖으로 둔다.
+## 2026-06-08 Player BWAPI Startup Error
+
+Status: decided and verified.
+
+Observed problem:
+
+- Early smoke trace captured the human client showing:
+  - `ERROR: Could not find ai under ai in "C:\starai\SC116AI\bwapi-data\bwapi.ini".`
+  - `ERROR: Failed to load the AI Module ""`.
+- The red error text also made the screen analyzer classify the first in-game frames as `GameRoom`, delaying the timer/APM overlay.
+
+Decision:
+
+- Keep the human `[ai] ai` value absent/empty. Do not put CoachAI, a selected bot DLL, or a no-op AI DLL into the human runtime.
+- Enable SCHNAIL-style player tournament mode instead:
+  - human `bwapi.ini`: `tournament = bwapi-data\TM\TournamentModule.dll`
+  - AI `bwapi.ini`: selected bot DLL only, with `tournament =`
+- When starting the human client, inherit TournamentModule environment variables that disable SCHNAIL/TM drawing overlays:
+  - `TM_DISABLE_DRAW_GAME_TIMER=true`
+  - `TM_DRAW_TOURNAMENT_INFO=false`
+  - `TM_DRAW_UNIT_INFO=false`
+  - `TM_DRAW_BOT_NAMES=false`
+  - `TM_STATE_FILE=bwapi-data\gameState.txt`
+
+Why:
+
+- SCHNAIL launches the player runtime through BWAPI plus TournamentModule instead of loading a normal AI module for the human player.
+- This preserves `auto_menu` room automation without loading a human AI module.
+- Actual smoke after the change showed no red `ERROR` chat message; only the AI player's normal BWAPI startup line may appear briefly.
+
+Verification evidence:
+
+- `.\scripts\smoke-app-start.ps1 -BotName 'Dragon' -MapName '(4)Fighting Spirit'`
+  - `inGame=True`
+  - `aiInGame=True`
+  - `timerOverlay=True`
+  - `traceMaxRed=0` in the clean run, or non-error red only from the AI player name in earlier trace.
+  - Screenshot trace: `artifacts\screenshots\startup-trace\...`
+
+## 2026-06-08 AI Shutdown After Leave
+
+Status: decided and verified.
+
+Decision:
+
+- On session finalization, the AI client should receive the in-game leave sequence (`F10`, `Q`, `Q`) before termination.
+- Do not depend on foreground focus for this. The controller posts key messages directly to the captured AI Brood War window handle.
+- Because screen capture of a covered AI window can report the player screen, the shutdown path should not block on a fresh covered-window state check.
+- After the leave sequence, normal cleanup may still terminate the AI StarCraft process. This is acceptable because the AI has already left the match, avoiding the player-side disconnect wait.
+
+Verification evidence:
+
+- `.\scripts\smoke-app-start.ps1 -BotName 'Dragon' -MapName '(4)Fighting Spirit'`
+  - `aiShutdownSent=True`
+  - `aiProcessGoneAfterCleanup=True`
+  - `playerAfterAiShutdownState=GameRoom`
+  - `aiGracefulShutdown=True`
+
+## 2026-06-08 Ladder/Random Compatibility Regression
+
+Status: decided and verified.
+
+Observed evidence before editing:
+
+- AI runtime crash log `C:\starai\SC116AI_ai\Errors\2026 Jun 08.txt` contained access violations for:
+  - `Stone.dll` on `(4)Jade.scx`
+  - `LetaBot.dll` on `(4)Fighting_Spirit 1.4.scx`
+- The launcher and smoke-start path did not verify the Remastered ladder-map catalog, player race, enemy race, or ladder/random selection path.
+- `scripts\smoke.ps1` did not propagate a non-zero exit code from `dotnet run -- --smoke`, so launcher UI smoke failures could be missed.
+
+Decision:
+
+- Treat the observed runtime-broken pairs as known-bad compatibility exclusions:
+  - `LetaBot` + Fighting Spirit variants
+  - `Stone` + Fighting Spirit variants
+  - `Stone` + Jade variants
+  - Existing `ICELab` and `Feint` Fighting Spirit exclusions remain.
+- Keep the exclusions in `PracticeCatalogCompatibility` so bot lists, map lists, ladder candidates, and random pair generation share the same source of truth.
+- Mirror selected bot config sidecar files such as `Gems_config.json` into `bwapi-data\AI` in the AI runtime, because some bots look for legacy root-side config paths even when the DLL is loaded from `bwapi-data\AI\StarAI\Bots\<BotName>`.
+- `scripts\smoke.ps1` must fail when launcher smoke fails.
+- `smoke-app-start.ps1` supports `-Mode`, `-PlayerRace`, and `-EnemyRace` so regressions like Protoss player vs Terran ladder on Remastered Fighting Spirit 1.4 can be checked directly.
+
+Verification evidence:
+
+- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 99 passed.
+- `.\scripts\smoke.ps1`: warning 0 / error 0.
+- `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]'`: selected a compatible Terran bot.
+- `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'LetaBot'`: failed because the bot was no longer in candidates.
+- `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Stone'`: failed because the bot was no longer in candidates.
+- `.\scripts\smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Dragon'`: passed with `inGame=True`, `aiInGame=True`, `timerOverlay=True`, `aiGracefulShutdown=True`.
+- `.\scripts\audit-compatibility.ps1`: passed after the audit was added, with:
+  - `declaredDllPairs=1050`
+  - `compatibleDllPairs=1041`
+  - `blockedDeclaredDllPairs=9`
+  - `issues=0`
+
+## 2026-06-08 Map Preview Smoke Guard
+
+Status: decided and verified.
+
+Observed problem:
+
+- The launcher map preview panel had been removed while the details panel grew wider.
+- Existing smoke saved screenshots but did not assert that the preview control and image were present.
+
+Decision:
+
+- Restore the map preview panel on the Game tab.
+- For Remastered ladder maps without their own preview image, reuse the linked SCHNAIL compatibility map preview when available.
+- Launcher smoke now selects a concrete map and fails if the map preview `PictureBox` or image is missing.
+
+Verification evidence:
+
+- `.\scripts\smoke.ps1` first failed with `smoke: map preview box/image was not visible in the launcher.`
+- After restoring the preview panel, `.\scripts\smoke.ps1` passed and `artifacts\screenshots\starai-launcher-smoke.png` showed the selected map preview.
+
+## 2026-06-08 Compatibility Audit
+
+Status: decided and verified.
+
+Decision:
+
+- Do not rely only on user screenshots or one-off smoke failures for compatibility filtering.
+- Add a full catalog audit command that checks every declared DLL bot-map pair from the same merged catalog the launcher uses.
+- The audit writes CSV artifacts under `artifacts\compatibility-audit`:
+  - `compatible-pairs.csv`
+  - `blocked-declared-pairs.csv`
+  - `issues.csv`
+  - `runtime-crashes.csv`
+- The audit fails if a currently compatible pair has missing bot/map files or runtime crash evidence.
+- Runtime crash evidence based only on a shared DLL module name is not promoted to a blocking issue unless the bot directory can be identified or only one current bot uses that module. This avoids false positives for shared DLL names such as `Steamhammer.dll`.
+
+Latest result:
+
+- `bots=86`
+- `dllBots=61`
+- `maps=31`
+- `declaredDllPairs=1050`
+- `compatibleDllPairs=1041`
+- `blockedDeclaredDllPairs=9`
+- `issues=0`
+- `runtimeCrashes=6`
+
+Limit:
+
+- This is an exhaustive static/log audit, not an exhaustive in-game boot test for all 1041 currently compatible pairs. A full dynamic boot matrix would take many hours and should be run as a separate overnight-style validation job if needed.
+  - no local StarCraft/ChaosLauncher processes remained after smoke cleanup.

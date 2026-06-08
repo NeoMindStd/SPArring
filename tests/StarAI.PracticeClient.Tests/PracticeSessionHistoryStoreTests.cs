@@ -36,6 +36,26 @@ public sealed class PracticeSessionHistoryStoreTests
         Assert.Equal(newer.Id, store.Load()[0].Id);
     }
 
+    [Fact]
+    public void RecordProvidesReadableHistoryDisplayFields()
+    {
+        var record = CreateRecord(Guid.NewGuid(), apm: 42) with
+        {
+            DurationSeconds = 65,
+            Mode = PracticeSessionMode.Ladder,
+            Outcome = PracticeSessionOutcome.PlayerLoss,
+            PlayerRatingAfter = 1484,
+            RatingDelta = -16,
+            ResultSource = "player-left-ingame:GameRoom"
+        };
+
+        Assert.Equal("래더", record.ModeText);
+        Assert.Equal("패", record.OutcomeText);
+        Assert.Equal("1:05", record.DurationText);
+        Assert.Equal("1484 (-16)", record.RatingText);
+        Assert.Equal("플레이어 나가기", record.ResultSourceText);
+    }
+
     private static PracticeSessionRecord CreateRecord(Guid id, int apm)
     {
         return new PracticeSessionRecord(

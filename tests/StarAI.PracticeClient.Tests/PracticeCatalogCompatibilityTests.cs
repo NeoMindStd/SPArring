@@ -48,13 +48,68 @@ public sealed class PracticeCatalogCompatibilityTests
         Assert.Equal(compatibleBotId, bot.Id);
     }
 
+    [Theory]
+    [InlineData("ICELab", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("ICELab", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Feint", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Feint", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("LetaBot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("LetaBot", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Stone", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Stone", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Stone", "(4)Jade", "(4)Jade.scx")]
+    public void KnownBadRuntimePairsAreNotCompatible(string botName, string mapName, string fileName)
+    {
+        var schnailMapId = Guid.NewGuid();
+        var mapId = Guid.NewGuid();
+        var botId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(botId, botName, schnailMapId)
+            ],
+            [
+                new PracticeMap(
+                    mapId,
+                    mapName,
+                    fileName,
+                    null,
+                    true,
+                    CompatibilityMapIds: new HashSet<Guid> { schnailMapId })
+            ]);
+
+        Assert.False(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));
+        Assert.Empty(PracticeCatalogCompatibility.MapsForBot(catalog, botId));
+        Assert.Empty(PracticeCatalogCompatibility.BotsForMap(catalog, mapId));
+    }
+
+    [Fact]
+    public void OtherBotsCanStillUseFightingSpiritWhenDeclaredCompatible()
+    {
+        var mapId = Guid.NewGuid();
+        var botId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(botId, "Dragon", mapId)
+            ],
+            [
+                new PracticeMap(mapId, "(4)Fighting Spirit", "(4)Fighting Spirit.scx", null, true)
+            ]);
+
+        Assert.True(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));
+    }
+
     private static PracticeBot Bot(Guid id, params Guid[] supportedMaps)
+    {
+        return Bot(id, "TestBot", supportedMaps);
+    }
+
+    private static PracticeBot Bot(Guid id, string name, params Guid[] supportedMaps)
     {
         return new PracticeBot(
             id,
-            "TestBot",
+            name,
             StarCraftRace.Zerg,
-            "TestBot.dll",
+            $"{name}.dll",
             BotExecutableKind.Dll,
             "4.4.0",
             1000,

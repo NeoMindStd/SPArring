@@ -13,9 +13,13 @@ internal static class StarCraftBorderlessWindow
     private const long WsSysMenu = 0x00080000L;
     private const long WsPopup = 0x80000000L;
     private const uint SwpNoActivate = 0x0010;
+    private const uint SwpNoMove = 0x0002;
+    private const uint SwpNoSize = 0x0001;
     private const uint SwpNoOwnerZOrder = 0x0200;
     private const uint SwpFrameChanged = 0x0020;
     private const uint SwpShowWindow = 0x0040;
+    private static readonly IntPtr HwndTopMost = new(-1);
+    private static readonly IntPtr HwndNoTopMost = new(-2);
 
     public static HashSet<int> CurrentStarCraftProcessIds()
     {
@@ -154,6 +158,113 @@ internal static class StarCraftBorderlessWindow
         return false;
     }
 
+    public static bool ActivateProcessWindowWhenReady(int processId, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            var activated = false;
+            EnumWindows((handle, _) =>
+            {
+                if (!IsWindowVisible(handle) || !IsBroodWarWindow(handle))
+                {
+                    return true;
+                }
+
+                GetWindowThreadProcessId(handle, out var currentProcessId);
+                if (currentProcessId != processId)
+                {
+                    return true;
+                }
+
+                ShowWindow(handle, ShowRestore);
+                SetWindowPos(
+                    handle,
+                    HwndTopMost,
+                    0,
+                    0,
+                    0,
+                    0,
+                    SwpNoMove | SwpNoSize | SwpShowWindow);
+                SetWindowPos(
+                    handle,
+                    HwndNoTopMost,
+                    0,
+                    0,
+                    0,
+                    0,
+                    SwpNoMove | SwpNoSize | SwpShowWindow);
+                BringWindowToTop(handle);
+                activated = SetForegroundWindow(handle);
+                return false;
+            }, IntPtr.Zero);
+
+            if (activated)
+            {
+                return true;
+            }
+
+            Thread.Sleep(100);
+        }
+
+        return false;
+    }
+
+    public static bool TryFindBroodWarWindow(int processId, out IntPtr windowHandle)
+    {
+        var result = IntPtr.Zero;
+        EnumWindows((handle, _) =>
+        {
+            if (!IsWindowVisible(handle) || !IsBroodWarWindow(handle))
+            {
+                return true;
+            }
+
+            GetWindowThreadProcessId(handle, out var currentProcessId);
+            if (currentProcessId != processId)
+            {
+                return true;
+            }
+
+            result = handle;
+            return false;
+        }, IntPtr.Zero);
+
+        windowHandle = result;
+        return result != IntPtr.Zero;
+    }
+
+    public static bool TryGetProcessWindowBounds(int processId, out Rectangle bounds)
+    {
+        var foundBounds = Rectangle.Empty;
+        var found = false;
+        EnumWindows((handle, _) =>
+        {
+            if (!IsWindowVisible(handle) || !IsBroodWarWindow(handle))
+            {
+                return true;
+            }
+
+            GetWindowThreadProcessId(handle, out var currentProcessId);
+            if (currentProcessId != processId)
+            {
+                return true;
+            }
+
+            if (GetWindowRect(handle, out var rect))
+            {
+                foundBounds = Rectangle.FromLTRB(rect.Left, rect.Top, rect.Right, rect.Bottom);
+                found = true;
+                return false;
+            }
+
+            return true;
+        }, IntPtr.Zero);
+
+        bounds = foundBounds;
+        return found;
+    }
+
     private static int? TryApply(string expectedExe, Rectangle targetBounds, IReadOnlySet<int> excludedProcessIds)
     {
         int? appliedProcessId = null;
@@ -261,6 +372,7 @@ internal static class StarCraftBorderlessWindow
 
     private const int ShowNoActivate = 4;
     private const int ShowMinimize = 6;
+    private const int ShowRestore = 9;
 
     [DllImport("user32.dll")]
     private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr lParam);
@@ -283,6 +395,12 @@ internal static class StarCraftBorderlessWindow
 
     [DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr handle, int command);
+
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr handle);
+
+    [DllImport("user32.dll")]
+    private static extern bool BringWindowToTop(IntPtr handle);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     private static extern int GetWindowText(IntPtr handle, System.Text.StringBuilder text, int maxCount);

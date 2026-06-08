@@ -38,4 +38,59 @@ public sealed class HotkeyCsvStoreTests
         Assert.Contains("599,e<1>Build Probe", saved);
         Assert.Contains("protoss_train_probe,p<1>Build Probe(<3>P<1>)<0>", saved);
     }
+
+    [Fact]
+    public void RemasteredImporterAppliesKnownKeyValueHotkeys()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "starai-hotkeys", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var path = Path.Combine(root, "remastered_hotkeys.txt");
+        File.WriteAllLines(path,
+        [
+            "STR_MAKE_T_SCV=x",
+            "STR_PSISTORM=q",
+            "STR_BLD_GATEWAY=w",
+            "STR_UNKNOWN=z"
+        ]);
+        var entries = new List<HotkeyEntry>
+        {
+            Entry("terran_train_scv", "s"),
+            Entry("protoss_cmd_psistorm", "t"),
+            Entry("protoss_build_gateway", "g")
+        };
+
+        var result = RemasteredHotkeyImporter.ApplyFromFile(path, entries);
+
+        Assert.Equal(3, result.UpdatedCount);
+        Assert.Equal("x", entries.Single(entry => entry.CommandId == "terran_train_scv").Hotkey);
+        Assert.Equal("q", entries.Single(entry => entry.CommandId == "protoss_cmd_psistorm").Hotkey);
+        Assert.Equal("w", entries.Single(entry => entry.CommandId == "protoss_build_gateway").Hotkey);
+    }
+
+    [Fact]
+    public void RemasteredImporterFindsCandidateFileInDirectory()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "starai-hotkeys", Guid.NewGuid().ToString("N"));
+        var nested = Path.Combine(root, "StarCraft", "Hotkeys");
+        Directory.CreateDirectory(nested);
+        var path = Path.Combine(nested, "Grid.hotkeys");
+        File.WriteAllText(path, "STR_MAKE_T_SCV=s");
+
+        var found = RemasteredHotkeyImporter.FindFirstCandidateFile([root]);
+
+        Assert.Equal(path, found);
+    }
+
+    private static HotkeyEntry Entry(string commandId, string hotkey)
+    {
+        return new HotkeyEntry
+        {
+            StringId = 1,
+            CommandId = commandId,
+            Hotkey = hotkey,
+            Description = commandId,
+            DefaultText = commandId,
+            CurrentText = commandId
+        };
+    }
 }

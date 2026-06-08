@@ -23,6 +23,21 @@ if ($taskbarText -notmatch [regex]::Escape('C:\starai\StarAI.PracticeClient')) {
     throw 'Taskbar launcher no longer points at this repo.'
 }
 
+function Invoke-NativeChecked {
+    param(
+        [Parameter(Mandatory = $true)]
+        [scriptblock]$Command,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    & $Command
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Name failed with exit code $LASTEXITCODE"
+    }
+}
+
 $coachMatches = Get-ChildItem -LiteralPath (Join-Path $repo 'src'), (Join-Path $repo 'tests') -Recurse -File |
     Where-Object { $_.Extension -in '.cs', '.csproj', '.resx' } |
     Select-String -Pattern 'CoachAI' -SimpleMatch
@@ -30,5 +45,5 @@ if ($coachMatches) {
     throw 'CoachAI reference found in source or tests.'
 }
 
-dotnet build $solution -c Release --nologo
-dotnet run --project $appProject -c Release -- --smoke
+Invoke-NativeChecked -Name 'dotnet build' -Command { dotnet build $solution -c Release --nologo }
+Invoke-NativeChecked -Name 'launcher smoke' -Command { dotnet run --project $appProject -c Release -- --smoke }

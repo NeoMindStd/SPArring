@@ -24,7 +24,14 @@ public sealed record PracticeMap(
     string? ImagePath,
     bool Enabled,
     string? SourcePath = null,
-    bool IsUserMap = false);
+    bool IsUserMap = false,
+    IReadOnlySet<Guid>? CompatibilityMapIds = null)
+{
+    public IReadOnlySet<Guid> EffectiveCompatibilityMapIds =>
+        CompatibilityMapIds is { Count: > 0 }
+            ? CompatibilityMapIds
+            : new HashSet<Guid> { Id };
+}
 
 public sealed record PracticeBot(
     Guid Id,
