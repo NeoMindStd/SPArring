@@ -289,12 +289,44 @@ Latest result:
 - `dllBots=61`
 - `maps=31`
 - `declaredDllPairs=1050`
-- `compatibleDllPairs=1041`
-- `blockedDeclaredDllPairs=9`
+- `compatibleDllPairs=1024`
+- `blockedDeclaredDllPairs=26`
 - `issues=0`
-- `runtimeCrashes=6`
+- `runtimeCrashes=10`
 
 Limit:
 
-- This is an exhaustive static/log audit, not an exhaustive in-game boot test for all 1041 currently compatible pairs. A full dynamic boot matrix would take many hours and should be run as a separate overnight-style validation job if needed.
+- This is an exhaustive static/log audit, not an exhaustive in-game boot test for all 1024 currently compatible pairs. A full dynamic boot matrix would take many hours and should be run as a separate overnight-style validation job if needed.
   - no local StarCraft/ChaosLauncher processes remained after smoke cleanup.
+
+## 2026-06-10 Alt+F4 Player Exit Handling
+
+Status: decided and verified.
+
+Observed evidence before editing:
+
+- The issue was reproduced through the actual launcher UI flow, not inferred only from code.
+- A stale reproduction showed `Brood War Instance 2: Windows - application error` after sending Alt+F4 to the player window.
+- The fresh AI runtime error log also revealed `RedRum.dll` crashing on `(4)Jade.scx`, which is a compatibility problem independent of the Alt+F4 exit path.
+- A later release-candidate UI verification selected `Stone.dll` on `(2)Benzene.scx` and reproduced another AI-side access violation.
+- Another release-candidate UI verification selected `CUBOT.dll` on `(4)Fighting Spirit.scx` and reproduced an AI-side access violation.
+- Another release-candidate UI verification selected `Yuanheng Zhu` / `Juno.dll` on `(4)Andromeda.scx` and reproduced an AI-side access violation.
+
+Decision:
+
+- Intercept Alt+F4 only when the foreground process is the captured player StarCraft PID.
+- Do not pass that Alt+F4 directly to StarCraft while a StarAI session is active.
+- Convert it into the same safe game-leave sequence used elsewhere: `F10`, `Q`, `Q`.
+- After the player leaves, close the player process and then run the existing AI graceful shutdown/finalization path.
+- Add `RedRum` + `(4)Jade` as a known-bad compatibility exclusion.
+- Exclude `Stone` from the compatible bot pool entirely until runtime safety is proven, because it now has crash evidence across Fighting Spirit, Jade, and Benzene.
+- Block `CUBOT` on Fighting Spirit variants because the crash evidence maps to that map family.
+- Block `Yuanheng Zhu` on Andromeda variants because the crash evidence maps to that map family.
+- Ensure random/sparring candidate filters remove bots with no currently compatible maps and final launch resolution rechecks explicit bot-map compatibility.
+
+Verification evidence:
+
+- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 121 passed.
+- `.\scripts\smoke.ps1`: warning 0 / error 0.
+- `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1024`, `blockedDeclaredDllPairs=26`, `issues=0`, `runtimeCrashes=10`.
+- Alt+F4 interception is covered by `GlobalInputActionHookTests`; foreground Alt+F4 UI automation was stopped after user safety feedback.

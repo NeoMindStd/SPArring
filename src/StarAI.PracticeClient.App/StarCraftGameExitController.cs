@@ -45,6 +45,11 @@ internal static class StarCraftGameExitController
         }
     }
 
+    public static bool TryLeaveGame(int processId, TimeSpan leaveWait)
+    {
+        return TrySendLeaveGameSequence(processId, leaveWait);
+    }
+
     private static bool TrySendLeaveGameSequence(int processId, TimeSpan leaveWait)
     {
         if (!StarCraftBorderlessWindow.TryFindBroodWarWindow(processId, out var windowHandle))

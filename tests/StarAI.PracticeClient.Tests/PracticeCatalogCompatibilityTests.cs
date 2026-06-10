@@ -51,6 +51,8 @@ public sealed class PracticeCatalogCompatibilityTests
     [Theory]
     [InlineData("ICELab", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("ICELab", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("CUBOT", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("CUBOT", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("Feint", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("Feint", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("LetaBot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
@@ -58,6 +60,9 @@ public sealed class PracticeCatalogCompatibilityTests
     [InlineData("Stone", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("Stone", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("Stone", "(4)Jade", "(4)Jade.scx")]
+    [InlineData("Stone", "(2)Benzene", "(2)Benzene.scx")]
+    [InlineData("RedRum", "(4)Jade", "(4)Jade.scx")]
+    [InlineData("Yuanheng Zhu", "(4)Andromeda", "(4)Andromeda.scx")]
     public void KnownBadRuntimePairsAreNotCompatible(string botName, string mapName, string fileName)
     {
         var schnailMapId = Guid.NewGuid();
@@ -80,6 +85,28 @@ public sealed class PracticeCatalogCompatibilityTests
         Assert.False(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));
         Assert.Empty(PracticeCatalogCompatibility.MapsForBot(catalog, botId));
         Assert.Empty(PracticeCatalogCompatibility.BotsForMap(catalog, mapId));
+    }
+
+    [Fact]
+    public void StoneIsExcludedFromEveryDeclaredMapUntilRuntimeSafetyIsProven()
+    {
+        var benzeneId = Guid.NewGuid();
+        var pythonId = Guid.NewGuid();
+        var circuitBreakerId = Guid.NewGuid();
+        var botId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(botId, "Stone", benzeneId, pythonId, circuitBreakerId)
+            ],
+            [
+                new PracticeMap(benzeneId, "(2)Benzene", "(2)Benzene.scx", null, true),
+                new PracticeMap(pythonId, "(4)Python", "(4)Python.scx", null, true),
+                new PracticeMap(circuitBreakerId, "(4)Circuit Breaker", "(4)CircuitBreaker.scx", null, true)
+            ]);
+
+        Assert.Empty(PracticeCatalogCompatibility.MapsForBot(catalog, botId));
+        Assert.All(catalog.Maps, map =>
+            Assert.DoesNotContain(PracticeCatalogCompatibility.BotsForMap(catalog, map.Id), bot => bot.Id == botId));
     }
 
     [Fact]

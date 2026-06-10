@@ -1,15 +1,15 @@
 # StarAI Practice Client Thread Handoff
 
-Last updated: 2026-06-08
+Last updated: 2026-06-10
 
 ## Repository
 
 - Repo: `C:\starai\StarAI.PracticeClient`
 - User taskbar entrypoint: `C:\starai\Start-StarAI-PracticeClient.cmd`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.2.0`
-- Last verified implementation state: 1.2.0 minor release candidate for StarAI-bundled assets, SCHNAIL-independent product packaging, MMR-weighted ladder matching, TournamentModule result fallback, and win-floor ladder scoring.
-- Current WIP after 1.2.0: none. Do not reset uncommitted changes unless the user explicitly asks.
+- Current version: `1.2.1`
+- Last verified implementation state: 1.2.1 hotfix release candidate for Alt+F4 graceful player exit handling, `RedRum` + `(4)Jade` blocking, `Stone` full compatibility-pool exclusion, `CUBOT` Fighting Spirit blocking, `Yuanheng Zhu` Andromeda blocking, and stricter random/sparring compatibility filters.
+- Current WIP after 1.2.1: none. Do not reset uncommitted changes unless the user explicitly asks.
 
 ## Hard Rules
 
@@ -224,21 +224,23 @@ Important observations:
   - `dllBots=61`
   - `maps=31`
   - `declaredDllPairs=1050`
-  - `compatibleDllPairs=1041`
-  - `blockedDeclaredDllPairs=9`
+  - `compatibleDllPairs=1024`
+  - `blockedDeclaredDllPairs=26`
   - `issues=0`
-  - `runtimeCrashes=6`
+  - `runtimeCrashes=10`
 - Current blocked declared pairs are:
   - `Feint` + `(4)Fighting Spirit`
   - `Feint` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
+  - `CUBOT` + `(4)Fighting Spirit`
+  - `CUBOT` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
   - `ICELab` + `(4)Fighting Spirit`
   - `ICELab` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
   - `LetaBot` + `(4)Fighting Spirit`
   - `LetaBot` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
-  - `Stone` + `(4)Fighting Spirit`
-  - `Stone` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
-  - `Stone` + `(4)Jade`
-- This is exhaustive static/log auditing, not exhaustive dynamic boot testing for all 1041 compatible pairs.
+  - `Stone` + all 16 declared maps, after repeated `Stone.dll` access violations on Fighting Spirit, Jade, and Benzene.
+  - `RedRum` + `(4)Jade`
+  - `Yuanheng Zhu` + `(4)Andromeda`
+- This is exhaustive static/log auditing, not exhaustive dynamic boot testing for all 1024 compatible pairs.
 
 ## 2026-06-08 StarAI Bundled Asset Follow-up
 
@@ -287,3 +289,34 @@ Important observations:
 - `EloRatingCalculator.Calculate` still uses the Elo expected-score formula, but if a `PlayerWin` rounds to no gain, it forces `after = playerRating + 1`.
 - Loss and draw calculations remain unchanged.
 - `LoadCatalog()` now also calls `RefreshRatingUi()` so the Game tab refresh button picks up rating file changes.
+
+## 2026-06-10 Alt+F4 Exit Follow-up
+
+- Reproduced the user-reported exit-error path before editing with the real launcher UI flow:
+  - Starting from the WinForms launcher, a local player `Brood War` window and AI `Brood War Instance 2` window were active.
+  - Sending Alt+F4 to the player window left an AI-side Windows application error dialog in one reproduction.
+  - The fresh AI runtime log showed `RedRum.dll` access violation on `(4)Jade.scx`; this was a separate compatibility regression found during the exit repro.
+  - A later release-candidate UI verification selected `Stone.dll` on `(2)Benzene.scx` and reproduced another AI-side access violation.
+  - Another release-candidate UI verification selected `CUBOT.dll` on `(4)Fighting Spirit.scx` and reproduced another AI-side access violation.
+  - Another release-candidate UI verification selected `Yuanheng Zhu` / `Juno.dll` on `(4)Andromeda.scx` and reproduced another AI-side access violation.
+- Implemented:
+  - `GlobalInputActionHook` now intercepts Alt+F4 only when the foreground process is the captured player StarCraft PID.
+  - The intercepted Alt+F4 is not passed directly to StarCraft. StarAI sends the normal in-game leave sequence (`F10`, `Q`, `Q`), closes the player process, then runs the existing AI graceful shutdown/finalization path.
+  - `RedRum` + `(4)Jade` is now a known-bad compatibility exclusion in `PracticeCatalogCompatibility`.
+  - `Stone` is excluded from all declared compatible maps until runtime safety is proven.
+  - `CUBOT` is blocked on Fighting Spirit variants.
+  - `Yuanheng Zhu` is blocked on Andromeda variants.
+  - Random/sparring candidate filtering now removes bots with no currently compatible maps, and launch resolution rechecks explicit bot-map compatibility.
+- Regression tests added:
+  - `GlobalInputActionHookTests` verifies Alt+F4 interception is limited to the captured player PID and does not catch other keys/windows.
+  - `PracticeCatalogCompatibilityTests` covers `RedRum` + `(4)Jade`, `Stone` + `(2)Benzene`, full `Stone` map exclusion, `CUBOT` Fighting Spirit variants, and `Yuanheng Zhu` + `(4)Andromeda`.
+- Latest verification:
+  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 121 passed.
+  - `.\scripts\smoke.ps1`: warning 0 / error 0.
+  - `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1024`, `blockedDeclaredDllPairs=26`, `issues=0`, `runtimeCrashes=10`.
+  - `.\scripts\smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Dragon'`: passed with `inGame=True`, `aiInGame=True`, `timerOverlay=True`, `aiGracefulShutdown=True`.
+  - Foreground Alt+F4 UI automation was stopped after user safety feedback; Alt+F4 interception remains covered by unit tests and non-foreground smoke paths.
+- Computer Use note:
+  - The Computer Use plugin skill was read and bootstrap was attempted.
+  - Current local helper failed to load with `Package subpath './dist/project/cua/sky_js/src/targets/windows/internal/computer_use_client_base.js' is not defined by "exports" ... @oai/sky\package.json`.
+  - Windows UI verification therefore used direct Win32/UIAutomation automation after the plugin helper failure.

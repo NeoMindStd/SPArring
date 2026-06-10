@@ -41,17 +41,27 @@ public static class PracticeCatalogCompatibility
 
     private static bool IsKnownBadRuntimePair(PracticeBot bot, PracticeMap map)
     {
+        if (bot.Name.Equals("Stone", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
         if (IsFightingSpiritVariant(map))
         {
             return bot.Name.Equals("ICELab", StringComparison.OrdinalIgnoreCase) ||
+                   bot.Name.Equals("CUBOT", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("Feint", StringComparison.OrdinalIgnoreCase) ||
-                   bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase) ||
-                   bot.Name.Equals("Stone", StringComparison.OrdinalIgnoreCase);
+                   bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase);
         }
 
         if (IsJadeVariant(map))
         {
-            return bot.Name.Equals("Stone", StringComparison.OrdinalIgnoreCase);
+            return bot.Name.Equals("RedRum", StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (IsAndromedaVariant(map))
+        {
+            return bot.Name.Equals("Yuanheng Zhu", StringComparison.OrdinalIgnoreCase);
         }
 
         return false;
@@ -67,6 +77,12 @@ public static class PracticeCatalogCompatibility
     {
         return ContainsToken(map.Name, "Jade") ||
                ContainsToken(map.FileName, "Jade");
+    }
+
+    private static bool IsAndromedaVariant(PracticeMap map)
+    {
+        return ContainsToken(map.Name, "Andromeda") ||
+               ContainsToken(map.FileName, "Andromeda");
     }
 
     private static bool ContainsFightingSpiritToken(string value)

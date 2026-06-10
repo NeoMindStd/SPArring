@@ -71,6 +71,7 @@ public sealed class MainForm : Form
     private DateTime _activeSessionStartedAtUtc;
     private int _notInGameSamples;
     private bool _finalizingSession;
+    private bool _playerExitShortcutRequested;
     private bool _updatingSelections;
     private Image? _mapPreviewImage;
 
@@ -1497,6 +1498,10 @@ public sealed class MainForm : Form
         {
             bots = bots.Where(bot => PracticeCatalogCompatibility.IsCompatible(_catalog, bot.Id, mapConstraint.Id));
         }
+        else
+        {
+            bots = bots.Where(bot => PracticeCatalogCompatibility.MapsForBot(_catalog, bot.Id).Count > 0);
+        }
 
         return bots;
     }
@@ -1843,7 +1848,11 @@ public sealed class MainForm : Form
 
             var sessionStartedAt = DateTime.UtcNow;
             var actionCounter = new ActionRateCounter();
-            _inputActionHook = new GlobalInputActionHook(actionCounter, existingStarCraftProcesses);
+            _inputActionHook = new GlobalInputActionHook(
+                actionCounter,
+                existingStarCraftProcesses,
+                report.Player.StarCraftProcessId.Value,
+                RequestPlayerGracefulExitFromShortcut);
             _practiceOverlay = new PracticeOverlayForm();
             var overlayBounds = StarCraftBorderlessWindow.TryGetProcessWindowBounds(
                 report.Player.StarCraftProcessId.Value,
@@ -1956,6 +1965,11 @@ public sealed class MainForm : Form
 
         if (botItem.Bot is { } selectedBot && mapItem.Map is { } selectedMap)
         {
+            if (!PracticeCatalogCompatibility.IsCompatible(_catalog, selectedBot.Id, selectedMap.Id))
+            {
+                throw new InvalidOperationException($"'{selectedBot.Name}' 遊뉕낵 '{selectedMap.Name}' 留듭? ?명솚?섏? ?딆뒿?덈떎.");
+            }
+
             return (selectedBot, selectedMap);
         }
 
@@ -2258,6 +2272,49 @@ public sealed class MainForm : Form
             $"로컬 StarCraft/AI 정리 {stopped}개 | 타이머/APM OFF";
     }
 
+    private void RequestPlayerGracefulExitFromShortcut()
+    {
+        if (_playerExitShortcutRequested)
+        {
+            return;
+        }
+
+        _playerExitShortcutRequested = true;
+        if (IsDisposed || !IsHandleCreated)
+        {
+            return;
+        }
+
+        try
+        {
+            BeginInvoke(new Action(() => _ = HandlePlayerGracefulExitShortcutAsync()));
+        }
+        catch
+        {
+            // The form may be closing while the low-level keyboard hook is unwinding.
+        }
+    }
+
+    private async Task HandlePlayerGracefulExitShortcutAsync()
+    {
+        if (_finalizingSession || _activeSession is not { } session)
+        {
+            return;
+        }
+
+        _statusLabel.Text = "Alt+F4 감지 | 게임을 정상 나가기 순서로 종료합니다.";
+        if (session.LaunchReport.Player.StarCraftProcessId is { } playerProcessId)
+        {
+            _sessionLifecycleTimer?.Stop();
+            await Task.Run(() => StarCraftGameExitController.LeaveGameThenCloseProcess(
+                playerProcessId,
+                TimeSpan.FromSeconds(4),
+                TimeSpan.FromSeconds(3)));
+        }
+
+        await FinalizeActiveSessionAsync("player-left-ingame:AltF4");
+    }
+
     private BotResultLogObservation? FindBotResult(ActivePracticeSession session)
     {
         var roots = new List<string>();
@@ -2372,6 +2429,7 @@ public sealed class MainForm : Form
         _activeSession = null;
         _notInGameSamples = 0;
         _finalizingSession = false;
+        _playerExitShortcutRequested = false;
 
         _inputActionHook?.Dispose();
         _inputActionHook = null;
