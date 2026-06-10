@@ -1,33 +1,20 @@
 # StarAI Practice Client 1.2.1
 
-Hotfix release focused on preventing the Alt+F4 exit crash path and tightening one bot-map compatibility hole found during reproduction.
+Alt+F4 종료 경로에서 발생할 수 있는 크래시를 막고, 재현 중 확인된 봇-맵 호환성 구멍을 보강한 핫픽스 릴리즈입니다.
 
-## Fixes
+## 수정 사항
 
-- Player-side Alt+F4 during an active StarAI match is now intercepted only for the captured human StarCraft process.
-- The intercepted shortcut is converted into the normal in-game leave flow before session finalization and AI cleanup.
-- This prevents StarCraft from taking the raw Alt+F4 path that could leave Windows application error dialogs behind.
-- `RedRum` + `(4)Jade` is now blocked as a known-bad runtime pair after local AI crash evidence.
-- `Stone` is excluded from the compatible bot pool until runtime safety is proven, after repeated local crashes on Fighting Spirit, Jade, and Benzene.
-- `CUBOT` is blocked on Fighting Spirit variants after release-candidate UI verification reproduced a local AI crash.
-- `Yuanheng Zhu` is blocked on Andromeda after release-candidate UI verification reproduced a local `Juno.dll` crash.
-- Random/sparring candidate filtering now removes bots that have no currently compatible maps, and launch resolution rechecks explicit bot-map compatibility.
+- StarAI 매치 중 플레이어가 Alt+F4로 종료해도 정상 인게임 나가기 흐름으로 정리됩니다.
+- 종료 중 Windows 응용 프로그램 오류 창이 남을 수 있던 문제를 줄였습니다.
+- 게임 중 튕길 수 있는 `RedRum` + `(4)Jade` 조합을 차단했습니다.
+- 여러 맵에서 불안정한 `Stone`은 호환 봇 풀에서 제외했습니다.
+- 게임 중 튕길 수 있는 `CUBOT` + Fighting Spirit 계열 조합을 차단했습니다.
+- 게임 중 튕길 수 있는 `Yuanheng Zhu` + Andromeda 조합을 차단했습니다.
+- 랜덤/스파링 후보 필터는 현재 호환 가능한 맵이 없는 봇을 제거하고, 실행 직전에도 명시 봇-맵 호환성을 다시 확인합니다.
 
-## Verification
+## 설치 방법
 
-- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`
-- `.\scripts\smoke.ps1`
-- `.\scripts\audit-compatibility.ps1`
-- `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Terran -EnemyRace Terran -MapName '(2)Benzene' -BotName 'Stone'`
-- `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Terran -EnemyRace Zerg -MapName '(4)Fighting Spirit' -BotName 'CUBOT'`
-- `.\scripts\smoke-app-start.ps1 -DryRun -Mode Sparring -PlayerRace Terran -EnemyRace Protoss -MapName '(4)Andromeda' -BotName 'Yuanheng Zhu'`
-- `.\scripts\smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Dragon'`
-- Alt+F4 interception is covered by `GlobalInputActionHookTests`; foreground Alt+F4 UI automation was stopped after safety feedback.
-- `.\scripts\build-release.ps1`
-
-## Install
-
-1. Download `StarAI-PracticeClient-1.2.1-win-x64.zip`.
-2. Extract it.
-3. Run `install.cmd`.
-4. Launch `C:\starai\Start-StarAI-PracticeClient.cmd`.
+1. `StarAI-PracticeClient-1.2.1-win-x64.zip`을 다운로드합니다.
+2. ZIP 파일의 압축을 풉니다.
+3. 압축을 푼 폴더에서 `install.cmd`를 실행합니다.
+4. 설치 후 `C:\starai\Start-StarAI-PracticeClient.cmd`로 실행합니다.

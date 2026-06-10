@@ -12,6 +12,12 @@ StarAI Practice Client는 StarCraft 1.16.1 + BWAPI 기반의 로컬 AI 스파링
 4. 설치가 끝나면 바탕화면의 `StarAI Practice Client` 바로가기를 실행합니다.
 5. 런처에서 봇, 맵, 종족을 고른 뒤 `스파링 시작`을 누릅니다.
 
+## 실제 플레이 예시
+
+래더 모드에서 투혼 맵으로 진행한 Protoss vs Terran 24분 경기입니다. 봇/맵/종족을 고르고 래더 매칭으로 스파링하는 흐름을 볼 수 있습니다.
+
+[![StarAI 래더 플레이 예시 - 투혼 Protoss vs Terran 24분 경기](https://img.youtube.com/vi/LJhL1WCl8wE/hqdefault.jpg)](https://www.youtube.com/watch?v=LJhL1WCl8wE)
+
 설치 후 실행 파일은 아래 위치에 만들어집니다.
 
 ```text
@@ -75,11 +81,3 @@ Requirements:
 - 봇/맵 목록이 비어 있으면 설치 폴더의 `C:\starai\StarAI.PracticeClient\data`가 함께 복사됐는지 확인하세요.
 - 스파링 시작이 안 되면 `C:\starai\SC116AI\StarCraft.exe`가 존재하는지 확인하세요.
 - AI 창은 합류 후 자동 최소화됩니다. 작업 표시줄에서 `Brood War Instance 2`를 복원하면 AI 화면을 볼 수 있습니다.
-
-## 개발 검증
-
-```powershell
-dotnet test .\StarAI.PracticeClient.sln -v:minimal
-.\scripts\smoke.ps1
-.\scripts\smoke-app-start.ps1
-```

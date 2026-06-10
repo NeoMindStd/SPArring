@@ -1,38 +1,20 @@
 # StarAI Practice Client 1.1.0
 
-Minor release focused on making practice sessions safer and more useful in real play.
+실전 스파링을 더 안정적으로 진행하기 위한 마이너 릴리즈입니다.
 
-## Highlights
+## 주요 변경
 
-- Timer/APM overlay now starts after actual in-game HUD detection instead of at launcher click or room wait time.
-- Human client uses BWAPI tournament mode without loading a normal AI module.
-- AI client leaves the game before process cleanup to avoid player-side disconnect waits.
-- Ladder and random matching now share compatibility filtering with Remastered ladder maps.
-- Known broken local runtime combinations are blocked from bot/map candidates.
-- Full compatibility audit command added for declared DLL bot-map pairs.
-- Map preview panel restored on the Game tab.
-- History, ladder MMR controls, result handling, AI-name hiding, and hotkey import/UI received the WIP improvements carried into this release.
+- 타이머/APM 오버레이가 런처 클릭이나 방 대기 시점이 아니라 실제 인게임 HUD 감지 이후 시작됩니다.
+- 사람 클라이언트는 일반 AI 모듈을 로드하지 않고 BWAPI Tournament Module 기반으로 실행됩니다.
+- AI 클라이언트는 정리 전에 정상 나가기 흐름을 먼저 수행해 플레이어 측 연결 끊김 대기 문제를 줄였습니다.
+- 래더/랜덤 매칭과 Remastered 래더맵이 같은 봇-맵 호환성 필터를 사용합니다.
+- 로컬 런타임에서 깨지는 것으로 확인된 봇-맵 조합은 후보에서 제외됩니다.
+- 게임 탭의 맵 프리뷰 패널을 복구했습니다.
+- 전적, 래더 MMR 조정, 결과 처리, AI 이름 가리기, 핫키 가져오기/UI 개선 작업을 포함했습니다.
 
-## Verification
+## 설치 방법
 
-- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`
-- `.\scripts\smoke.ps1`
-- `.\scripts\audit-compatibility.ps1`
-- `.\scripts\smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Dragon'`
-
-## Compatibility Audit Snapshot
-
-- Bots: 86
-- DLL bots: 61
-- Maps: 31
-- Declared DLL bot-map pairs: 1050
-- Compatible DLL pairs: 1041
-- Blocked declared pairs: 9
-- Audit issues: 0
-
-## Install
-
-1. Download `StarAI-PracticeClient-1.1.0-win-x64.zip`.
-2. Extract it.
-3. Run `install.cmd`.
-4. Launch `C:\starai\Start-StarAI-PracticeClient.cmd`.
+1. `StarAI-PracticeClient-1.1.0-win-x64.zip`을 다운로드합니다.
+2. ZIP 파일의 압축을 풉니다.
+3. 압축을 푼 폴더에서 `install.cmd`를 실행합니다.
+4. 설치 후 `C:\starai\Start-StarAI-PracticeClient.cmd`로 실행합니다.
