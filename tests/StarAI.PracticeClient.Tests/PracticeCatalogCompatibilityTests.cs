@@ -118,6 +118,28 @@ public sealed class PracticeCatalogCompatibilityTests
     }
 
     [Fact]
+    public void RedRumIsExcludedFromEveryDeclaredMapUntilRuntimeSafetyIsProven()
+    {
+        var benzeneId = Guid.NewGuid();
+        var pythonId = Guid.NewGuid();
+        var circuitBreakerId = Guid.NewGuid();
+        var botId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(botId, "RedRum", benzeneId, pythonId, circuitBreakerId)
+            ],
+            [
+                new PracticeMap(benzeneId, "(2)Benzene", "(2)Benzene.scx", null, true),
+                new PracticeMap(pythonId, "(4)Python", "(4)Python.scx", null, true),
+                new PracticeMap(circuitBreakerId, "(4)Circuit Breaker", "(4)CircuitBreaker.scx", null, true)
+            ]);
+
+        Assert.Empty(PracticeCatalogCompatibility.MapsForBot(catalog, botId));
+        Assert.All(catalog.Maps, map =>
+            Assert.DoesNotContain(PracticeCatalogCompatibility.BotsForMap(catalog, map.Id), bot => bot.Id == botId));
+    }
+
+    [Fact]
     public void OtherBotsCanStillUseFightingSpiritWhenDeclaredCompatible()
     {
         var mapId = Guid.NewGuid();

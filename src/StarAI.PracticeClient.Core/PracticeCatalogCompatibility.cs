@@ -41,7 +41,8 @@ public static class PracticeCatalogCompatibility
 
     private static bool IsKnownBadRuntimePair(PracticeBot bot, PracticeMap map)
     {
-        if (bot.Name.Equals("Stone", StringComparison.OrdinalIgnoreCase))
+        if (bot.Name.Equals("Stone", StringComparison.OrdinalIgnoreCase) ||
+            bot.Name.Equals("RedRum", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
@@ -52,13 +53,12 @@ public static class PracticeCatalogCompatibility
                    bot.Name.Equals("CUBOT", StringComparison.OrdinalIgnoreCase) ||
                    IsSteamhammerFamily(bot) ||
                    bot.Name.Equals("Feint", StringComparison.OrdinalIgnoreCase) ||
-                   bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase) ||
-                   bot.Name.Equals("RedRum", StringComparison.OrdinalIgnoreCase);
+                   bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase);
         }
 
         if (IsJadeVariant(map))
         {
-            return bot.Name.Equals("RedRum", StringComparison.OrdinalIgnoreCase);
+            return false;
         }
 
         if (IsAndromedaVariant(map))
