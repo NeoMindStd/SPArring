@@ -118,7 +118,7 @@ public sealed class PracticeCatalogCompatibilityTests
     }
 
     [Fact]
-    public void RedRumKeepsWhitelistedMapsWithoutBadRuntimeEvidence()
+    public void RedRumIsExcludedUntilAValidatedSupportedMapWhitelistExists()
     {
         var fightingSpiritId = Guid.NewGuid();
         var fightingSpirit14Id = Guid.NewGuid();
@@ -138,13 +138,9 @@ public sealed class PracticeCatalogCompatibilityTests
                 new PracticeMap(jadeId, "(4)Jade", "(4)Jade.scx", null, true)
             ]);
 
-        var maps = PracticeCatalogCompatibility.MapsForBot(catalog, botId);
-
-        Assert.Contains(maps, map => map.Id == benzeneId);
-        Assert.Contains(maps, map => map.Id == pythonId);
-        Assert.DoesNotContain(maps, map => map.Id == fightingSpiritId);
-        Assert.DoesNotContain(maps, map => map.Id == fightingSpirit14Id);
-        Assert.DoesNotContain(maps, map => map.Id == jadeId);
+        Assert.Empty(PracticeCatalogCompatibility.MapsForBot(catalog, botId));
+        Assert.All(catalog.Maps, map =>
+            Assert.DoesNotContain(PracticeCatalogCompatibility.BotsForMap(catalog, map.Id), bot => bot.Id == botId));
     }
 
     [Fact]

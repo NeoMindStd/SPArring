@@ -211,7 +211,7 @@ UI:
   - `ICELab` + `(4)Fighting Spirit` / `(4)Fighting Spirit 1.4 [Remastered Ladder]`: 사용자 실제 플레이에서 상대 정지 재현. 크래시는 없지만 로컬 런타임에서 실전 불가 조합으로 차단.
   - `CUBOT` + `(4)Fighting Spirit` / `(4)Fighting Spirit 1.4 [Remastered Ladder]`: 2026-06-10 릴리즈 후보 UI 검증 중 AI 런타임 `CUBOT.dll` 접근 위반 크래시 확인.
   - `Stone`: 투혼/Jade/Benzene에서 반복 접근 위반 크래시가 확인되어, 안전성이 다시 검증될 때까지 전체 호환 후보에서 제외.
-  - `RedRum` + `(4)Fighting Spirit` / `(4)Fighting Spirit 1.4 [Remastered Ladder]` / `(4)Jade`: AI 런타임 `RedRum.dll` 접근 위반 크래시 로그와 감사 매칭 근거가 있는 조합만 차단. 그 외 whitelist 맵은 후보에 남긴다.
+  - `RedRum`: 로컬 카탈로그/봇 패키지/외부 봇 설명에서 안전하게 허용할 수 있는 지원 맵 목록을 확인하지 못했고, `(4)Fighting Spirit` 계열, `(4)Jade`, `(2)Benzene`, `(2)Destination`, `(2)Heartbreak Ridge`, `(3)Neo Moon Glaive`, `(3)Tau Cross`에서 `RedRum.dll` 접근 위반이 확인되어 검증된 whitelist가 생길 때까지 전체 후보에서 제외한다.
   - `Yuanheng Zhu` + `(4)Andromeda`: 2026-06-10 릴리즈 후보 UI 검증 중 AI 런타임 `Juno.dll` 접근 위반 크래시 확인.
 
 주의:

@@ -48,7 +48,8 @@ public static class PracticeCatalogCompatibility
 
         if (bot.Name.Equals("RedRum", StringComparison.OrdinalIgnoreCase))
         {
-            return IsJadeVariant(map) || IsFightingSpiritVariant(map);
+            // RedRum crashes on multiple declared maps and has no trustworthy safe-map whitelist yet.
+            return true;
         }
 
         if (IsFightingSpiritVariant(map))
