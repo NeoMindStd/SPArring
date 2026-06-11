@@ -55,6 +55,12 @@ public sealed class PracticeCatalogCompatibilityTests
     [InlineData("CUBOT", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("Feint", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("Feint", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Crazyhammer", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Crazyhammer", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Randomhammer", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Randomhammer", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Steamhammer", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Steamhammer", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("LetaBot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("LetaBot", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("Stone", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
@@ -138,7 +144,9 @@ public sealed class PracticeCatalogCompatibilityTests
             id,
             name,
             StarCraftRace.Zerg,
-            $"{name}.dll",
+            SteamhammerFamilyBotNames.Contains(name, StringComparer.OrdinalIgnoreCase)
+                ? "Steamhammer.dll"
+                : $"{name}.dll",
             BotExecutableKind.Dll,
             "4.4.0",
             1000,
@@ -147,4 +155,12 @@ public sealed class PracticeCatalogCompatibilityTests
             null,
             null);
     }
+
+    private static readonly string[] SteamhammerFamilyBotNames =
+    [
+        "Crazyhammer",
+        "Feint",
+        "Randomhammer",
+        "Steamhammer"
+    ];
 }

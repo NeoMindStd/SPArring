@@ -130,6 +130,7 @@ Last updated: 2026-06-05
 현재 예외:
 
 - `Feint` + Fighting Spirit 계열: AI 런타임 `Steamhammer.dll` 접근 위반 크래시 로그 확인.
+- `Crazyhammer` / `Randomhammer` / `Steamhammer` + Fighting Spirit 계열: `Steamhammer.dll` 공유 계열이므로 같은 맵 패밀리에서 안전 차단한다.
 - `ICELab` + Fighting Spirit 계열: 실제 플레이에서 상대 정지 관찰. 원인 확정 전까지 실전 매칭에서 제외한다.
 - `RedRum` + Fighting Spirit 계열: AI 런타임 `RedRum.dll` 접근 위반 크래시 로그 확인.
 
@@ -321,6 +322,7 @@ Decision:
 - After the player leaves, close the player process and then run the existing AI graceful shutdown/finalization path.
 - Add `RedRum` + `(4)Jade` as a known-bad compatibility exclusion.
 - Add `RedRum` + Fighting Spirit variants as a known-bad compatibility exclusion after 2026-06-12 ladder crash evidence.
+- Block all `Steamhammer.dll` family bots on Fighting Spirit variants, because shared-DLL crash evidence on that map family should not leave sibling bot candidates selectable.
 - Exclude `Stone` from the compatible bot pool entirely until runtime safety is proven, because it now has crash evidence across Fighting Spirit, Jade, and Benzene.
 - Block `CUBOT` on Fighting Spirit variants because the crash evidence maps to that map family.
 - Block `Yuanheng Zhu` on Andromeda variants because the crash evidence maps to that map family.

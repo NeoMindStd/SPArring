@@ -230,8 +230,7 @@ public static class PracticeCompatibilityAuditor
         foreach (var crash in crashes)
         {
             var matchingBots = MatchingBotsForCrash(bots, crash);
-            if (matchingBots.Count == 0 ||
-                (crash.BotDirectoryName is null && matchingBots.Count > 1))
+            if (matchingBots.Count == 0)
             {
                 continue;
             }

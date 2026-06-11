@@ -50,6 +50,7 @@ public static class PracticeCatalogCompatibility
         {
             return bot.Name.Equals("ICELab", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("CUBOT", StringComparison.OrdinalIgnoreCase) ||
+                   IsSteamhammerFamily(bot) ||
                    bot.Name.Equals("Feint", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("RedRum", StringComparison.OrdinalIgnoreCase);
@@ -72,6 +73,14 @@ public static class PracticeCatalogCompatibility
     {
         return ContainsFightingSpiritToken(map.Name) ||
                ContainsFightingSpiritToken(map.FileName);
+    }
+
+    private static bool IsSteamhammerFamily(PracticeBot bot)
+    {
+        return string.Equals(
+            Path.GetFileName(bot.ExecutableName),
+            "Steamhammer.dll",
+            StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsJadeVariant(PracticeMap map)

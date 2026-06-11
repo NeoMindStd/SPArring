@@ -87,38 +87,45 @@ public sealed class PracticeCompatibilityAuditorTests
     }
 
     [Fact]
-    public void AuditDoesNotPromoteSharedDllCrashWithoutBotDirectory()
+    public void AuditReportsSharedDllCrashForEveryStillCompatibleCandidate()
     {
         var root = Path.Combine(Path.GetTempPath(), "starai-audit-tests", Guid.NewGuid().ToString("N"));
-        var firstBotRoot = Path.Combine(root, "bots", "FirstHammer");
-        var secondBotRoot = Path.Combine(root, "bots", "SecondHammer");
+        var firstBotRoot = Path.Combine(root, "bots", "FirstSharedBot");
+        var secondBotRoot = Path.Combine(root, "bots", "SecondSharedBot");
         var mapPath = Path.Combine(root, "maps", "(4)Fighting Spirit.scx");
         var errorRoot = Path.Combine(root, "errors");
         Directory.CreateDirectory(firstBotRoot);
         Directory.CreateDirectory(secondBotRoot);
         Directory.CreateDirectory(Path.GetDirectoryName(mapPath)!);
         Directory.CreateDirectory(errorRoot);
-        File.WriteAllText(Path.Combine(firstBotRoot, "Steamhammer.dll"), "bot");
-        File.WriteAllText(Path.Combine(secondBotRoot, "Steamhammer.dll"), "bot");
+        File.WriteAllText(Path.Combine(firstBotRoot, "SharedEngine.dll"), "bot");
+        File.WriteAllText(Path.Combine(secondBotRoot, "SharedEngine.dll"), "bot");
         File.WriteAllText(mapPath, "map");
         File.WriteAllText(Path.Combine(errorRoot, "crash.txt"), """
             TIME: Mon Jun  8 11:40:59 2026
             MAP: Fighting Spirit
                  (4)Fighting Spirit.scx
             EXCEPTION: 0xC0000005    EXCEPTION_ACCESS_VIOLATION
-            FAULT:     0x79F13722    Steamhammer.dll
+            FAULT:     0x79F13722    SharedEngine.dll
             """);
         var mapId = Guid.NewGuid();
         var catalog = new PracticeCatalog(
             [
-                Bot("FirstHammer", "Steamhammer.dll", mapId, firstBotRoot),
-                Bot("SecondHammer", "Steamhammer.dll", mapId, secondBotRoot)
+                Bot("FirstSharedBot", "SharedEngine.dll", mapId, firstBotRoot),
+                Bot("SecondSharedBot", "SharedEngine.dll", mapId, secondBotRoot)
             ],
             [new PracticeMap(mapId, "(4)Fighting Spirit", "(4)Fighting Spirit.scx", null, true, mapPath)]);
 
         var report = PracticeCompatibilityAuditor.Audit(catalog, errorRoot);
 
-        Assert.DoesNotContain(report.Issues, issue => issue.Kind == PracticeCompatibilityAuditIssueKind.RuntimeCrashEvidence);
+        var issues = report.Issues
+            .Where(issue => issue.Kind == PracticeCompatibilityAuditIssueKind.RuntimeCrashEvidence)
+            .OrderBy(issue => issue.BotName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        Assert.Equal(2, issues.Count);
+        Assert.Equal("FirstSharedBot", issues[0].BotName);
+        Assert.Equal("SecondSharedBot", issues[1].BotName);
+        Assert.All(issues, issue => Assert.Equal("(4)Fighting Spirit", issue.MapName));
         Assert.Single(report.RuntimeCrashes);
     }
 

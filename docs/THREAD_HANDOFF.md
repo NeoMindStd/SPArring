@@ -231,6 +231,12 @@ Important observations:
 - Current blocked declared pairs are:
   - `Feint` + `(4)Fighting Spirit`
   - `Feint` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
+  - `Crazyhammer` + `(4)Fighting Spirit`
+  - `Crazyhammer` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
+  - `Randomhammer` + `(4)Fighting Spirit`
+  - `Randomhammer` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
+  - `Steamhammer` + `(4)Fighting Spirit`
+  - `Steamhammer` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
   - `CUBOT` + `(4)Fighting Spirit`
   - `CUBOT` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
   - `ICELab` + `(4)Fighting Spirit`
@@ -331,12 +337,19 @@ Important observations:
 - Implemented:
   - `RedRum` + `(4)Fighting Spirit` is blocked.
   - `RedRum` + `(4)Fighting Spirit 1.4 [Remastered Ladder]` is blocked.
+  - `Crazyhammer`, `Randomhammer`, and `Steamhammer` are blocked on Fighting Spirit variants because the same `Steamhammer.dll` family has crash evidence there.
+  - Compatibility audit now promotes shared-DLL crash evidence for every still-compatible candidate instead of ignoring ambiguous shared module names.
   - The exclusion is in `PracticeCatalogCompatibility`, so bot list, map list, ladder candidates, random selection, and launch-time validation share it.
 - Regression coverage:
   - `PracticeCatalogCompatibilityTests.KnownBadRuntimePairsAreNotCompatible` covers both RedRum Fighting Spirit variants.
+  - `PracticeCatalogCompatibilityTests.KnownBadRuntimePairsAreNotCompatible` covers the Steamhammer-family Fighting Spirit variants.
+  - `PracticeCompatibilityAuditorTests.AuditReportsSharedDllCrashForEveryStillCompatibleCandidate` covers shared-DLL crash promotion.
 - Latest verification:
-  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 144 passed.
+  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 150 passed.
   - `.\scripts\smoke.ps1`: warning 0 / error 0.
-  - `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1022`, `blockedDeclaredDllPairs=28`, `issues=0`, `runtimeCrashes=14`.
+  - `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1016`, `blockedDeclaredDllPairs=34`, `issues=0`, `runtimeCrashes=14`.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'RedRum'`: failed as expected because blocked.
+  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Steamhammer'`: failed as expected because blocked.
+  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Crazyhammer'`: failed as expected because blocked.
+  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Randomhammer'`: failed as expected because blocked.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]'`: selected another compatible Terran bot.
