@@ -61,6 +61,8 @@ public sealed class PracticeCatalogCompatibilityTests
     [InlineData("Stone", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("Stone", "(4)Jade", "(4)Jade.scx")]
     [InlineData("Stone", "(2)Benzene", "(2)Benzene.scx")]
+    [InlineData("RedRum", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("RedRum", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("RedRum", "(4)Jade", "(4)Jade.scx")]
     [InlineData("Yuanheng Zhu", "(4)Andromeda", "(4)Andromeda.scx")]
     public void KnownBadRuntimePairsAreNotCompatible(string botName, string mapName, string fileName)

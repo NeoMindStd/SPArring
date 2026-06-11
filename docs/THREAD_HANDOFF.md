@@ -8,7 +8,7 @@ Last updated: 2026-06-10
 - User taskbar entrypoint: `C:\starai\Start-StarAI-PracticeClient.cmd`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
 - Current version: `1.2.1`
-- Last verified implementation state: 1.2.1 hotfix release candidate for Alt+F4 graceful player exit handling, `RedRum` + `(4)Jade` blocking, `Stone` full compatibility-pool exclusion, `CUBOT` Fighting Spirit blocking, `Yuanheng Zhu` Andromeda blocking, and stricter random/sparring compatibility filters.
+- Last verified implementation state: post-1.2.1 WIP with Alt+F4 graceful player exit handling, `RedRum` + `(4)Jade` and Fighting Spirit blocking, `Stone` full compatibility-pool exclusion, `CUBOT` Fighting Spirit blocking, `Yuanheng Zhu` Andromeda blocking, and stricter random/sparring compatibility filters.
 - Current WIP after 1.2.1: none. Do not reset uncommitted changes unless the user explicitly asks.
 
 ## Hard Rules
@@ -239,6 +239,8 @@ Important observations:
   - `LetaBot` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
   - `Stone` + all 16 declared maps, after repeated `Stone.dll` access violations on Fighting Spirit, Jade, and Benzene.
   - `RedRum` + `(4)Jade`
+  - `RedRum` + `(4)Fighting Spirit`
+  - `RedRum` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
   - `Yuanheng Zhu` + `(4)Andromeda`
 - This is exhaustive static/log auditing, not exhaustive dynamic boot testing for all 1024 compatible pairs.
 
@@ -320,3 +322,21 @@ Important observations:
   - The Computer Use plugin skill was read and bootstrap was attempted.
   - Current local helper failed to load with `Package subpath './dist/project/cua/sky_js/src/targets/windows/internal/computer_use_client_base.js' is not defined by "exports" ... @oai/sky\package.json`.
   - Windows UI verification therefore used direct Win32/UIAutomation automation after the plugin helper failure.
+
+## 2026-06-12 RedRum Fighting Spirit Follow-up
+
+- Verified before editing:
+  - `C:\starai\SC116AI_ai\Errors\2026 Jun 12.txt` had repeated `RedRum.dll` access violations on `(4)Fighting_Spirit 1.4.scx`.
+  - `%APPDATA%\StarAI.PracticeClient\history.json` had `RedRum` ladder entries on `(4)Fighting Spirit 1.4 [Remastered Ladder]` ending as `AI 종료` after 1-6 seconds.
+- Implemented:
+  - `RedRum` + `(4)Fighting Spirit` is blocked.
+  - `RedRum` + `(4)Fighting Spirit 1.4 [Remastered Ladder]` is blocked.
+  - The exclusion is in `PracticeCatalogCompatibility`, so bot list, map list, ladder candidates, random selection, and launch-time validation share it.
+- Regression coverage:
+  - `PracticeCatalogCompatibilityTests.KnownBadRuntimePairsAreNotCompatible` covers both RedRum Fighting Spirit variants.
+- Latest verification:
+  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 144 passed.
+  - `.\scripts\smoke.ps1`: warning 0 / error 0.
+  - `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1022`, `blockedDeclaredDllPairs=28`, `issues=0`, `runtimeCrashes=14`.
+  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'RedRum'`: failed as expected because blocked.
+  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]'`: selected another compatible Terran bot.

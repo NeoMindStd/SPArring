@@ -51,7 +51,8 @@ public static class PracticeCatalogCompatibility
             return bot.Name.Equals("ICELab", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("CUBOT", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("Feint", StringComparison.OrdinalIgnoreCase) ||
-                   bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase);
+                   bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase) ||
+                   bot.Name.Equals("RedRum", StringComparison.OrdinalIgnoreCase);
         }
 
         if (IsJadeVariant(map))
