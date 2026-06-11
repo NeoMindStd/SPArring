@@ -41,10 +41,14 @@ public static class PracticeCatalogCompatibility
 
     private static bool IsKnownBadRuntimePair(PracticeBot bot, PracticeMap map)
     {
-        if (bot.Name.Equals("Stone", StringComparison.OrdinalIgnoreCase) ||
-            bot.Name.Equals("RedRum", StringComparison.OrdinalIgnoreCase))
+        if (bot.Name.Equals("Stone", StringComparison.OrdinalIgnoreCase))
         {
             return true;
+        }
+
+        if (bot.Name.Equals("RedRum", StringComparison.OrdinalIgnoreCase))
+        {
+            return IsJadeVariant(map) || IsFightingSpiritVariant(map);
         }
 
         if (IsFightingSpiritVariant(map))

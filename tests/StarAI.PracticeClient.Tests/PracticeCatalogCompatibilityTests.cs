@@ -118,25 +118,33 @@ public sealed class PracticeCatalogCompatibilityTests
     }
 
     [Fact]
-    public void RedRumIsExcludedFromEveryDeclaredMapUntilRuntimeSafetyIsProven()
+    public void RedRumKeepsWhitelistedMapsWithoutBadRuntimeEvidence()
     {
+        var fightingSpiritId = Guid.NewGuid();
+        var fightingSpirit14Id = Guid.NewGuid();
         var benzeneId = Guid.NewGuid();
         var pythonId = Guid.NewGuid();
-        var circuitBreakerId = Guid.NewGuid();
+        var jadeId = Guid.NewGuid();
         var botId = Guid.NewGuid();
         var catalog = new PracticeCatalog(
             [
-                Bot(botId, "RedRum", benzeneId, pythonId, circuitBreakerId)
+                Bot(botId, "RedRum", fightingSpiritId, fightingSpirit14Id, benzeneId, pythonId, jadeId)
             ],
             [
+                new PracticeMap(fightingSpiritId, "(4)Fighting Spirit", "(4)Fighting Spirit.scx", null, true),
+                new PracticeMap(fightingSpirit14Id, "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx", null, true),
                 new PracticeMap(benzeneId, "(2)Benzene", "(2)Benzene.scx", null, true),
                 new PracticeMap(pythonId, "(4)Python", "(4)Python.scx", null, true),
-                new PracticeMap(circuitBreakerId, "(4)Circuit Breaker", "(4)CircuitBreaker.scx", null, true)
+                new PracticeMap(jadeId, "(4)Jade", "(4)Jade.scx", null, true)
             ]);
 
-        Assert.Empty(PracticeCatalogCompatibility.MapsForBot(catalog, botId));
-        Assert.All(catalog.Maps, map =>
-            Assert.DoesNotContain(PracticeCatalogCompatibility.BotsForMap(catalog, map.Id), bot => bot.Id == botId));
+        var maps = PracticeCatalogCompatibility.MapsForBot(catalog, botId);
+
+        Assert.Contains(maps, map => map.Id == benzeneId);
+        Assert.Contains(maps, map => map.Id == pythonId);
+        Assert.DoesNotContain(maps, map => map.Id == fightingSpiritId);
+        Assert.DoesNotContain(maps, map => map.Id == fightingSpirit14Id);
+        Assert.DoesNotContain(maps, map => map.Id == jadeId);
     }
 
     [Fact]

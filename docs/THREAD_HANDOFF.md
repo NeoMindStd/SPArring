@@ -8,7 +8,7 @@ Last updated: 2026-06-12
 - User taskbar entrypoint: `C:\starai\Start-StarAI-PracticeClient.cmd`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
 - Current version: `1.2.1`
-- Last verified implementation state: post-1.2.1 WIP with Alt+F4 graceful player exit handling, `RedRum` and `Stone` full compatibility-pool exclusion, Steamhammer-family Fighting Spirit blocking, `CUBOT` Fighting Spirit blocking, `Yuanheng Zhu` Andromeda blocking, and stricter random/sparring compatibility filters.
+- Last verified implementation state: post-1.2.1 WIP with Alt+F4 graceful player exit handling, `RedRum` Jade/Fighting Spirit blocking, `Stone` full compatibility-pool exclusion, Steamhammer-family Fighting Spirit blocking, `CUBOT` Fighting Spirit blocking, `Yuanheng Zhu` Andromeda blocking, and stricter random/sparring compatibility filters.
 - Current WIP after 1.2.1: none. Do not reset uncommitted changes unless the user explicitly asks.
 
 ## Hard Rules
@@ -224,8 +224,8 @@ Important observations:
   - `dllBots=61`
   - `maps=31`
   - `declaredDllPairs=1050`
-  - `compatibleDllPairs=1003`
-  - `blockedDeclaredDllPairs=47`
+  - `compatibleDllPairs=1016`
+  - `blockedDeclaredDllPairs=34`
   - `issues=0`
   - `runtimeCrashes=14`
 - Current blocked declared pairs are:
@@ -244,9 +244,11 @@ Important observations:
   - `LetaBot` + `(4)Fighting Spirit`
   - `LetaBot` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
   - `Stone` + all 16 declared maps, after repeated `Stone.dll` access violations on Fighting Spirit, Jade, and Benzene.
-  - `RedRum` + all 16 declared maps, after repeated `RedRum.dll` access violations on Jade and Fighting Spirit 1.4. Untested maps are not assumed safe.
+  - `RedRum` + `(4)Fighting Spirit`
+  - `RedRum` + `(4)Fighting Spirit 1.4 [Remastered Ladder]`
+  - `RedRum` + `(4)Jade`
   - `Yuanheng Zhu` + `(4)Andromeda`
-- This is exhaustive static/log auditing, not exhaustive dynamic boot testing for all 1003 compatible pairs.
+- This is exhaustive static/log auditing, not exhaustive dynamic boot testing for all 1016 compatible pairs.
 
 ## 2026-06-08 StarAI Bundled Asset Follow-up
 
@@ -308,14 +310,14 @@ Important observations:
 - Implemented:
   - `GlobalInputActionHook` now intercepts Alt+F4 only when the foreground process is the captured player StarCraft PID.
   - The intercepted Alt+F4 is not passed directly to StarCraft. StarAI sends the normal in-game leave sequence (`F10`, `Q`, `Q`), closes the player process, then runs the existing AI graceful shutdown/finalization path.
-  - `RedRum` is excluded from all declared compatible maps until runtime safety is proven.
+  - `RedRum` is blocked only on Jade and Fighting Spirit variants with local crash evidence or audit map-family matching.
   - `Stone` is excluded from all declared compatible maps until runtime safety is proven.
   - `CUBOT` is blocked on Fighting Spirit variants.
   - `Yuanheng Zhu` is blocked on Andromeda variants.
   - Random/sparring candidate filtering now removes bots with no currently compatible maps, and launch resolution rechecks explicit bot-map compatibility.
 - Regression tests added:
   - `GlobalInputActionHookTests` verifies Alt+F4 interception is limited to the captured player PID and does not catch other keys/windows.
-  - `PracticeCatalogCompatibilityTests` covers full `RedRum` map exclusion, `Stone` + `(2)Benzene`, full `Stone` map exclusion, `CUBOT` Fighting Spirit variants, and `Yuanheng Zhu` + `(4)Andromeda`.
+  - `PracticeCatalogCompatibilityTests` covers `RedRum` Jade/Fighting Spirit blocking while keeping other whitelisted RedRum maps selectable, `Stone` + `(2)Benzene`, full `Stone` map exclusion, `CUBOT` Fighting Spirit variants, and `Yuanheng Zhu` + `(4)Andromeda`.
 - Latest verification:
   - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 121 passed.
   - `.\scripts\smoke.ps1`: warning 0 / error 0.
@@ -333,24 +335,27 @@ Important observations:
   - `C:\starai\SC116AI_ai\Errors\2026 Jun 12.txt` had repeated `RedRum.dll` access violations on `(4)Fighting_Spirit 1.4.scx`.
   - Earlier runtime evidence also had `RedRum.dll` access violation on `(4)Jade.scx`.
   - `%APPDATA%\StarAI.PracticeClient\history.json` had `RedRum` ladder entries on `(4)Fighting Spirit 1.4 [Remastered Ladder]` ending as `AI 종료` after 1-6 seconds.
-  - The available runtime sample is not broad enough to prove any other RedRum map is safe.
+  - The available runtime sample is not broad enough to prove any other RedRum map good or bad. Those maps remain governed by the `bots.dat` whitelist until direct evidence says otherwise.
 - Implemented:
-  - `RedRum` is excluded from every declared compatible map until runtime safety is proven.
+  - `RedRum` is blocked on Fighting Spirit variants and Jade only.
+  - `RedRum` remains selectable on 13 whitelisted maps without bad runtime evidence, such as Benzene and Python.
   - `Crazyhammer`, `Randomhammer`, and `Steamhammer` are blocked on Fighting Spirit variants because the same `Steamhammer.dll` family has crash evidence there.
   - Compatibility audit now promotes shared-DLL crash evidence for every still-compatible candidate instead of ignoring ambiguous shared module names.
   - The exclusion is in `PracticeCatalogCompatibility`, so bot list, map list, ladder candidates, random selection, and launch-time validation share it.
 - Regression coverage:
-  - `PracticeCatalogCompatibilityTests.RedRumIsExcludedFromEveryDeclaredMapUntilRuntimeSafetyIsProven` covers full RedRum exclusion.
+  - `PracticeCatalogCompatibilityTests.RedRumKeepsWhitelistedMapsWithoutBadRuntimeEvidence` covers evidence-based RedRum filtering.
   - `PracticeCatalogCompatibilityTests.KnownBadRuntimePairsAreNotCompatible` covers the Steamhammer-family Fighting Spirit variants.
   - `PracticeCompatibilityAuditorTests.AuditReportsSharedDllCrashForEveryStillCompatibleCandidate` covers shared-DLL crash promotion.
 - Latest verification:
   - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 133 passed.
   - `.\scripts\smoke.ps1`: warning 0 / error 0.
-  - `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1003`, `blockedDeclaredDllPairs=47`, `issues=0`, `runtimeCrashes=14`.
-  - Compatibility audit CSV check: `RedRum` compatible pairs = 0, blocked declared pairs = 16.
-  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(2)Benzene' -BotName 'RedRum'`: failed as expected because blocked.
-  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -BotName 'RedRum'`: failed as expected because blocked.
+  - `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1016`, `blockedDeclaredDllPairs=34`, `issues=0`, `runtimeCrashes=14`.
+  - Compatibility audit CSV check: `RedRum` compatible pairs = 13, blocked declared pairs = 3.
+  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -BotName 'RedRum'`: selected `RedRum` on `(2)Benzene`.
+  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(2)Benzene' -BotName 'RedRum'`: selected `RedRum` as expected because it remains whitelisted and has no bad evidence on Benzene.
+  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit' -BotName 'RedRum'`: failed as expected because blocked.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'RedRum'`: failed as expected because blocked.
+  - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Jade' -BotName 'RedRum'`: failed as expected because blocked.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Steamhammer'`: failed as expected because blocked.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Crazyhammer'`: failed as expected because blocked.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Randomhammer'`: failed as expected because blocked.

@@ -125,14 +125,14 @@ Last updated: 2026-06-05
 
 상태: 결정
 
-선택: SCHNAIL 카탈로그가 호환으로 선언하더라도, 실제 1.16.1/BWAPI 로컬 런타임에서 크래시나 장시간 정지가 확인된 조합은 `PracticeCatalogCompatibility`에서 known-bad 조합으로 차단한다.
+선택: StarAI 카탈로그의 `mapGuids`는 봇별 허용 맵 whitelist로 해석한다. 실제 1.16.1/BWAPI 로컬 런타임에서 크래시나 장시간 정지가 확인된 조합은 `PracticeCatalogCompatibility`에서 known-bad 조합으로 차단한다.
 
 현재 예외:
 
 - `Feint` + Fighting Spirit 계열: AI 런타임 `Steamhammer.dll` 접근 위반 크래시 로그 확인.
 - `Crazyhammer` / `Randomhammer` / `Steamhammer` + Fighting Spirit 계열: `Steamhammer.dll` 공유 계열이므로 같은 맵 패밀리에서 안전 차단한다.
 - `ICELab` + Fighting Spirit 계열: 실제 플레이에서 상대 정지 관찰. 원인 확정 전까지 실전 매칭에서 제외한다.
-- `RedRum`: Jade와 Fighting Spirit 계열에서 AI 런타임 `RedRum.dll` 접근 위반 크래시 로그 확인. 현재 표본이 제한적이므로 안전 맵을 단정하지 않고 전체 후보에서 임시 제외한다.
+- `RedRum` + Jade/Fighting Spirit 계열: AI 런타임 `RedRum.dll` 접근 위반 크래시 로그 확인. 그 외 whitelist 맵은 로그 없이 정상/비정상을 단정하지 않고 후보에 남긴다.
 
 검증 기준: 차단 조합은 특정 봇을 고르면 맵 목록에서 사라지고, 특정 맵을 고르면 봇 목록/래더 후보에서 사라져야 한다.
 
@@ -291,8 +291,8 @@ Latest result:
 - `dllBots=61`
 - `maps=31`
 - `declaredDllPairs=1050`
-- `compatibleDllPairs=1003`
-- `blockedDeclaredDllPairs=47`
+- `compatibleDllPairs=1016`
+- `blockedDeclaredDllPairs=34`
 - `issues=0`
 - `runtimeCrashes=14`
 
@@ -320,7 +320,7 @@ Decision:
 - Do not pass that Alt+F4 directly to StarCraft while a StarAI session is active.
 - Convert it into the same safe game-leave sequence used elsewhere: `F10`, `Q`, `Q`.
 - After the player leaves, close the player process and then run the existing AI graceful shutdown/finalization path.
-- Exclude `RedRum` from the compatible bot pool entirely until runtime safety is proven, because current evidence covers multiple map families and untested maps cannot be assumed safe.
+- Block `RedRum` only on Jade and Fighting Spirit variants, because those are the local runtime crash-evidence matches. Keep other whitelisted maps selectable rather than treating missing crash logs as proof either way.
 - Block all `Steamhammer.dll` family bots on Fighting Spirit variants, because shared-DLL crash evidence on that map family should not leave sibling bot candidates selectable.
 - Exclude `Stone` from the compatible bot pool entirely until runtime safety is proven, because it now has crash evidence across Fighting Spirit, Jade, and Benzene.
 - Block `CUBOT` on Fighting Spirit variants because the crash evidence maps to that map family.
@@ -331,5 +331,5 @@ Verification evidence:
 
 - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 133 passed.
 - `.\scripts\smoke.ps1`: warning 0 / error 0.
-- `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1003`, `blockedDeclaredDllPairs=47`, `issues=0`, `runtimeCrashes=14`.
+- `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1016`, `blockedDeclaredDllPairs=34`, `issues=0`, `runtimeCrashes=14`.
 - Alt+F4 interception is covered by `GlobalInputActionHookTests`; foreground Alt+F4 UI automation was stopped after user safety feedback.
