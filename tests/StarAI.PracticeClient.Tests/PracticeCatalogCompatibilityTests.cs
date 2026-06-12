@@ -61,6 +61,14 @@ public sealed class PracticeCatalogCompatibilityTests
     [InlineData("Randomhammer", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("Steamhammer", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("Steamhammer", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("KillAlll", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("KillAlll", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Iron bot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Iron bot", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("XIAOYICOG2019", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("XIAOYICOG2019", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Zia bot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Zia bot", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("LetaBot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("LetaBot", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("Stone", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
@@ -93,6 +101,35 @@ public sealed class PracticeCatalogCompatibilityTests
         Assert.False(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));
         Assert.Empty(PracticeCatalogCompatibility.MapsForBot(catalog, botId));
         Assert.Empty(PracticeCatalogCompatibility.BotsForMap(catalog, mapId));
+    }
+
+    [Theory]
+    [InlineData("Crazyhammer", "(4)Empire of the Sun", "(4)Empire of the Sun.scm")]
+    [InlineData("McRaveZ", "(4)La Mancha1.1", "(4)La Mancha1.1.scx")]
+    [InlineData("PurpleWave", "(4)Polypoid 1.65", "(4)Polypoid1.65_BW1.16.1.scx")]
+    public void ShortUnresolvedHistoryPairsWithoutNormalResultsAreNotCompatible(
+        string botName,
+        string mapName,
+        string fileName)
+    {
+        var schnailMapId = Guid.NewGuid();
+        var mapId = Guid.NewGuid();
+        var botId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(botId, botName, schnailMapId)
+            ],
+            [
+                new PracticeMap(
+                    mapId,
+                    mapName,
+                    fileName,
+                    null,
+                    true,
+                    CompatibilityMapIds: new HashSet<Guid> { schnailMapId })
+            ]);
+
+        Assert.False(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));
     }
 
     [Fact]
@@ -154,6 +191,22 @@ public sealed class PracticeCatalogCompatibilityTests
             ],
             [
                 new PracticeMap(mapId, "(4)Fighting Spirit", "(4)Fighting Spirit.scx", null, true)
+            ]);
+
+        Assert.True(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));
+    }
+
+    [Fact]
+    public void SapphireCanStillUseFightingSpiritAfterConfigSidecarProvisioningFix()
+    {
+        var mapId = Guid.NewGuid();
+        var botId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(botId, "Sapphire", mapId)
+            ],
+            [
+                new PracticeMap(mapId, "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx", null, true)
             ]);
 
         Assert.True(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));

@@ -52,11 +52,20 @@ public static class PracticeCatalogCompatibility
             return true;
         }
 
+        if (IsShortUnresolvedHistoryPair(bot, map))
+        {
+            return true;
+        }
+
         if (IsFightingSpiritVariant(map))
         {
             return bot.Name.Equals("ICELab", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("CUBOT", StringComparison.OrdinalIgnoreCase) ||
                    IsSteamhammerFamily(bot) ||
+                   bot.Name.Equals("KillAlll", StringComparison.OrdinalIgnoreCase) ||
+                   bot.Name.Equals("Iron bot", StringComparison.OrdinalIgnoreCase) ||
+                   bot.Name.Equals("XIAOYICOG2019", StringComparison.OrdinalIgnoreCase) ||
+                   bot.Name.Equals("Zia bot", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("Feint", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase);
         }
@@ -72,6 +81,22 @@ public static class PracticeCatalogCompatibility
         }
 
         return false;
+    }
+
+    private static bool IsShortUnresolvedHistoryPair(PracticeBot bot, PracticeMap map)
+    {
+        return (bot.Name.Equals("Crazyhammer", StringComparison.OrdinalIgnoreCase) &&
+                IsMap(map, "Empire of the Sun")) ||
+               (bot.Name.Equals("McRaveZ", StringComparison.OrdinalIgnoreCase) &&
+                IsMap(map, "La Mancha")) ||
+               (bot.Name.Equals("PurpleWave", StringComparison.OrdinalIgnoreCase) &&
+                IsMap(map, "Polypoid"));
+    }
+
+    private static bool IsMap(PracticeMap map, string token)
+    {
+        return ContainsToken(map.Name, token) ||
+               ContainsToken(map.FileName, token);
     }
 
     private static bool IsFightingSpiritVariant(PracticeMap map)

@@ -358,3 +358,19 @@ Important observations:
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Crazyhammer'`: failed as expected because blocked.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Randomhammer'`: failed as expected because blocked.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]'`: selected another compatible Terran bot.
+
+## 2026-06-12 Short History Compatibility Follow-up
+
+- Verified before editing without Computer Use or foreground focus changes:
+  - `%APPDATA%\StarAI.PracticeClient\history.json` had 14 records under 60 seconds with `Unknown` or AI-exit style sources, grouped into 13 bot-map pairs.
+  - None of those exact bot-map pairs had a normal win/loss history result.
+  - `.\scripts\audit-compatibility.ps1` failed before the fix with 16 runtime crash issues from fresh local AI error logs.
+- Classified and handled:
+  - `KillAlll`, `Iron bot`, and `XIAOYICOG2019` are blocked on Fighting Spirit variants because `C:\starai\SC116AI_ai\Errors\2026 Jun 12.txt` has repeated DLL access-violation evidence there.
+  - `Zia bot` is blocked on Fighting Spirit variants because local history shows immediate AI exit on Fighting Spirit 1.4, the DLL/source sidecars exist, and no trustworthy supported-map whitelist was found.
+  - `Crazyhammer` + `(4)Empire of the Sun`, `McRaveZ` + `(4)La Mancha1.1`, and `PurpleWave` + `(4)Polypoid 1.65` are exact-pair blocked from short unresolved history records with no matching normal result.
+  - `Dragon` + Fighting Spirit and `Sapphire` + Fighting Spirit are intentionally kept compatible because previous local verification/config-sidecar fixes showed those runtime paths can work and no current crash evidence was found for them.
+- Regression coverage:
+  - `PracticeCatalogCompatibilityTests.KnownBadRuntimePairsAreNotCompatible` covers the newly blocked Fighting Spirit bot set.
+  - `PracticeCatalogCompatibilityTests.ShortUnresolvedHistoryPairsWithoutNormalResultsAreNotCompatible` covers the exact short-history pair blocks.
+  - `PracticeCatalogCompatibilityTests.OtherBotsCanStillUseFightingSpiritWhenDeclaredCompatible` and `SapphireCanStillUseFightingSpiritAfterConfigSidecarProvisioningFix` guard the basic known-good Fighting Spirit paths.
