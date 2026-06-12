@@ -7,9 +7,9 @@ Last updated: 2026-06-12
 - Repo: `C:\starai\StarAI.PracticeClient`
 - User taskbar entrypoint: `C:\starai\Start-StarAI-PracticeClient.cmd`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.2.2`
-- Last verified implementation state: 1.2.2 hotfix release candidate with `RedRum` full compatibility-pool exclusion until a validated supported-map whitelist exists, `Stone` full compatibility-pool exclusion, Steamhammer-family Fighting Spirit blocking, `CUBOT` Fighting Spirit blocking, `Yuanheng Zhu` Andromeda blocking, and stricter random/sparring compatibility filters.
-- Current WIP after 1.2.2: none. Do not reset uncommitted changes unless the user explicitly asks.
+- Current version: `1.2.3`
+- Last verified implementation state: 1.2.3 hotfix release candidate with short-history bot-map exclusions, `RedRum` full compatibility-pool exclusion until a validated supported-map whitelist exists, `Stone` full compatibility-pool exclusion, Steamhammer-family Fighting Spirit blocking, `CUBOT` Fighting Spirit blocking, `Yuanheng Zhu` Andromeda blocking, and stricter random/sparring compatibility filters.
+- Current WIP after 1.2.3: none. Do not reset uncommitted changes unless the user explicitly asks.
 
 ## Hard Rules
 
