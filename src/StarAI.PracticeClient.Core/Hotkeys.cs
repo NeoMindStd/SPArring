@@ -681,7 +681,7 @@ public sealed class HotkeyPatchApplier
             File.Copy(patchRtMpqPath, backup, overwrite: false);
         }
 
-        var javaExe = ResolveJavaExe();
+        var javaExe = JavaRuntimeResolver.ResolveJavaExe(paths);
         var helperPath = WriteJavaHelper();
         var classPath = PracticeAssetPaths.MpqWriterClasspath(paths);
         if (!File.Exists(classPath))
@@ -691,42 +691,6 @@ public sealed class HotkeyPatchApplier
 
         var args = $"-cp \"{classPath}\" \"{helperPath}\" \"{patchRtMpqPath}\" \"{statTxtTblPath}\" \"{MpqTargetName}\"";
         RunProcess(javaExe, args, Path.GetDirectoryName(helperPath)!);
-    }
-
-    private static string ResolveJavaExe()
-    {
-        var candidates = new[]
-        {
-            "java.exe",
-            @"C:\Java\jdk-25.0.1\bin\java.exe"
-        };
-
-        foreach (var candidate in candidates)
-        {
-            try
-            {
-                using var process = Process.Start(new ProcessStartInfo
-                {
-                    FileName = candidate,
-                    Arguments = "-version",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                });
-                process?.WaitForExit(3000);
-                if (process is { ExitCode: 0 })
-                {
-                    return candidate;
-                }
-            }
-            catch
-            {
-                // Try the next candidate.
-            }
-        }
-
-        throw new InvalidOperationException("Java 11+ runtime was not found. Hotkey MPQ patching requires Java source-file mode.");
     }
 
     private static string WriteJavaHelper()

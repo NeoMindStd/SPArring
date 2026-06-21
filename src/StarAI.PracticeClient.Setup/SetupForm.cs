@@ -12,10 +12,17 @@ internal sealed class SetupForm : Form
     private const string PlayerRuntimeRoot = @"C:\starai\SC116AI";
     private const string AiRuntimeRoot = @"C:\starai\SC116AI_ai";
     private const string TaskbarLauncherPath = @"C:\starai\Start-StarAI-PracticeClient.cmd";
-    private const string StarCraftGuideUrl = "https://sscaitournament.com/index.php?action=tutorial";
+    private const string StarCraftGuideUrl = "https://github.com/NeoMindStd/SPArring#starcraft-1161-%EC%A4%80%EB%B9%84";
+    private const string VcRedist2008Url = "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe";
+    private const string VcRedist2010Url = "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe";
+    private const string VcRedist2013Url = "https://aka.ms/highdpimfc2013x86enu";
+    private const string VcRedistCurrentUrl = "https://aka.ms/vs/17/release/vc_redist.x86.exe";
+    private const string TemurinJdkUrl = "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jdk/hotspot/normal/eclipse";
 
     private readonly TextBox _installRootBox = new() { Text = DefaultInstallRoot };
     private readonly TextBox _starCraftSourceBox = new();
+    private readonly CheckBox _installVcRedistsBox = new() { Text = "VC++ x86 런타임 설치 (권장)", Checked = true, AutoSize = true };
+    private readonly CheckBox _installJavaBox = new() { Text = "Java 런타임 준비 (핫키용)", Checked = true, AutoSize = true };
     private readonly CheckBox _desktopShortcutBox = new() { Text = "바탕화면 바로가기 만들기", Checked = true, AutoSize = true };
     private readonly CheckBox _launchAfterInstallBox = new() { Text = "설치 후 StarAI Practice Client 실행", Checked = true, AutoSize = true };
     private readonly Button _installButton = new() { Text = "설치" };
@@ -25,7 +32,7 @@ internal sealed class SetupForm : Form
     public SetupForm()
     {
         Text = "StarAI Practice Client 설치";
-        MinimumSize = new Size(760, 560);
+        MinimumSize = new Size(800, 660);
         StartPosition = FormStartPosition.CenterScreen;
         Font = new Font("Segoe UI", 9F);
         BackColor = Color.FromArgb(14, 18, 14);
@@ -50,7 +57,7 @@ internal sealed class SetupForm : Form
             Dock = DockStyle.Fill,
             Padding = new Padding(22),
             ColumnCount = 3,
-            RowCount = 9
+            RowCount = 10
         };
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -58,6 +65,7 @@ internal sealed class SetupForm : Form
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 16));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -70,8 +78,12 @@ internal sealed class SetupForm : Form
         layout.Controls.Add(description, 0, 1);
         layout.SetColumnSpan(description, 3);
 
-        AddPathRow(layout, 3, "설치 경로", _installRootBox, "찾기", BrowseInstallRoot);
-        AddPathRow(layout, 4, "StarCraft 1.16.1", _starCraftSourceBox, "찾기", BrowseStarCraftRoot);
+        var prerequisitePanel = CreatePrerequisitePanel();
+        layout.Controls.Add(prerequisitePanel, 0, 3);
+        layout.SetColumnSpan(prerequisitePanel, 3);
+
+        AddPathRow(layout, 4, "설치 경로", _installRootBox, "찾기", BrowseInstallRoot);
+        AddPathRow(layout, 5, "StarCraft 1.16.1", _starCraftSourceBox, "찾기", BrowseStarCraftRoot);
 
         var link = new LinkLabel
         {
@@ -82,32 +94,76 @@ internal sealed class SetupForm : Form
             VisitedLinkColor = Color.FromArgb(120, 220, 255)
         };
         link.LinkClicked += (_, _) => OpenUrl(StarCraftGuideUrl);
-        layout.Controls.Add(new Label(), 0, 5);
-        layout.Controls.Add(link, 1, 5);
+        layout.Controls.Add(new Label(), 0, 6);
+        layout.Controls.Add(link, 1, 6);
         layout.SetColumnSpan(link, 2);
 
         _logBox.BackColor = Color.Black;
         _logBox.ForeColor = Color.FromArgb(170, 255, 120);
         _logBox.BorderStyle = BorderStyle.FixedSingle;
-        layout.Controls.Add(_logBox, 0, 6);
+        layout.Controls.Add(_logBox, 0, 7);
         layout.SetColumnSpan(_logBox, 3);
 
         var optionPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true };
         optionPanel.Controls.Add(_desktopShortcutBox);
         optionPanel.Controls.Add(_launchAfterInstallBox);
-        layout.Controls.Add(optionPanel, 0, 7);
+        layout.Controls.Add(optionPanel, 0, 8);
         layout.SetColumnSpan(optionPanel, 3);
 
         var buttonPanel = new FlowLayoutPanel { Dock = DockStyle.Right, AutoSize = true };
         buttonPanel.Controls.Add(_installButton);
         buttonPanel.Controls.Add(_cancelButton);
-        layout.Controls.Add(buttonPanel, 0, 8);
+        layout.Controls.Add(buttonPanel, 0, 9);
         layout.SetColumnSpan(buttonPanel, 3);
 
         Controls.Add(layout);
 
         _installButton.Click += async (_, _) => await InstallAsync();
         _cancelButton.Click += (_, _) => Close();
+    }
+
+    private Control CreatePrerequisitePanel()
+    {
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            ColumnCount = 2,
+            Padding = new Padding(0, 4, 0, 8)
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 230));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        var heading = new Label
+        {
+            Text = "선택 구성요소",
+            AutoSize = true,
+            Font = new Font(Font.FontFamily, 10F, FontStyle.Bold)
+        };
+        panel.Controls.Add(heading, 0, 0);
+        panel.SetColumnSpan(heading, 2);
+
+        panel.Controls.Add(_installVcRedistsBox, 0, 1);
+        panel.Controls.Add(CreateInfoLabel("미설치 시 일부 32비트 DLL/EXE 봇이 조용히 로드 실패할 수 있습니다. Microsoft 공식 VC++ x86 런타임을 설치합니다."), 1, 1);
+
+        panel.Controls.Add(_installJavaBox, 0, 2);
+        panel.Controls.Add(CreateInfoLabel("미설치 시 커스텀 단축키 MPQ 반영을 할 수 없습니다. 앱 폴더 안에 OpenJDK를 준비하며 시스템 Java는 바꾸지 않습니다. .NET 런타임은 설치 파일에 포함되어 별도 설치가 필요 없습니다."), 1, 2);
+
+        return panel;
+    }
+
+    private Label CreateInfoLabel(string text)
+    {
+        return new Label
+        {
+            Text = text,
+            AutoSize = true,
+            MaximumSize = new Size(520, 0),
+            ForeColor = Color.FromArgb(160, 230, 120)
+        };
     }
 
     private void AddPathRow(
@@ -185,6 +241,8 @@ internal sealed class SetupForm : Form
 
             Log($"앱 파일 복사: {installRoot}");
             CopyDirectory(payload.Root, installRoot);
+
+            await InstallSelectedPrerequisitesAsync(installRoot);
 
             CreateLaunchers(installRoot);
             if (_desktopShortcutBox.Checked)
@@ -311,6 +369,164 @@ internal sealed class SetupForm : Form
         shortcut.Save();
     }
 
+    private async Task InstallSelectedPrerequisitesAsync(string installRoot)
+    {
+        if (!_installVcRedistsBox.Checked && !_installJavaBox.Checked)
+        {
+            Log("선택 구성요소 설치를 건너뜁니다.");
+            return;
+        }
+
+        if (_installVcRedistsBox.Checked)
+        {
+            await InstallVcRedistsAsync();
+        }
+
+        if (_installJavaBox.Checked)
+        {
+            await InstallJavaRuntimeAsync(installRoot);
+        }
+    }
+
+    private async Task InstallVcRedistsAsync()
+    {
+        Log("VC++ x86 런타임을 확인/설치합니다.");
+        var packages = new[]
+        {
+            new RedistPackage("VC++ 2008 SP1 x86", VcRedist2008Url, "vc2008sp1_x86.exe", "/q /norestart"),
+            new RedistPackage("VC++ 2010 SP1 x86", VcRedist2010Url, "vc2010sp1_x86.exe", "/q /norestart"),
+            new RedistPackage("VC++ 2013 x86", VcRedist2013Url, "vc2013_x86.exe", "/install /quiet /norestart"),
+            new RedistPackage("VC++ 2015-2022 x86", VcRedistCurrentUrl, "vc2015-2022_x86.exe", "/install /quiet /norestart")
+        };
+
+        foreach (var package in packages)
+        {
+            var installerPath = await DownloadDependencyAsync(package.Url, Path.Combine("vcredist", package.FileName));
+            Log($"{package.Name} 설치를 실행합니다.");
+            await RunExternalProcessAsync(
+                installerPath,
+                package.Arguments,
+                Path.GetDirectoryName(installerPath)!,
+                [0, 1638, 3010]);
+        }
+    }
+
+    private async Task InstallJavaRuntimeAsync(string installRoot)
+    {
+        var targetRoot = Path.Combine(installRoot, "runtime", "jdk");
+        var javaExe = Path.Combine(targetRoot, "bin", "java.exe");
+        if (File.Exists(javaExe))
+        {
+            Log($"Java 런타임이 이미 준비되어 있습니다: {javaExe}");
+            return;
+        }
+
+        Log("OpenJDK 17 런타임을 앱 폴더에 준비합니다.");
+        var archivePath = await DownloadDependencyAsync(TemurinJdkUrl, Path.Combine("java", "temurin-jdk17-windows-x64.zip"));
+        var tempRoot = Path.Combine(Path.GetTempPath(), "StarAIPracticeClientSetup", "jdk-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+        try
+        {
+            ZipFile.ExtractToDirectory(archivePath, tempRoot);
+            var extractedJava = Directory
+                .EnumerateFiles(tempRoot, "java.exe", SearchOption.AllDirectories)
+                .FirstOrDefault(path => path.EndsWith(Path.Combine("bin", "java.exe"), StringComparison.OrdinalIgnoreCase))
+                ?? throw new FileNotFoundException("Downloaded OpenJDK archive did not contain bin\\java.exe.", archivePath);
+
+            var jdkRoot = Directory.GetParent(Path.GetDirectoryName(extractedJava)!)!.FullName;
+            AssertSafeChildPath(targetRoot, installRoot);
+            if (Directory.Exists(targetRoot))
+            {
+                Directory.Delete(targetRoot, recursive: true);
+            }
+
+            CopyDirectory(jdkRoot, targetRoot);
+            Log($"Java 런타임 준비 완료: {javaExe}");
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+            catch
+            {
+                // Best-effort cleanup only.
+            }
+        }
+    }
+
+    private async Task<string> DownloadDependencyAsync(string url, string relativePath)
+    {
+        var cacheRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "StarAI.PracticeClient",
+            "deps",
+            "installer");
+        var destination = Path.Combine(cacheRoot, relativePath);
+        if (File.Exists(destination))
+        {
+            Log($"캐시 사용: {destination}");
+            return destination;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        Log($"다운로드: {url}");
+        using var client = new HttpClient();
+        client.Timeout = TimeSpan.FromMinutes(10);
+        using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+        response.EnsureSuccessStatusCode();
+        await using var source = await response.Content.ReadAsStreamAsync();
+        await using var target = File.Create(destination);
+        await source.CopyToAsync(target);
+        return destination;
+    }
+
+    private async Task RunExternalProcessAsync(
+        string fileName,
+        string arguments,
+        string workingDirectory,
+        IReadOnlyCollection<int> allowedExitCodes)
+    {
+        using var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                WorkingDirectory = workingDirectory,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            },
+            EnableRaisingEvents = true
+        };
+
+        process.Start();
+        var outputTask = PumpOutputAsync(process.StandardOutput);
+        var errorTask = PumpOutputAsync(process.StandardError);
+        await process.WaitForExitAsync();
+        await Task.WhenAll(outputTask, errorTask);
+        if (!allowedExitCodes.Contains(process.ExitCode))
+        {
+            throw new InvalidOperationException($"{Path.GetFileName(fileName)} failed with exit code {process.ExitCode}.");
+        }
+    }
+
+    private static void AssertSafeChildPath(string childPath, string rootPath)
+    {
+        var child = Path.GetFullPath(childPath);
+        var root = Path.GetFullPath(rootPath);
+        var rootWithSeparator = root.EndsWith(Path.DirectorySeparatorChar)
+            ? root
+            : root + Path.DirectorySeparatorChar;
+        if (!child.StartsWith(rootWithSeparator, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"Refusing to modify path outside install root: {child}");
+        }
+    }
+
     private async Task RunRuntimeSetupAsync(string installRoot, string starCraftSource)
     {
         var scriptPath = Path.Combine(installRoot, "scripts", "setup-runtime.ps1");
@@ -390,4 +606,6 @@ internal sealed class SetupForm : Form
     }
 
     private sealed record PayloadExtraction(string Root, bool DeleteAfterInstall);
+
+    private sealed record RedistPackage(string Name, string Url, string FileName, string Arguments);
 }

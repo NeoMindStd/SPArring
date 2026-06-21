@@ -392,3 +392,27 @@ Important observations:
   - `PracticeCatalogCompatibilityTests.KnownBadRuntimePairsAreNotCompatible` covers the newly blocked Fighting Spirit bot set.
   - `PracticeCatalogCompatibilityTests.ShortUnresolvedHistoryPairsWithoutNormalResultsAreNotCompatible` covers the exact short-history pair blocks.
   - `PracticeCatalogCompatibilityTests.OtherBotsCanStillUseFightingSpiritWhenDeclaredCompatible` and `SapphireCanStillUseFightingSpiritAfterConfigSidecarProvisioningFix` guard the basic known-good Fighting Spirit paths.
+
+## 2026-06-21 Installer Prerequisite Follow-up
+
+- Verified before editing:
+  - SSCAIT/BWAPI tutorial still exists, but old direct StarCraft 1.16.1 mirror links can return 403/404.
+  - Local SCHNAIL install contains `starcraft_bundled`, `starcraft_bundled_forAI`, `jre`, and `redists`, but this is not StarAI redistribution permission.
+  - Bot DLL/EXE scan found x86 runtime dependencies including `MSVCP90/MSVCR90`, `MSVCP120/MSVCR120`, `VCRUNTIME140/MSVCP140`, and `api-ms-win-crt-*`.
+  - Recent local AI error logs are mostly `EXCEPTION_ACCESS_VIOLATION`, not clear missing-runtime loader errors, so previous map-bot crashes were not reclassified as VC++ issues.
+- Implemented:
+  - StarAI setup still does not include StarCraft game files; users must point the installer at a valid StarCraft 1.16.1 source folder.
+  - Setup UI now shows optional prerequisites before path selection:
+    - VC++ x86 runtime install, checked by default and described as recommended for native bot loading.
+    - Java runtime preparation, checked by default and described as required for custom hotkey MPQ patching.
+    - .NET is documented as unnecessary because the app/setup are self-contained.
+  - VC++ installers are downloaded from Microsoft official URLs at install time.
+  - OpenJDK 17 is downloaded via the Adoptium API and extracted under the app install folder `runtime\jdk`, without changing system Java.
+  - Hotkey MPQ patching now resolves bundled Java from `<app root>\runtime\jdk\bin\java.exe` before falling back to system Java.
+  - Added `docs\INSTALL.md` and updated `README.md`/`docs\TECH_DECISIONS.md`.
+- Latest verification:
+  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 148 passed.
+  - `.\scripts\smoke.ps1`: Release build warning 0 / error 0.
+  - `.\scripts\build-release.ps1`: produced updated `StarAI-PracticeClient-1.3.0-setup.exe` and `StarAI-PracticeClient-1.3.0-win-x64.zip`.
+  - VC++/Adoptium dependency URLs returned HTTP 200 in HEAD checks.
+  - No StarCraft/ChaosLauncher launch flow was changed, so `smoke-app-start.ps1` was not required for this change.

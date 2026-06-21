@@ -333,3 +333,21 @@ Verification evidence:
 - `.\scripts\smoke.ps1`: warning 0 / error 0.
 - `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1003`, `blockedDeclaredDllPairs=47`, `issues=0`, `runtimeCrashes=24`.
 - Alt+F4 interception is covered by `GlobalInputActionHookTests`; foreground Alt+F4 UI automation was stopped after user safety feedback.
+
+## 2026-06-21 Installer Prerequisites and StarCraft Distribution
+
+Status: decided.
+
+Observed evidence:
+
+- The SSCAIT/BWAPI tutorial still references StarCraft 1.16.1 preparation, but old direct mirror links can return 403/404.
+- Local SCHNAIL installation contains bundled StarCraft runtime folders, Java, and VC++ redistributables, but that observation is not redistribution permission for StarAI.
+- Local bot binaries include 32-bit runtime dependencies across `MSVCP90/MSVCR90`, `MSVCP120/MSVCR120`, `VCRUNTIME140/MSVCP140`, and `api-ms-win-crt-*`.
+- Recent local AI runtime failures are mostly access violations, not clear missing-runtime loader errors, so earlier map-bot crashes should not be reclassified as VC++ problems without fresh evidence.
+
+Decision:
+
+- Do not include StarCraft 1.16.1 game files in StarAI release artifacts unless explicit redistribution permission or a clearly licensed source is obtained.
+- The setup app continues to ask for a user-provided StarCraft 1.16.1 source folder and copies it into separate player/AI runtimes.
+- Add optional setup choices for VC++ x86 redistributables and OpenJDK. VC++ installers are downloaded from Microsoft official URLs; OpenJDK is prepared inside the app install folder and does not change system Java.
+- Do not add a .NET runtime prerequisite because the app and setup are self-contained.
