@@ -13,7 +13,6 @@ public sealed class PracticePathsTests
         Assert.Equal(@"D:\Games\StarAI Practice\data", paths.AssetRoot);
         Assert.Equal(@"C:\starai\SC116AI", paths.PlayerRuntimeRoot);
         Assert.Equal(@"C:\starai\SC116AI_ai", paths.AiRuntimeRoot);
-        Assert.Equal(@"C:\starai\Start-StarAI-PracticeClient.cmd", paths.TaskbarLauncherPath);
     }
 
     [Fact]

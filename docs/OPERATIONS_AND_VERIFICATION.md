@@ -2,13 +2,13 @@
 
 ## 사용자 실행 경로
 
-사용자 진입점은 아래 경로다.
+사용자 진입점은 설치 프로그램이 만든 바탕화면/시작 메뉴 바로가기다. 바로가기는 설치 폴더의 EXE를 직접 실행한다.
 
 ```text
-C:\starai\Start-StarAI-PracticeClient.cmd
+C:\starai\StarAI.PracticeClient\StarAI.PracticeClient.App.exe
 ```
 
-이 경로와 동작은 깨면 안 된다. 배포/설치 문서도 이 진입점을 기준으로 설명한다.
+`C:\starai\Start-StarAI-PracticeClient.cmd`는 1.3.1부터 생성하지 않는 레거시 진입점이다.
 
 ## 개발 작업 전 확인
 

@@ -64,7 +64,6 @@ public sealed class RuntimeWritePolicyTests
     {
         return new PracticePaths(
             @"C:\starai\StarAI.PracticeClient",
-            @"C:\starai\Start-StarAI-PracticeClient.cmd",
             @"C:\starai\SC116AI",
             @"C:\starai\SC116AI_ai",
             @"C:\Program Files (x86)\SCHNAIL Client");

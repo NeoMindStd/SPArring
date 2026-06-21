@@ -57,7 +57,6 @@ $installCmd = @'
 setlocal
 
 set "TARGET=C:\starai\StarAI.PracticeClient"
-set "LAUNCHER=C:\starai\Start-StarAI-PracticeClient.cmd"
 
 echo StarAI Practice Client legacy ZIP installer
 echo.
@@ -100,11 +99,8 @@ if %ERRORLEVEL% GEQ 8 (
   exit /b 1
 )
 
-> "%LAUNCHER%" echo @echo off
->> "%LAUNCHER%" echo start "StarAI Practice Client" "%TARGET%\StarAI.PracticeClient.App.exe"
-
-> "%TARGET%\Start-StarAI-PracticeClient.cmd" echo @echo off
->> "%TARGET%\Start-StarAI-PracticeClient.cmd" echo start "StarAI Practice Client" "%TARGET%\StarAI.PracticeClient.App.exe"
+del "C:\starai\Start-StarAI-PracticeClient.cmd" >nul 2>nul
+del "%TARGET%\Start-StarAI-PracticeClient.cmd" >nul 2>nul
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$desktop=[Environment]::GetFolderPath('Desktop'); $shortcut=(New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path $desktop 'StarAI Practice Client.lnk')); $shortcut.TargetPath='%TARGET%\StarAI.PracticeClient.App.exe'; $shortcut.WorkingDirectory='%TARGET%'; $shortcut.Save()" >nul 2>nul
 powershell -NoProfile -ExecutionPolicy Bypass -File "%TARGET%\scripts\setup-runtime.ps1" -AppRoot "%TARGET%" -StarCraftSourceRoot "%SCROOT%" -NonInteractive
@@ -117,7 +113,7 @@ if %ERRORLEVEL% NEQ 0 (
 echo.
 echo Installation completed.
 echo Run the desktop shortcut "StarAI Practice Client" or:
-echo %LAUNCHER%
+echo %TARGET%\StarAI.PracticeClient.App.exe
 echo.
 
 start "StarAI Practice Client" "%TARGET%\StarAI.PracticeClient.App.exe"

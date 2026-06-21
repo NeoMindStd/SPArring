@@ -5,11 +5,11 @@ Last updated: 2026-06-21
 ## Repository
 
 - Repo: `C:\starai\StarAI.PracticeClient`
-- User taskbar entrypoint: `C:\starai\Start-StarAI-PracticeClient.cmd`
+- User entrypoint: desktop/start-menu shortcut targeting `StarAI.PracticeClient.App.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.3.0`
-- Last verified implementation state: 1.3.0 release candidate with Setup EXE packaging, installer-selected StarCraft 1.16.1 source validation, automatic player/AI runtime provisioning, dynamic app-root asset discovery, and existing 1.2.3 compatibility filters.
-- Current WIP after 1.3.0: none in the release worktree. The original `C:\starai\StarAI.PracticeClient` folder may still contain unrelated local WIP; do not reset it unless the user explicitly asks.
+- Current version: `1.3.1`
+- Last verified implementation state: 1.3.1 release candidate with Setup EXE packaging, optional VC++/Java prerequisites, installer-selected StarCraft 1.16.1 source validation, EXE-direct shortcuts, automatic player/AI runtime provisioning, dynamic app-root asset discovery, and existing compatibility filters.
+- Current WIP after 1.3.1: none expected in the release worktree after release. The original `C:\starai\StarAI.PracticeClient` folder may still contain unrelated local WIP; do not reset it unless the user explicitly asks.
 
 ## Hard Rules
 
@@ -91,7 +91,7 @@ Latest 1.3.0 release-candidate verification:
 - The setup app asks for install path, StarCraft 1.16.1 source folder, desktop shortcut option, and optional launch after install.
 - The setup app validates `StarCraft.exe`, `stardat.mpq`, `broodat.mpq`, and `patch_rt.mpq` before copying.
 - `scripts\setup-runtime.ps1` copies the user-provided StarCraft source into `C:\starai\SC116AI`, installs public BWAPI/cnc-ddraw/TournamentModule runtime files, then seeds `C:\starai\SC116AI_ai`.
-- `C:\starai\Start-StarAI-PracticeClient.cmd` remains a compatibility entrypoint but desktop/start-menu shortcuts target `StarAI.PracticeClient.App.exe`.
+- `C:\starai\Start-StarAI-PracticeClient.cmd` is no longer created from 1.3.1 onward; desktop/start-menu shortcuts target `StarAI.PracticeClient.App.exe`.
 
 Last known local verification:
 
@@ -416,3 +416,18 @@ Important observations:
   - `.\scripts\build-release.ps1`: produced updated `StarAI-PracticeClient-1.3.0-setup.exe` and `StarAI-PracticeClient-1.3.0-win-x64.zip`.
   - VC++/Adoptium dependency URLs returned HTTP 200 in HEAD checks.
   - No StarCraft/ChaosLauncher launch flow was changed, so `smoke-app-start.ps1` was not required for this change.
+
+## 2026-06-21 1.3.1 Release Follow-up
+
+- Implemented:
+  - Removed the `C:\starai\Start-StarAI-PracticeClient.cmd` entrypoint from new setup generation and smoke requirements.
+  - Setup now cleans up legacy `Start-StarAI-PracticeClient.cmd` files on a best-effort basis.
+  - Release/install docs now point users to multiple public 1.16.1 preparation pages with Markdown links instead of exposing a dead direct mirror URL.
+  - Battle.net/Remastered 1.23.x downgrade is explicitly not supported; users must provide a separate 1.16.1 folder.
+  - Added Windows Defender/antivirus false-positive guidance and links to Microsoft exclusion instructions.
+  - Version bumped to `1.3.1` and `docs\RELEASE_NOTES_1.3.1.md` added.
+- Required verification for the release:
+  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`
+  - `.\scripts\smoke.ps1`
+  - `.\scripts\build-release.ps1`
+  - Because launch flow itself was not changed, actual `smoke-app-start.ps1` is not required unless later changes touch StarCraft/ChaosLauncher execution.

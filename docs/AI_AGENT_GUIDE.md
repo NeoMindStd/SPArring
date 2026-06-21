@@ -15,7 +15,7 @@
 - 사용자가 요청하지 않은 release/tag/push/installer 업로드.
 - 원본 SCHNAIL 폴더 수정.
 - StarCraft Remastered 원본 폴더 수정.
-- `C:\starai\Start-StarAI-PracticeClient.cmd` 진입점 파괴.
+- 새 EXE 바로가기 진입점 파괴.
 - 사람 런타임 `bwapi.ini`에 봇 DLL 설정.
 - CoachAI 재도입.
 - 독점 전체화면 설정.

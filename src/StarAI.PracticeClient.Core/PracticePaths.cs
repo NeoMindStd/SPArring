@@ -2,7 +2,6 @@ namespace StarAI.PracticeClient.Core;
 
 public sealed record PracticePaths(
     string RepositoryRoot,
-    string TaskbarLauncherPath,
     string PlayerRuntimeRoot,
     string AiRuntimeRoot,
     string AssetRoot,
@@ -10,13 +9,11 @@ public sealed record PracticePaths(
 {
     public PracticePaths(
         string repositoryRoot,
-        string taskbarLauncherPath,
         string playerRuntimeRoot,
         string aiRuntimeRoot,
         string referenceSchnailRoot)
         : this(
             repositoryRoot,
-            taskbarLauncherPath,
             playerRuntimeRoot,
             aiRuntimeRoot,
             Path.Combine(repositoryRoot, "data"),
@@ -34,7 +31,6 @@ public sealed record PracticePaths(
         var repositoryRoot = Path.GetFullPath(applicationRoot);
         return new PracticePaths(
             RepositoryRoot: repositoryRoot,
-            TaskbarLauncherPath: @"C:\starai\Start-StarAI-PracticeClient.cmd",
             PlayerRuntimeRoot: @"C:\starai\SC116AI",
             AiRuntimeRoot: @"C:\starai\SC116AI_ai",
             AssetRoot: Path.Combine(repositoryRoot, "data"),

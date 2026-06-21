@@ -11,7 +11,7 @@ internal sealed class SetupForm : Form
     private const string DefaultInstallRoot = @"C:\starai\StarAI.PracticeClient";
     private const string PlayerRuntimeRoot = @"C:\starai\SC116AI";
     private const string AiRuntimeRoot = @"C:\starai\SC116AI_ai";
-    private const string TaskbarLauncherPath = @"C:\starai\Start-StarAI-PracticeClient.cmd";
+    private const string LegacyCmdLauncherPath = @"C:\starai\Start-StarAI-PracticeClient.cmd";
     private const string StarCraftGuideUrl = "https://github.com/NeoMindStd/SPArring#starcraft-1161-%EC%A4%80%EB%B9%84";
     private const string VcRedist2008Url = "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe";
     private const string VcRedist2010Url = "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe";
@@ -222,7 +222,9 @@ internal sealed class SetupForm : Form
         {
             MessageBox.Show(
                 this,
-                "StarCraft 1.16.1 폴더가 올바르지 않습니다.\r\n누락 파일: " + string.Join(", ", missing),
+                "StarCraft 1.16.1 폴더가 올바르지 않습니다.\r\n" +
+                "최신 Battle.net/Remastered 설치 폴더는 1.16.1 소스로 자동 변환할 수 없습니다.\r\n" +
+                "누락 파일: " + string.Join(", ", missing),
                 "StarCraft 폴더 확인",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
@@ -244,7 +246,7 @@ internal sealed class SetupForm : Form
 
             await InstallSelectedPrerequisitesAsync(installRoot);
 
-            CreateLaunchers(installRoot);
+            RemoveLegacyCmdLaunchers(installRoot);
             if (_desktopShortcutBox.Checked)
             {
                 CreateDesktopShortcut(installRoot);
@@ -334,13 +336,22 @@ internal sealed class SetupForm : Form
         }
     }
 
-    private static void CreateLaunchers(string installRoot)
+    private static void RemoveLegacyCmdLaunchers(string installRoot)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(TaskbarLauncherPath)!);
-        var launcherText = "@echo off\r\n" +
-                           $"start \"StarAI Practice Client\" \"{Path.Combine(installRoot, "StarAI.PracticeClient.App.exe")}\"\r\n";
-        File.WriteAllText(TaskbarLauncherPath, launcherText, Encoding.Default);
-        File.WriteAllText(Path.Combine(installRoot, "Start-StarAI-PracticeClient.cmd"), launcherText, Encoding.Default);
+        foreach (var path in new[] { LegacyCmdLauncherPath, Path.Combine(installRoot, "Start-StarAI-PracticeClient.cmd") })
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+            catch
+            {
+                // Legacy cleanup is best-effort; shortcuts now target the EXE directly.
+            }
+        }
     }
 
     private static void CreateDesktopShortcut(string installRoot)

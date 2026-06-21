@@ -351,3 +351,15 @@ Decision:
 - The setup app continues to ask for a user-provided StarCraft 1.16.1 source folder and copies it into separate player/AI runtimes.
 - Add optional setup choices for VC++ x86 redistributables and OpenJDK. VC++ installers are downloaded from Microsoft official URLs; OpenJDK is prepared inside the app install folder and does not change system Java.
 - Do not add a .NET runtime prerequisite because the app and setup are self-contained.
+
+## 2026-06-21 1.3.1 Installer Guidance
+
+Status: decided.
+
+Decision:
+
+- Stop creating `C:\starai\Start-StarAI-PracticeClient.cmd` in new installs. Desktop and Start Menu shortcuts should target `StarAI.PracticeClient.App.exe` directly.
+- Treat existing `Start-StarAI-PracticeClient.cmd` files as legacy cleanup targets during setup.
+- Do not add a Battle.net/Remastered-to-1.16.1 downgrade option. Current Battle.net/Remastered clients use a different modern install/update model, and no official, legally clean downgrade path to a BWAPI 4.4-compatible 1.16.1 runtime was identified.
+- User-facing install docs should provide multiple public reference pages for obtaining/preparing 1.16.1, but StarAI must not host or endorse a specific third-party binary.
+- Add Windows Defender/antivirus false-positive guidance because BWAPI tools, old native bot DLLs/EXEs, and legacy 32-bit runtime files may be flagged on some machines.

@@ -23,12 +23,12 @@ SPArring은 StarCraft 1.16.1 + BWAPI 환경에서 사람이 다양한 AI 봇과 
 
 - StarCraft: Brood War를 연습하는 한국어 사용자.
 - AI 봇 스파링 경험에서 맵/종족/상대 봇 선택권이 더 필요한 사용자.
-- 프로그래밍 지식 없이 `C:\starai\Start-StarAI-PracticeClient.cmd` 또는 바로가기로 실행하려는 사용자.
+- 프로그래밍 지식 없이 바탕화면/시작 메뉴 바로가기로 실행하려는 사용자.
 
 ## 필수 사용자 시나리오
 
 1. 런처 실행
-   - 사용자는 작업표시줄 또는 바로가기에서 `C:\starai\Start-StarAI-PracticeClient.cmd`를 실행한다.
+   - 사용자는 바탕화면/시작 메뉴 바로가기 또는 `StarAI.PracticeClient.App.exe` 직접 실행으로 런처를 실행한다.
    - 런처는 StarAI 내장 봇/맵 카탈로그와 로컬 런타임 상태를 읽는다.
 
 2. 스파링 모드
@@ -98,4 +98,4 @@ SPArring은 StarCraft 1.16.1 + BWAPI 환경에서 사람이 다양한 AI 봇과 
 - CoachAI 또는 플레이어 유닛 제어 흐름을 되살리지 않는다.
 - StarAI 내장 `data`와 Remastered 원본 폴더는 런타임에서 읽기 전용이다.
 - 독점 전체화면은 금지한다.
-- 사용자 진입점 `C:\starai\Start-StarAI-PracticeClient.cmd`는 유지한다.
+- 새 설치는 `C:\starai\Start-StarAI-PracticeClient.cmd`를 생성하지 않는다.

@@ -18,7 +18,7 @@ $cncDdrawVersion = 'v7.1.0.0'
 $cncDdrawUrl = 'https://github.com/FunkyFr3sh/cnc-ddraw/releases/download/v7.1.0.0/cnc-ddraw.zip'
 $bwapiTmVersion = 'v5.0.4'
 $bwapiTmUrl = 'https://github.com/chriscoxe/bwapi-tm/releases/download/v5.0.4/bwapi-tm-bin-v5.0.4.zip'
-$starCraftGuideUrl = 'https://sscaitournament.com/index.php?action=tutorial'
+$starCraftGuideUrl = 'https://github.com/NeoMindStd/SPArring#starcraft-1161-%EC%A4%80%EB%B9%84'
 
 function Convert-FullPath([string] $Path) {
     return [IO.Path]::GetFullPath($Path)

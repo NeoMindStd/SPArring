@@ -4,24 +4,13 @@ $repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $solution = Join-Path $repo 'StarAI.PracticeClient.sln'
 $version = Join-Path $repo 'VERSION'
 $appProject = Join-Path $repo 'src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj'
-$taskbarLauncher = 'C:\starai\Start-StarAI-PracticeClient.cmd'
 
 if (-not (Test-Path -LiteralPath $version)) {
-    throw 'VERSION file is required because the taskbar launcher reads it.'
+    throw 'VERSION file is required.'
 }
 
 if (-not (Test-Path -LiteralPath $appProject)) {
-    throw 'Taskbar-compatible app project path is missing.'
-}
-
-if (-not (Test-Path -LiteralPath $taskbarLauncher)) {
-    throw 'Taskbar launcher is missing: C:\starai\Start-StarAI-PracticeClient.cmd'
-}
-
-$taskbarText = Get-Content -LiteralPath $taskbarLauncher -Raw
-if ($taskbarText -notmatch [regex]::Escape('StarAI.PracticeClient.App.exe') -or
-    $taskbarText -notmatch [regex]::Escape('C:\starai')) {
-    throw 'Taskbar launcher no longer starts the local StarAI Practice Client.'
+    throw 'App project path is missing.'
 }
 
 function Invoke-NativeChecked {
