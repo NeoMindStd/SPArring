@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\StarAI.PracticeClient.Core\StarAI.PracticeClient.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(PayloadZipPath)' != ''">
+    <EmbeddedResource Include="$(PayloadZipPath)" LogicalName="payload.zip" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+</Project>

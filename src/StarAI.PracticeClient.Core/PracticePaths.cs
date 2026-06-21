@@ -26,7 +26,12 @@ public sealed record PracticePaths(
 
     public static PracticePaths Defaults()
     {
-        const string repositoryRoot = @"C:\starai\StarAI.PracticeClient";
+        return ForApplicationRoot(ResolveApplicationRoot());
+    }
+
+    public static PracticePaths ForApplicationRoot(string applicationRoot)
+    {
+        var repositoryRoot = Path.GetFullPath(applicationRoot);
         return new PracticePaths(
             RepositoryRoot: repositoryRoot,
             TaskbarLauncherPath: @"C:\starai\Start-StarAI-PracticeClient.cmd",
@@ -34,6 +39,46 @@ public sealed record PracticePaths(
             AiRuntimeRoot: @"C:\starai\SC116AI_ai",
             AssetRoot: Path.Combine(repositoryRoot, "data"),
             ReferenceSchnailRoot: @"C:\Program Files (x86)\SCHNAIL Client");
+    }
+
+    public static string ResolveApplicationRoot()
+    {
+        var candidates = new List<string?>();
+        candidates.Add(Environment.GetEnvironmentVariable("STARAI_PRACTICECLIENT_ROOT"));
+        candidates.Add(AppContext.BaseDirectory);
+        candidates.Add(Directory.GetCurrentDirectory());
+        candidates.Add(@"C:\starai\StarAI.PracticeClient");
+
+        foreach (var candidate in candidates.SelectMany(ExpandCandidateAndParents))
+        {
+            if (HasBundledData(candidate))
+            {
+                return Path.GetFullPath(candidate);
+            }
+        }
+
+        return @"C:\starai\StarAI.PracticeClient";
+    }
+
+    private static IEnumerable<string> ExpandCandidateAndParents(string? candidate)
+    {
+        if (string.IsNullOrWhiteSpace(candidate))
+        {
+            yield break;
+        }
+
+        var current = new DirectoryInfo(Path.GetFullPath(candidate));
+        for (var depth = 0; current is not null && depth < 8; depth++)
+        {
+            yield return current.FullName;
+            current = current.Parent;
+        }
+    }
+
+    private static bool HasBundledData(string root)
+    {
+        return File.Exists(Path.Combine(root, "data", "bots", "bots.dat")) &&
+               File.Exists(Path.Combine(root, "data", "maps", "maps.dat"));
     }
 }
 

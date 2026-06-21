@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarAI.PracticeClient.Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarAI.PracticeClient.App", "src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj", "{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarAI.PracticeClient.Setup", "src\StarAI.PracticeClient.Setup\StarAI.PracticeClient.Setup.csproj", "{9CBFADB4-998A-468C-9A7F-AA29977E5F43}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,10 +36,15 @@ Global
 		{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CBFADB4-998A-468C-9A7F-AA29977E5F43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CBFADB4-998A-468C-9A7F-AA29977E5F43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CBFADB4-998A-468C-9A7F-AA29977E5F43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CBFADB4-998A-468C-9A7F-AA29977E5F43}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6B98716E-EBB7-4E66-A556-2127B23BBF96} = {1C3C3176-996A-4D55-B53F-D60EA110692E}
 		{90638BBE-7267-41BD-9119-724EC0144CA5} = {773A7928-010F-461C-8A7C-13723CEAFCF7}
 		{C427B1AF-D4E4-4DA2-8A42-F38F81BBEA69} = {1C3C3176-996A-4D55-B53F-D60EA110692E}
+		{9CBFADB4-998A-468C-9A7F-AA29977E5F43} = {1C3C3176-996A-4D55-B53F-D60EA110692E}
 	EndGlobalSection
 EndGlobal

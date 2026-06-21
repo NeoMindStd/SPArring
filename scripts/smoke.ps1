@@ -19,8 +19,9 @@ if (-not (Test-Path -LiteralPath $taskbarLauncher)) {
 }
 
 $taskbarText = Get-Content -LiteralPath $taskbarLauncher -Raw
-if ($taskbarText -notmatch [regex]::Escape('C:\starai\StarAI.PracticeClient')) {
-    throw 'Taskbar launcher no longer points at this repo.'
+if ($taskbarText -notmatch [regex]::Escape('StarAI.PracticeClient.App.exe') -or
+    $taskbarText -notmatch [regex]::Escape('C:\starai')) {
+    throw 'Taskbar launcher no longer starts the local StarAI Practice Client.'
 }
 
 function Invoke-NativeChecked {

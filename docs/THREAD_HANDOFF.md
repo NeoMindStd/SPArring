@@ -1,15 +1,15 @@
 # StarAI Practice Client Thread Handoff
 
-Last updated: 2026-06-12
+Last updated: 2026-06-21
 
 ## Repository
 
 - Repo: `C:\starai\StarAI.PracticeClient`
 - User taskbar entrypoint: `C:\starai\Start-StarAI-PracticeClient.cmd`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.2.3`
-- Last verified implementation state: 1.2.3 hotfix release candidate with short-history bot-map exclusions, `RedRum` full compatibility-pool exclusion until a validated supported-map whitelist exists, `Stone` full compatibility-pool exclusion, Steamhammer-family Fighting Spirit blocking, `CUBOT` Fighting Spirit blocking, `Yuanheng Zhu` Andromeda blocking, and stricter random/sparring compatibility filters.
-- Current WIP after 1.2.3: none. Do not reset uncommitted changes unless the user explicitly asks.
+- Current version: `1.3.0`
+- Last verified implementation state: 1.3.0 release candidate with Setup EXE packaging, installer-selected StarCraft 1.16.1 source validation, automatic player/AI runtime provisioning, dynamic app-root asset discovery, and existing 1.2.3 compatibility filters.
+- Current WIP after 1.3.0: none in the release worktree. The original `C:\starai\StarAI.PracticeClient` folder may still contain unrelated local WIP; do not reset it unless the user explicitly asks.
 
 ## Hard Rules
 
@@ -74,6 +74,24 @@ dotnet test .\StarAI.PracticeClient.sln -v:minimal
 .\scripts\smoke.ps1
 .\scripts\smoke-app-start.ps1
 ```
+
+Latest 1.3.0 release-candidate verification:
+
+- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 147 passed.
+- `.\scripts\smoke.ps1`: build warning 0 / error 0, launcher smoke passed.
+- `.\scripts\build-release.ps1`: produced `StarAI-PracticeClient-1.3.0-setup.exe` and `StarAI-PracticeClient-1.3.0-win-x64.zip`.
+- Isolated runtime setup smoke using a temporary fake StarCraft 1.16.1 source and temporary player/AI runtime roots: passed; BWAPI, TournamentModule, cnc-ddraw, and AI runtime files were created without touching `C:\starai\SC116AI`.
+- `.\scripts\audit-compatibility.ps1`: `issues=0`.
+- `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]'`: selected a compatible DLL Terran bot.
+
+1.3.0 packaging notes:
+
+- Primary user installer: `StarAI-PracticeClient-1.3.0-setup.exe`.
+- The setup app is a self-contained WinForms installer with an embedded payload ZIP.
+- The setup app asks for install path, StarCraft 1.16.1 source folder, desktop shortcut option, and optional launch after install.
+- The setup app validates `StarCraft.exe`, `stardat.mpq`, `broodat.mpq`, and `patch_rt.mpq` before copying.
+- `scripts\setup-runtime.ps1` copies the user-provided StarCraft source into `C:\starai\SC116AI`, installs public BWAPI/cnc-ddraw/TournamentModule runtime files, then seeds `C:\starai\SC116AI_ai`.
+- `C:\starai\Start-StarAI-PracticeClient.cmd` remains a compatibility entrypoint but desktop/start-menu shortcuts target `StarAI.PracticeClient.App.exe`.
 
 Last known local verification:
 
