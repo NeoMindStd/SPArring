@@ -12,7 +12,7 @@
 
 ## 설치 방법
 
-1. StarCraft 1.16.1 원본 클라이언트를 준비합니다.
+1. [SSCAIT/BWAPI](https://sscaitournament.com/index.php?action=tutorial), [Dave Churchill AI 자료실](https://davechurchill.ca/starcraft/resources/), [StarEdit Network 안내 글](https://staredit.net/topic/17625/), [iCCup 시작 페이지](https://iccup.com/sc_start.html) 중 1곳에서 StarCraft 1.16.1 원본 클라이언트를 준비합니다. 기존에 1.16.1 클라이언트가 설치되어 있었다면 이 단계를 스킵하셔도 됩니다.
 2. `StarAI-PracticeClient-1.3.1-setup.exe`를 실행합니다.
 3. 선택 구성요소와 설치 경로를 확인합니다.
 4. StarCraft 1.16.1 원본 폴더를 지정합니다.
