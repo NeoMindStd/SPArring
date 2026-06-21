@@ -5,7 +5,7 @@
 사용자 진입점은 설치 프로그램이 만든 바탕화면/시작 메뉴 바로가기다. 바로가기는 설치 폴더의 EXE를 직접 실행한다.
 
 ```text
-C:\starai\StarAI.PracticeClient\StarAI.PracticeClient.App.exe
+C:\starai\StarAI.PracticeClient.App.exe
 ```
 
 `C:\starai\Start-StarAI-PracticeClient.cmd`는 1.3.1부터 생성하지 않는 레거시 진입점이다.

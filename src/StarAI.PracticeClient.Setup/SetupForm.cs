@@ -2,13 +2,12 @@ using StarAI.PracticeClient.Core;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
-using System.Text;
 
 namespace StarAI.PracticeClient.Setup;
 
 internal sealed class SetupForm : Form
 {
-    private const string DefaultInstallRoot = @"C:\starai\StarAI.PracticeClient";
+    private const string DefaultInstallRoot = @"C:\starai";
     private const string PlayerRuntimeRoot = @"C:\starai\SC116AI";
     private const string AiRuntimeRoot = @"C:\starai\SC116AI_ai";
     private const string LegacyCmdLauncherPath = @"C:\starai\Start-StarAI-PracticeClient.cmd";
@@ -19,172 +18,526 @@ internal sealed class SetupForm : Form
     private const string VcRedistCurrentUrl = "https://aka.ms/vs/17/release/vc_redist.x86.exe";
     private const string TemurinJdkUrl = "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jdk/hotspot/normal/eclipse";
 
+    private readonly Panel _pagePanel = new() { Dock = DockStyle.Fill, Padding = new Padding(24, 20, 24, 16) };
+    private readonly Label _headerTitle = new();
+    private readonly Label _headerDescription = new();
     private readonly TextBox _installRootBox = new() { Text = DefaultInstallRoot };
     private readonly TextBox _starCraftSourceBox = new();
-    private readonly CheckBox _installVcRedistsBox = new() { Text = "VC++ x86 런타임 설치 (권장)", Checked = true, AutoSize = true };
-    private readonly CheckBox _installJavaBox = new() { Text = "Java 런타임 준비 (핫키용)", Checked = true, AutoSize = true };
-    private readonly CheckBox _desktopShortcutBox = new() { Text = "바탕화면 바로가기 만들기", Checked = true, AutoSize = true };
-    private readonly CheckBox _launchAfterInstallBox = new() { Text = "설치 후 StarAI Practice Client 실행", Checked = true, AutoSize = true };
-    private readonly Button _installButton = new() { Text = "설치" };
-    private readonly Button _cancelButton = new() { Text = "닫기" };
+    private readonly Label _componentDescription = new();
+    private readonly ProgressBar _progressBar = new() { Minimum = 0, Maximum = 100 };
+    private readonly Label _statusLabel = new();
     private readonly TextBox _logBox = new() { Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical };
+    private readonly Button _backButton = new() { Text = "< 뒤로", Width = 92, Height = 30 };
+    private readonly Button _nextButton = new() { Text = "다음 >", Width = 92, Height = 30 };
+    private readonly Button _cancelButton = new() { Text = "취소", Width = 92, Height = 30 };
+
+    private TreeNode? _desktopShortcutNode;
+    private TreeNode? _vcRedistsNode;
+    private TreeNode? _javaNode;
+    private TreeNode? _launchAfterInstallNode;
+    private SetupPage _page = SetupPage.Paths;
+    private bool _installing;
+    private bool _completed;
+    private bool _failed;
 
     public SetupForm()
     {
-        Text = "StarAI Practice Client 설치";
-        MinimumSize = new Size(800, 660);
+        Text = "StarAI Practice Client Setup";
+        ClientSize = new Size(700, 520);
+        MinimumSize = new Size(700, 520);
         StartPosition = FormStartPosition.CenterScreen;
         Font = new Font("Segoe UI", 9F);
-        BackColor = Color.FromArgb(14, 18, 14);
-        ForeColor = Color.FromArgb(190, 255, 140);
+        FormBorderStyle = FormBorderStyle.FixedDialog;
+        MaximizeBox = false;
+        BackColor = SystemColors.Control;
 
-        var title = new Label
+        Controls.Add(_pagePanel);
+        Controls.Add(CreateHeader());
+        Controls.Add(CreateFooter());
+
+        _backButton.Click += (_, _) => MoveBack();
+        _nextButton.Click += async (_, _) => await MoveNextAsync();
+        _cancelButton.Click += (_, _) => Close();
+
+        RenderPage();
+    }
+
+    private Control CreateHeader()
+    {
+        var header = new Panel
         {
-            Text = "StarAI Practice Client 설치",
-            Font = new Font(Font.FontFamily, 18F, FontStyle.Bold),
-            AutoSize = true,
-            Margin = new Padding(0, 0, 0, 8)
-        };
-        var description = new Label
-        {
-            Text = "StarCraft 1.16.1 원본 폴더를 읽어 사람/AI 런타임을 분리 구성합니다. 원본 폴더는 수정하지 않습니다.",
-            AutoSize = true,
-            ForeColor = Color.FromArgb(160, 230, 120)
+            Dock = DockStyle.Top,
+            Height = 78,
+            BackColor = Color.White,
+            Padding = new Padding(22, 12, 22, 8)
         };
 
-        var layout = new TableLayoutPanel
+        var icon = new PictureBox
+        {
+            Image = SystemIcons.Application.ToBitmap(),
+            SizeMode = PictureBoxSizeMode.CenterImage,
+            Dock = DockStyle.Right,
+            Width = 48
+        };
+
+        _headerTitle.AutoSize = false;
+        _headerTitle.Dock = DockStyle.Top;
+        _headerTitle.Height = 24;
+        _headerTitle.Font = new Font(Font.FontFamily, 10F, FontStyle.Bold);
+
+        _headerDescription.AutoSize = false;
+        _headerDescription.Dock = DockStyle.Fill;
+        _headerDescription.ForeColor = SystemColors.ControlText;
+
+        header.Controls.Add(_headerDescription);
+        header.Controls.Add(_headerTitle);
+        header.Controls.Add(icon);
+        return header;
+    }
+
+    private Control CreateFooter()
+    {
+        var footer = new Panel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 54,
+            BackColor = SystemColors.Control
+        };
+
+        var footerLayout = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            Padding = new Padding(22),
-            ColumnCount = 3,
-            RowCount = 10
+            ColumnCount = 1,
+            RowCount = 2
         };
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 16));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        footerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 1));
+        footerLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        footerLayout.Controls.Add(new Panel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = SystemColors.ControlDark
+        }, 0, 0);
+
+        var buttons = new FlowLayoutPanel
+        {
+            FlowDirection = FlowDirection.RightToLeft,
+            Dock = DockStyle.Fill,
+            Padding = new Padding(0, 12, 18, 0)
+        };
+        buttons.Controls.Add(_cancelButton);
+        buttons.Controls.Add(_nextButton);
+        buttons.Controls.Add(_backButton);
+        footerLayout.Controls.Add(buttons, 0, 1);
+        footer.Controls.Add(footerLayout);
+        return footer;
+    }
+
+    private void RenderPage()
+    {
+        _pagePanel.Controls.Clear();
+        _backButton.Enabled = !_installing && _page == SetupPage.Components;
+        _cancelButton.Enabled = !_installing && !_completed;
+
+        if (_completed)
+        {
+            _nextButton.Text = "마침";
+            _nextButton.Enabled = true;
+        }
+        else if (_failed)
+        {
+            _nextButton.Text = "닫기";
+            _nextButton.Enabled = true;
+        }
+        else if (_page == SetupPage.Components)
+        {
+            _nextButton.Text = "설치";
+            _nextButton.Enabled = !_installing;
+        }
+        else
+        {
+            _nextButton.Text = "다음 >";
+            _nextButton.Enabled = !_installing;
+        }
+
+        switch (_page)
+        {
+            case SetupPage.Paths:
+                _headerTitle.Text = "설치 위치 선택";
+                _headerDescription.Text = "StarAI Practice Client를 설치할 폴더와 StarCraft 1.16.1 원본 폴더를 선택합니다.";
+                RenderPathPage();
+                break;
+            case SetupPage.Components:
+                _headerTitle.Text = "구성 요소 선택";
+                _headerDescription.Text = "설치할 선택 구성 요소를 고릅니다. 일반 사용자는 기본값을 권장합니다.";
+                RenderComponentsPage();
+                break;
+            case SetupPage.Progress:
+                _headerTitle.Text = _failed ? "설치 실패" : _completed ? "설치 완료" : "설치 중";
+                _headerDescription.Text = _failed
+                    ? "아래 로그와 안내를 확인한 뒤 다시 설치해 주세요."
+                    : _completed
+                    ? "설치 파일과 런타임 파일 검증을 마쳤습니다."
+                    : "파일 복사, 선택 구성 요소 설치, 런타임 구성을 진행합니다.";
+                RenderProgressPage();
+                break;
+        }
+    }
+
+    private void RenderPathPage()
+    {
+        var layout = CreateContentLayout();
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-        layout.Controls.Add(title, 0, 0);
-        layout.SetColumnSpan(title, 3);
-        layout.Controls.Add(description, 0, 1);
-        layout.SetColumnSpan(description, 3);
+        layout.Controls.Add(CreatePathSection(), 0, 0);
+        layout.Controls.Add(CreateStarCraftSection(), 0, 1);
+        layout.Controls.Add(CreateInstallNotice(), 0, 2);
+        _pagePanel.Controls.Add(layout);
+    }
 
-        var prerequisitePanel = CreatePrerequisitePanel();
-        layout.Controls.Add(prerequisitePanel, 0, 3);
-        layout.SetColumnSpan(prerequisitePanel, 3);
+    private Control CreatePathSection()
+    {
+        var group = CreateGroupBox("설치 폴더", 112);
+        var layout = CreateTwoColumnLayout();
+        PreparePathTextBox(_installRootBox);
+        layout.Controls.Add(new Label
+        {
+            Text = "StarAI 설치 폴더:",
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            Margin = new Padding(0, 7, 8, 0)
+        }, 0, 0);
+        layout.Controls.Add(_installRootBox, 1, 0);
+        layout.Controls.Add(CreateBrowseButton("찾아보기...", BrowseInstallRoot), 2, 0);
+        layout.Controls.Add(new Label
+        {
+            Text = @"기본값은 C:\starai 입니다. 앱 파일, data 폴더, 선택 Java 런타임이 이 폴더 아래에 설치됩니다.",
+            AutoSize = true,
+            ForeColor = SystemColors.GrayText,
+            Margin = new Padding(0, 8, 0, 0)
+        }, 1, 1);
+        group.Controls.Add(layout);
+        return group;
+    }
 
-        AddPathRow(layout, 4, "설치 경로", _installRootBox, "찾기", BrowseInstallRoot);
-        AddPathRow(layout, 5, "StarCraft 1.16.1", _starCraftSourceBox, "찾기", BrowseStarCraftRoot);
+    private Control CreateStarCraftSection()
+    {
+        var group = CreateGroupBox("StarCraft 1.16.1 원본", 104);
+        var layout = CreateTwoColumnLayout();
+        PreparePathTextBox(_starCraftSourceBox);
+        layout.Controls.Add(new Label
+        {
+            Text = "원본 폴더:",
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            Margin = new Padding(0, 7, 8, 0)
+        }, 0, 0);
+        layout.Controls.Add(_starCraftSourceBox, 1, 0);
+        layout.Controls.Add(CreateBrowseButton("찾아보기...", BrowseStarCraftRoot), 2, 0);
 
         var link = new LinkLabel
         {
-            Text = "StarCraft 1.16.1 준비 안내 열기",
+            Text = "StarCraft 1.16.1 준비 방법 보기",
             AutoSize = true,
-            LinkColor = Color.FromArgb(120, 220, 255),
-            ActiveLinkColor = Color.White,
-            VisitedLinkColor = Color.FromArgb(120, 220, 255)
+            Margin = new Padding(0, 8, 0, 0)
         };
         link.LinkClicked += (_, _) => OpenUrl(StarCraftGuideUrl);
-        layout.Controls.Add(new Label(), 0, 6);
-        layout.Controls.Add(link, 1, 6);
-        layout.SetColumnSpan(link, 2);
-
-        _logBox.BackColor = Color.Black;
-        _logBox.ForeColor = Color.FromArgb(170, 255, 120);
-        _logBox.BorderStyle = BorderStyle.FixedSingle;
-        layout.Controls.Add(_logBox, 0, 7);
-        layout.SetColumnSpan(_logBox, 3);
-
-        var optionPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true };
-        optionPanel.Controls.Add(_desktopShortcutBox);
-        optionPanel.Controls.Add(_launchAfterInstallBox);
-        layout.Controls.Add(optionPanel, 0, 8);
-        layout.SetColumnSpan(optionPanel, 3);
-
-        var buttonPanel = new FlowLayoutPanel { Dock = DockStyle.Right, AutoSize = true };
-        buttonPanel.Controls.Add(_installButton);
-        buttonPanel.Controls.Add(_cancelButton);
-        layout.Controls.Add(buttonPanel, 0, 9);
-        layout.SetColumnSpan(buttonPanel, 3);
-
-        Controls.Add(layout);
-
-        _installButton.Click += async (_, _) => await InstallAsync();
-        _cancelButton.Click += (_, _) => Close();
+        layout.Controls.Add(link, 1, 1);
+        group.Controls.Add(layout);
+        return group;
     }
 
-    private Control CreatePrerequisitePanel()
-    {
-        var panel = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            AutoSize = true,
-            ColumnCount = 2,
-            Padding = new Padding(0, 4, 0, 8)
-        };
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 230));
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-        var heading = new Label
-        {
-            Text = "선택 구성요소",
-            AutoSize = true,
-            Font = new Font(Font.FontFamily, 10F, FontStyle.Bold)
-        };
-        panel.Controls.Add(heading, 0, 0);
-        panel.SetColumnSpan(heading, 2);
-
-        panel.Controls.Add(_installVcRedistsBox, 0, 1);
-        panel.Controls.Add(CreateInfoLabel("미설치 시 일부 32비트 DLL/EXE 봇이 조용히 로드 실패할 수 있습니다. Microsoft 공식 VC++ x86 런타임을 설치합니다."), 1, 1);
-
-        panel.Controls.Add(_installJavaBox, 0, 2);
-        panel.Controls.Add(CreateInfoLabel("미설치 시 커스텀 단축키 MPQ 반영을 할 수 없습니다. 앱 폴더 안에 OpenJDK를 준비하며 시스템 Java는 바꾸지 않습니다. .NET 런타임은 설치 파일에 포함되어 별도 설치가 필요 없습니다."), 1, 2);
-
-        return panel;
-    }
-
-    private Label CreateInfoLabel(string text)
+    private Control CreateInstallNotice()
     {
         return new Label
         {
-            Text = text,
-            AutoSize = true,
-            MaximumSize = new Size(520, 0),
-            ForeColor = Color.FromArgb(160, 230, 120)
+            Dock = DockStyle.Top,
+            AutoSize = false,
+            Height = 54,
+            Text = "선택한 StarCraft 원본 폴더는 수정하지 않습니다. 설치기는 사람용/AI용 로컬 런타임을 별도로 복사해 구성합니다.",
+            ForeColor = SystemColors.ControlText
         };
     }
 
-    private void AddPathRow(
-        TableLayoutPanel layout,
-        int row,
-        string label,
-        TextBox textBox,
-        string buttonText,
-        Action browse)
+    private void RenderComponentsPage()
+    {
+        var layout = CreateContentLayout();
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        var intro = new Label
+        {
+            Text = "설치할 구성 요소를 체크하거나 해제한 뒤 설치를 누르세요.",
+            AutoSize = true,
+            Margin = new Padding(0, 0, 0, 12)
+        };
+        layout.Controls.Add(intro, 0, 0);
+
+        var body = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 3
+        };
+        body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55));
+        body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45));
+        body.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        body.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        body.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        var tree = CreateComponentsTree();
+        body.Controls.Add(tree, 0, 0);
+        body.SetRowSpan(tree, 3);
+
+        var descriptionGroup = CreateGroupBox("설명", 0);
+        descriptionGroup.Dock = DockStyle.Fill;
+        _componentDescription.Dock = DockStyle.Fill;
+        _componentDescription.ForeColor = SystemColors.ControlText;
+        _componentDescription.Padding = new Padding(8);
+        descriptionGroup.Controls.Add(_componentDescription);
+        body.Controls.Add(descriptionGroup, 1, 0);
+
+        var destination = new Label
+        {
+            Text = "설치 위치: " + _installRootBox.Text.Trim(),
+            AutoSize = true,
+            Margin = new Padding(12, 8, 0, 0)
+        };
+        body.Controls.Add(destination, 1, 1);
+
+        var runtime = new Label
+        {
+            Text = $"런타임: {PlayerRuntimeRoot}, {AiRuntimeRoot}",
+            AutoSize = true,
+            ForeColor = SystemColors.GrayText,
+            Margin = new Padding(12, 4, 0, 0)
+        };
+        body.Controls.Add(runtime, 1, 2);
+
+        layout.Controls.Add(body, 0, 1);
+        _pagePanel.Controls.Add(layout);
+        UpdateComponentDescription(tree.SelectedNode ?? _desktopShortcutNode);
+    }
+
+    private TreeView CreateComponentsTree()
+    {
+        var tree = new TreeView
+        {
+            Dock = DockStyle.Fill,
+            CheckBoxes = true,
+            HideSelection = false,
+            BorderStyle = BorderStyle.Fixed3D,
+            LabelEdit = false,
+            ShowLines = true
+        };
+
+        _desktopShortcutNode = new TreeNode("바탕화면 바로가기") { Checked = _desktopShortcutNode?.Checked ?? true };
+        _vcRedistsNode = new TreeNode("VC++ x86 런타임 설치") { Checked = _vcRedistsNode?.Checked ?? true };
+        _javaNode = new TreeNode("OpenJDK 17 준비") { Checked = _javaNode?.Checked ?? true };
+        _launchAfterInstallNode = new TreeNode("설치 후 런처 실행") { Checked = _launchAfterInstallNode?.Checked ?? true };
+
+        var root = new TreeNode("StarAI Practice Client") { Checked = true };
+        root.Nodes.Add(_desktopShortcutNode);
+        root.Nodes.Add(_vcRedistsNode);
+        root.Nodes.Add(_javaNode);
+        root.Nodes.Add(_launchAfterInstallNode);
+        tree.Nodes.Add(root);
+        root.ExpandAll();
+        tree.SelectedNode = _desktopShortcutNode;
+        tree.AfterSelect += (_, e) => UpdateComponentDescription(e.Node);
+        tree.AfterCheck += (_, e) =>
+        {
+            if (e.Node == root && !root.Checked)
+            {
+                root.Checked = true;
+            }
+        };
+        return tree;
+    }
+
+    private void UpdateComponentDescription(TreeNode? node)
+    {
+        _componentDescription.Text = node?.Text switch
+        {
+            "바탕화면 바로가기" => "바탕화면에 StarAI Practice Client 바로가기를 만듭니다.",
+            "VC++ x86 런타임 설치" => "일부 32비트 AI 봇 DLL/EXE 실행에 필요할 수 있는 Microsoft VC++ 런타임을 설치합니다.",
+            "OpenJDK 17 준비" => "커스텀 단축키 MPQ 적용에 필요한 Java를 StarAI 설치 폴더 안에 준비합니다. 시스템 Java 설정은 바꾸지 않습니다.",
+            "설치 후 런처 실행" => "설치가 끝나면 StarAI Practice Client 런처를 바로 실행합니다.",
+            _ => "StarAI Practice Client 앱 파일과 내장 봇/맵 데이터를 설치합니다."
+        };
+    }
+
+    private void RenderProgressPage()
+    {
+        var layout = CreateContentLayout();
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        _statusLabel.AutoSize = false;
+        _statusLabel.Height = 26;
+        _statusLabel.Dock = DockStyle.Top;
+        _statusLabel.TextAlign = ContentAlignment.MiddleLeft;
+
+        _progressBar.Dock = DockStyle.Top;
+        _progressBar.Height = 20;
+
+        _logBox.Dock = DockStyle.Fill;
+        _logBox.BackColor = SystemColors.Window;
+        _logBox.ForeColor = SystemColors.WindowText;
+        _logBox.BorderStyle = BorderStyle.Fixed3D;
+
+        layout.Controls.Add(_statusLabel, 0, 0);
+        layout.Controls.Add(_progressBar, 0, 1);
+        layout.Controls.Add(_logBox, 0, 2);
+        _pagePanel.Controls.Add(layout);
+    }
+
+    private static TableLayoutPanel CreateContentLayout()
+    {
+        var layout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 0
+        };
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        return layout;
+    }
+
+    private static GroupBox CreateGroupBox(string text, int height)
+    {
+        var group = new GroupBox
+        {
+            Text = text,
+            Dock = DockStyle.Top,
+            Padding = new Padding(12, 18, 12, 12),
+            Margin = new Padding(0, 0, 0, 14)
+        };
+        if (height > 0)
+        {
+            group.Height = height;
+        }
+
+        return group;
+    }
+
+    private static TableLayoutPanel CreateTwoColumnLayout()
+    {
+        var layout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 3,
+            RowCount = 2
+        };
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 118));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 104));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        return layout;
+    }
+
+    private static void PreparePathTextBox(TextBox textBox)
     {
         textBox.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-        textBox.BackColor = Color.Black;
-        textBox.ForeColor = Color.FromArgb(180, 255, 140);
-        textBox.BorderStyle = BorderStyle.FixedSingle;
+        textBox.Margin = new Padding(0, 4, 12, 0);
+    }
 
-        var browseButton = new Button { Text = buttonText, Dock = DockStyle.Fill };
-        browseButton.Click += (_, _) => browse();
+    private Button CreateBrowseButton(string text, Action browse)
+    {
+        var button = new Button
+        {
+            Text = text,
+            Width = 96,
+            Height = 28,
+            Anchor = AnchorStyles.Left | AnchorStyles.Right
+        };
+        button.Click += (_, _) => browse();
+        return button;
+    }
 
-        layout.Controls.Add(new Label { Text = label, AutoSize = true, Anchor = AnchorStyles.Left }, 0, row);
-        layout.Controls.Add(textBox, 1, row);
-        layout.Controls.Add(browseButton, 2, row);
+    private void MoveBack()
+    {
+        if (_installing)
+        {
+            return;
+        }
+
+        if (_page == SetupPage.Components)
+        {
+            _page = SetupPage.Paths;
+            RenderPage();
+        }
+    }
+
+    private async Task MoveNextAsync()
+    {
+        if (_completed)
+        {
+            Close();
+            return;
+        }
+
+        if (_failed)
+        {
+            Close();
+            return;
+        }
+
+        if (_page == SetupPage.Paths)
+        {
+            if (!ValidatePathPage())
+            {
+                return;
+            }
+
+            _page = SetupPage.Components;
+            RenderPage();
+            return;
+        }
+
+        if (_page == SetupPage.Components)
+        {
+            _page = SetupPage.Progress;
+            RenderPage();
+            await InstallAsync();
+        }
+    }
+
+    private bool ValidatePathPage()
+    {
+        if (string.IsNullOrWhiteSpace(_installRootBox.Text))
+        {
+            MessageBox.Show(this, "설치 폴더를 입력해 주세요.", "설치 폴더", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_starCraftSourceBox.Text))
+        {
+            MessageBox.Show(this, "StarCraft 1.16.1 원본 폴더를 선택해 주세요.", "StarCraft 원본", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return false;
+        }
+
+        var starCraftSource = Path.GetFullPath(_starCraftSourceBox.Text.Trim());
+        var missing = StarCraftInstallation.MissingRequiredFiles(starCraftSource);
+        if (missing.Count > 0)
+        {
+            MessageBox.Show(
+                this,
+                "StarCraft 1.16.1 원본 폴더가 올바르지 않습니다.\r\n\r\n" +
+                "필수 파일: StarCraft.exe, stardat.mpq, broodat.mpq, patch_rt.mpq\r\n" +
+                "누락 파일: " + string.Join(", ", missing),
+                "StarCraft 원본 확인",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return false;
+        }
+
+        return true;
     }
 
     private void BrowseInstallRoot()
@@ -217,47 +570,49 @@ internal sealed class SetupForm : Form
     {
         var installRoot = Path.GetFullPath(_installRootBox.Text.Trim());
         var starCraftSource = Path.GetFullPath(_starCraftSourceBox.Text.Trim());
-        var missing = StarCraftInstallation.MissingRequiredFiles(starCraftSource);
-        if (missing.Count > 0)
-        {
-            MessageBox.Show(
-                this,
-                "StarCraft 1.16.1 폴더가 올바르지 않습니다.\r\n" +
-                "최신 Battle.net/Remastered 설치 폴더는 1.16.1 소스로 자동 변환할 수 없습니다.\r\n" +
-                "누락 파일: " + string.Join(", ", missing),
-                "StarCraft 폴더 확인",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning);
-            return;
-        }
-
-        _installButton.Enabled = false;
-        _cancelButton.Enabled = false;
+        _installing = true;
+        _completed = false;
+        _failed = false;
         _logBox.Clear();
+        RenderPage();
 
         PayloadExtraction? payload = null;
+        IReadOnlyList<InstallationManifestEntry>? payloadManifest = null;
         try
         {
-            Log("설치 파일을 준비합니다.");
+            SetProgress(2, "설치 파일을 준비합니다.");
             payload = ExtractEmbeddedPayload();
+            payloadManifest = await Task.Run(() => InstallationVerifier.BuildManifest(payload.Root));
 
-            Log($"앱 파일 복사: {installRoot}");
-            CopyDirectory(payload.Root, installRoot);
+            SetBusy(12, "앱 파일과 내장 데이터를 복사합니다.");
+            await Task.Run(() => CopyDirectory(payload.Root, installRoot));
 
+            SetBusy(30, "복사된 설치 파일을 검증합니다.");
+            await VerifyPayloadCopyAsync(installRoot, payloadManifest);
+
+            SetProgress(42, "선택 구성 요소를 설치합니다.");
             await InstallSelectedPrerequisitesAsync(installRoot);
 
+            SetProgress(62, "바로가기를 구성합니다.");
             RemoveLegacyCmdLaunchers(installRoot);
-            if (_desktopShortcutBox.Checked)
+            if (InstallDesktopShortcut)
             {
                 CreateDesktopShortcut(installRoot);
             }
+
             CreateStartMenuShortcut(installRoot);
 
-            Log("StarCraft/BWAPI 런타임을 구성합니다.");
+            SetBusy(72, "StarCraft/BWAPI 런타임을 구성합니다.");
             await RunRuntimeSetupAsync(installRoot, starCraftSource);
 
-            Log("설치가 완료되었습니다.");
-            if (_launchAfterInstallBox.Checked)
+            SetBusy(90, "설치 결과를 최종 검증합니다.");
+            await VerifyPayloadCopyAsync(installRoot, payloadManifest);
+            VerifyRequiredInstalledFiles(installRoot);
+
+            SetProgress(100, "설치가 완료되었습니다.");
+            _completed = true;
+
+            if (LaunchAfterInstall)
             {
                 Process.Start(new ProcessStartInfo
                 {
@@ -266,12 +621,11 @@ internal sealed class SetupForm : Form
                     UseShellExecute = true
                 });
             }
-
-            MessageBox.Show(this, "설치가 완료되었습니다.", "StarAI Practice Client", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            Close();
         }
         catch (Exception ex)
         {
+            _failed = true;
+            SetProgress(Math.Max(_progressBar.Value, 1), "설치에 실패했습니다.");
             Log(ex.ToString());
             MessageBox.Show(this, ex.Message, "설치 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
@@ -289,9 +643,102 @@ internal sealed class SetupForm : Form
                 }
             }
 
-            _installButton.Enabled = true;
-            _cancelButton.Enabled = true;
+            _installing = false;
+            RenderPage();
         }
+    }
+
+    private bool InstallDesktopShortcut => _desktopShortcutNode?.Checked ?? true;
+
+    private bool InstallVcRedists => _vcRedistsNode?.Checked ?? true;
+
+    private bool InstallJava => _javaNode?.Checked ?? true;
+
+    private bool LaunchAfterInstall => _launchAfterInstallNode?.Checked ?? true;
+
+    private async Task VerifyPayloadCopyAsync(
+        string installRoot,
+        IReadOnlyList<InstallationManifestEntry> payloadManifest)
+    {
+        var issues = await Task.Run(() => InstallationVerifier.Verify(installRoot, payloadManifest));
+        ThrowIfVerificationIssues("설치 파일", issues);
+    }
+
+    private void VerifyRequiredInstalledFiles(string installRoot)
+    {
+        var requiredFiles = new List<string>
+        {
+            Path.Combine(installRoot, "StarAI.PracticeClient.App.exe"),
+            Path.Combine(installRoot, "VERSION"),
+            Path.Combine(installRoot, "README.md"),
+            Path.Combine(installRoot, "scripts", "setup-runtime.ps1"),
+            Path.Combine(installRoot, "data", "bots", "bots.dat"),
+            Path.Combine(installRoot, "data", "maps", "maps.dat")
+        };
+
+        foreach (var root in new[] { PlayerRuntimeRoot, AiRuntimeRoot })
+        {
+            requiredFiles.AddRange(
+            [
+                Path.Combine(root, "StarCraft.exe"),
+                Path.Combine(root, "stardat.mpq"),
+                Path.Combine(root, "broodat.mpq"),
+                Path.Combine(root, "patch_rt.mpq"),
+                Path.Combine(root, "Chaoslauncher - MultiInstance.exe"),
+                Path.Combine(root, "Plugins", "BWAPI_PluginInjector.bwl"),
+                Path.Combine(root, "bwapi-data", "BWAPI.dll"),
+                Path.Combine(root, "bwapi-data", "bwapi.ini"),
+                Path.Combine(root, "bwapi-data", "TM", "TournamentModule.dll"),
+                Path.Combine(root, "ddraw.dll")
+            ]);
+        }
+
+        if (InstallJava)
+        {
+            requiredFiles.Add(Path.Combine(installRoot, "runtime", "jdk", "bin", "java.exe"));
+        }
+
+        var missing = requiredFiles
+            .Where(path => !File.Exists(path))
+            .Select(path => Path.GetRelativePath(installRoot, path))
+            .ToList();
+        if (missing.Count == 0)
+        {
+            Log("필수 파일 검증 완료.");
+            return;
+        }
+
+        throw new InvalidOperationException(
+            "설치 후 필수 파일 일부가 보이지 않습니다.\r\n\r\n" +
+            FormatVerificationAdvice(missing));
+    }
+
+    private static void ThrowIfVerificationIssues(
+        string targetName,
+        IReadOnlyList<InstallationVerificationIssue> issues)
+    {
+        if (issues.Count == 0)
+        {
+            return;
+        }
+
+        var details = issues
+            .Take(8)
+            .Select(issue => $"{issue.Kind}: {issue.RelativePath}")
+            .ToList();
+
+        throw new InvalidOperationException(
+            $"{targetName} 검증에 실패했습니다.\r\n\r\n" +
+            FormatVerificationAdvice(details));
+    }
+
+    private static string FormatVerificationAdvice(IReadOnlyList<string> details)
+    {
+        var suffix = details.Count > 8 ? "\r\n..." : string.Empty;
+        return
+            "Windows Defender 또는 백신 프로그램이 파일을 격리/삭제했을 수 있습니다. " +
+            "Windows 보안의 보호 기록에서 차단 항목을 확인하고, 신뢰한 릴리즈 파일이라면 복원 또는 허용 처리한 뒤 다시 설치해 주세요.\r\n\r\n" +
+            "확인 대상:\r\n" + string.Join("\r\n", details.Select(item => "- " + item)) + suffix;
     }
 
     private static PayloadExtraction ExtractEmbeddedPayload()
@@ -382,18 +829,18 @@ internal sealed class SetupForm : Form
 
     private async Task InstallSelectedPrerequisitesAsync(string installRoot)
     {
-        if (!_installVcRedistsBox.Checked && !_installJavaBox.Checked)
+        if (!InstallVcRedists && !InstallJava)
         {
-            Log("선택 구성요소 설치를 건너뜁니다.");
+            Log("선택 구성 요소 설치를 건너뜁니다.");
             return;
         }
 
-        if (_installVcRedistsBox.Checked)
+        if (InstallVcRedists)
         {
             await InstallVcRedistsAsync();
         }
 
-        if (_installJavaBox.Checked)
+        if (InstallJava)
         {
             await InstallJavaRuntimeAsync(installRoot);
         }
@@ -412,8 +859,9 @@ internal sealed class SetupForm : Form
 
         foreach (var package in packages)
         {
+            SetBusy(46, $"{package.Name} 설치 파일을 준비합니다.");
             var installerPath = await DownloadDependencyAsync(package.Url, Path.Combine("vcredist", package.FileName));
-            Log($"{package.Name} 설치를 실행합니다.");
+            SetBusy(50, $"{package.Name} 설치를 실행합니다.");
             await RunExternalProcessAsync(
                 installerPath,
                 package.Arguments,
@@ -432,13 +880,13 @@ internal sealed class SetupForm : Form
             return;
         }
 
-        Log("OpenJDK 17 런타임을 앱 폴더에 준비합니다.");
+        SetBusy(54, "OpenJDK 17 런타임을 준비합니다.");
         var archivePath = await DownloadDependencyAsync(TemurinJdkUrl, Path.Combine("java", "temurin-jdk17-windows-x64.zip"));
         var tempRoot = Path.Combine(Path.GetTempPath(), "StarAIPracticeClientSetup", "jdk-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempRoot);
         try
         {
-            ZipFile.ExtractToDirectory(archivePath, tempRoot);
+            await Task.Run(() => ZipFile.ExtractToDirectory(archivePath, tempRoot));
             var extractedJava = Directory
                 .EnumerateFiles(tempRoot, "java.exe", SearchOption.AllDirectories)
                 .FirstOrDefault(path => path.EndsWith(Path.Combine("bin", "java.exe"), StringComparison.OrdinalIgnoreCase))
@@ -451,7 +899,7 @@ internal sealed class SetupForm : Form
                 Directory.Delete(targetRoot, recursive: true);
             }
 
-            CopyDirectory(jdkRoot, targetRoot);
+            await Task.Run(() => CopyDirectory(jdkRoot, targetRoot));
             Log($"Java 런타임 준비 완료: {javaExe}");
         }
         finally
@@ -591,11 +1039,44 @@ internal sealed class SetupForm : Form
         }
     }
 
+    private void SetProgress(int value, string message)
+    {
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action<int, string>(SetProgress), value, message);
+            return;
+        }
+
+        _progressBar.Style = ProgressBarStyle.Continuous;
+        _progressBar.Value = Math.Clamp(value, _progressBar.Minimum, _progressBar.Maximum);
+        _statusLabel.Text = message;
+        Log(message);
+    }
+
+    private void SetBusy(int value, string message)
+    {
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action<int, string>(SetBusy), value, message);
+            return;
+        }
+
+        _progressBar.Style = ProgressBarStyle.Marquee;
+        _progressBar.Value = Math.Clamp(value, _progressBar.Minimum, _progressBar.Maximum);
+        _statusLabel.Text = message;
+        Log(message);
+    }
+
     private void Log(string message)
     {
         if (InvokeRequired)
         {
             BeginInvoke(new Action<string>(Log), message);
+            return;
+        }
+
+        if (_logBox.IsDisposed)
+        {
             return;
         }
 
@@ -614,6 +1095,13 @@ internal sealed class SetupForm : Form
             FileName = url,
             UseShellExecute = true
         });
+    }
+
+    private enum SetupPage
+    {
+        Paths,
+        Components,
+        Progress
     }
 
     private sealed record PayloadExtraction(string Root, bool DeleteAfterInstall);

@@ -43,6 +43,7 @@ public sealed record PracticePaths(
         candidates.Add(Environment.GetEnvironmentVariable("STARAI_PRACTICECLIENT_ROOT"));
         candidates.Add(AppContext.BaseDirectory);
         candidates.Add(Directory.GetCurrentDirectory());
+        candidates.Add(@"C:\starai");
         candidates.Add(@"C:\starai\StarAI.PracticeClient");
 
         foreach (var candidate in candidates.SelectMany(ExpandCandidateAndParents))
@@ -53,7 +54,7 @@ public sealed record PracticePaths(
             }
         }
 
-        return @"C:\starai\StarAI.PracticeClient";
+        return @"C:\starai";
     }
 
     private static IEnumerable<string> ExpandCandidateAndParents(string? candidate)

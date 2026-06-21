@@ -363,3 +363,15 @@ Decision:
 - Do not add a Battle.net/Remastered-to-1.16.1 downgrade option. Current Battle.net/Remastered clients use a different modern install/update model, and no official, legally clean downgrade path to a BWAPI 4.4-compatible 1.16.1 runtime was identified.
 - User-facing install docs should provide multiple public reference pages for obtaining/preparing 1.16.1, but StarAI must not host or endorse a specific third-party binary.
 - Add Windows Defender/antivirus false-positive guidance because BWAPI tools, old native bot DLLs/EXEs, and legacy 32-bit runtime files may be flagged on some machines.
+
+## 2026-06-22 1.3.2 Installer UX and Install Verification
+
+Status: decided.
+
+Decision:
+
+- Use `C:\starai` as the default app install folder. The app still uses separate mutable player/AI runtimes at `C:\starai\SC116AI` and `C:\starai\SC116AI_ai`.
+- Keep the setup artifact as a self-contained EXE, but present the flow like a familiar Windows installer wizard with path, component, progress, and completion states.
+- Show visible progress/status during long copy/download/runtime setup steps.
+- Build a SHA-256 manifest from the embedded payload and verify the copied files after install. Also check required runtime files after StarCraft/BWAPI provisioning so antivirus quarantine or missing files surface as a clear user-facing error.
+- Remove the ZIP `install.cmd` fallback from new release payloads. Setup EXE is the supported installer path.

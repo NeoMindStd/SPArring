@@ -9,7 +9,7 @@
 2. GitHub Releases에서 `StarAI-PracticeClient-{{VERSION}}-setup.exe`를 다운로드합니다.
 3. 설치 프로그램을 실행합니다.
 4. 선택 구성요소를 확인합니다. VC++ x86 런타임은 봇 호환성을 위해 권장하고, Java 런타임은 커스텀 단축키 반영에 필요합니다.
-5. 설치 경로를 확인합니다.
+5. 설치 경로를 확인합니다. 기본값은 `C:\starai`입니다.
 6. `StarCraft 1.16.1` 항목에서 원본 폴더를 지정합니다.
 7. 필요한 경우 `바탕화면 바로가기 만들기`를 체크하고 설치합니다.
 
@@ -36,7 +36,7 @@ C:\starai\SC116AI_ai
 앱 자체는 설치 프로그램에서 선택한 경로에 설치됩니다. 기본값은 아래와 같습니다.
 
 ```text
-C:\starai\StarAI.PracticeClient
+C:\starai
 ```
 
 ## 참고
@@ -45,7 +45,7 @@ C:\starai\StarAI.PracticeClient
 - 사람 런타임은 `C:\starai\SC116AI`, AI 런타임은 `C:\starai\SC116AI_ai`로 분리됩니다.
 - StarAI 봇/맵 카탈로그는 릴리즈 패키지에 포함됩니다.
 - SCHNAIL Client는 최종 사용자 설치 요구사항이 아닙니다.
-- 기존 ZIP 방식이 필요하면 `StarAI-PracticeClient-{{VERSION}}-win-x64.zip` 안의 `install.cmd`를 사용할 수 있지만, 기본 권장 방식은 Setup EXE입니다.
+- 기본 권장 방식은 Setup EXE입니다. ZIP 파일은 고급 사용자의 수동 확인용 보조 패키지입니다.
 - 새 설치는 바탕화면/시작 메뉴 바로가기와 `StarAI.PracticeClient.App.exe` 직접 실행을 사용합니다. `C:\starai\Start-StarAI-PracticeClient.cmd`는 1.3.1부터 생성하지 않습니다.
 
 ## Windows Defender 안내
@@ -62,7 +62,7 @@ C:\starai\StarAI.PracticeClient
 2. Download `StarAI-PracticeClient-{{VERSION}}-setup.exe`.
 3. Run the installer.
 4. Review optional prerequisites.
-5. Choose the StarAI install folder.
+5. Choose the StarAI install folder. The default is `C:\starai`.
 6. Select the StarCraft 1.16.1 source folder.
 7. Enable the desktop shortcut option if desired, then install.
 

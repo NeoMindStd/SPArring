@@ -11,7 +11,7 @@
 
 읽기 전용 제품 자산:
 
-- `C:\starai\StarAI.PracticeClient\data`
+- `C:\starai\data`
 
 개발/릴리즈 import 참조 대상:
 

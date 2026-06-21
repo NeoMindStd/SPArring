@@ -7,15 +7,15 @@ Last updated: 2026-06-21
 - Repo: `C:\starai\StarAI.PracticeClient`
 - User entrypoint: desktop/start-menu shortcut targeting `StarAI.PracticeClient.App.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.3.1`
-- Last verified implementation state: 1.3.1 release candidate with Setup EXE packaging, optional VC++/Java prerequisites, installer-selected StarCraft 1.16.1 source validation, EXE-direct shortcuts, automatic player/AI runtime provisioning, dynamic app-root asset discovery, and existing compatibility filters.
-- Current WIP after 1.3.1: none expected in the release worktree after release. The original `C:\starai\StarAI.PracticeClient` folder may still contain unrelated local WIP; do not reset it unless the user explicitly asks.
+- Current version: `1.3.2`
+- Last verified implementation state: 1.3.2 release candidate with Windows-wizard-style Setup EXE, default app install folder `C:\starai`, optional VC++/Java prerequisites, installer-selected StarCraft 1.16.1 source validation, payload checksum verification, required runtime file verification, EXE-direct shortcuts, automatic player/AI runtime provisioning, dynamic app-root asset discovery, and existing compatibility filters.
+- Current WIP after 1.3.2: none expected in the release worktree after release. The original `C:\starai\StarAI.PracticeClient` folder may still contain unrelated local WIP; do not reset it unless the user explicitly asks.
 
 ## Hard Rules
 
 - 답변과 보고는 한국어 존댓말로 한다.
 - release/tag/push/installer 배포는 사용자가 명시적으로 요청할 때만 한다.
-- StarAI 제품 실행은 `C:\starai\StarAI.PracticeClient\data` 내장 자산을 사용해야 한다. SCHNAIL은 개발/릴리즈 import 소스일 뿐 최종 사용자 필수 조건이 아니다.
+- StarAI 제품 실행은 기본 설치 기준 `C:\starai\data` 내장 자산을 사용해야 한다. SCHNAIL은 개발/릴리즈 import 소스일 뿐 최종 사용자 필수 조건이 아니다.
 - SCHNAIL/Remastered 원본은 읽기 전용이다.
 - 사람 런타임: `C:\starai\SC116AI`
 - AI 런타임: `C:\starai\SC116AI_ai`
@@ -270,7 +270,7 @@ Important observations:
 
 - User clarified that SCHNAIL was only a development reference and must not be a product/runtime dependency.
 - Added `PracticeAssetCatalogReader` and `PracticeAssetPaths`.
-- Product catalog/hotkey/map preview loading now uses `C:\starai\StarAI.PracticeClient\data`.
+- Product catalog/hotkey/map preview loading now uses StarAI-owned `data` under the resolved app root. The default installed app root is now `C:\starai`.
 - Added `scripts\import-schnail-assets.ps1` to copy local SCHNAIL assets into StarAI-owned `data` during development/release preparation.
 - Imported current local assets:
   - `data\bots`: 100 bot folders plus `bots.dat`
@@ -425,9 +425,21 @@ Important observations:
   - Release/install docs now point users to multiple public 1.16.1 preparation pages with Markdown links instead of exposing a dead direct mirror URL.
   - Battle.net/Remastered 1.23.x downgrade is explicitly not supported; users must provide a separate 1.16.1 folder.
   - Added Windows Defender/antivirus false-positive guidance and links to Microsoft exclusion instructions.
-  - Version bumped to `1.3.1` and `docs\RELEASE_NOTES_1.3.1.md` added.
+- Version bumped to `1.3.1` and `docs\RELEASE_NOTES_1.3.1.md` added.
 - Required verification for the release:
   - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`
   - `.\scripts\smoke.ps1`
   - `.\scripts\build-release.ps1`
   - Because launch flow itself was not changed, actual `smoke-app-start.ps1` is not required unless later changes touch StarCraft/ChaosLauncher execution.
+
+## 2026-06-22 1.3.2 Installer UX Follow-up
+
+- Setup UI now follows a familiar Windows wizard layout:
+  - install path and StarCraft 1.16.1 source page
+  - component selection page
+  - progress/log page
+  - finish state
+- Default install path changed from `C:\starai\StarAI.PracticeClient` to `C:\starai`.
+- Setup builds a SHA-256 manifest from the embedded payload and verifies copied app/data files. It also verifies required app/runtime files after runtime provisioning.
+- New release ZIP payload no longer includes `install.cmd`; Setup EXE is the supported installer path.
+- Version bumped to `1.3.2` and `docs\RELEASE_NOTES_1.3.2.md` added.
