@@ -7,9 +7,9 @@ Last updated: 2026-06-21
 - Repo: `C:\starai\StarAI.PracticeClient`
 - User entrypoint: desktop/start-menu shortcut targeting `StarAI.PracticeClient.App.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.3.2`
-- Last verified implementation state: 1.3.2 release candidate with Windows-wizard-style Setup EXE, default app install folder `C:\starai`, optional VC++/Java prerequisites, installer-selected StarCraft 1.16.1 source validation, payload checksum verification, required runtime file verification, EXE-direct shortcuts, automatic player/AI runtime provisioning, dynamic app-root asset discovery, and existing compatibility filters.
-- Current WIP after 1.3.2: none expected in the release worktree after release. The original `C:\starai\StarAI.PracticeClient` folder may still contain unrelated local WIP; do not reset it unless the user explicitly asks.
+- Current version: `1.3.3`
+- Last verified implementation state: 1.3.3 release candidate with DPI/large-font-safe Windows-wizard-style Setup EXE, default app install folder `C:\starai`, optional VC++/Java prerequisites, installer-selected StarCraft 1.16.1 source validation, payload checksum verification, required runtime file verification, EXE-direct shortcuts, automatic player/AI runtime provisioning, dynamic app-root asset discovery, and existing compatibility filters.
+- Current WIP after 1.3.3: none expected in the release worktree after release. The original `C:\starai\StarAI.PracticeClient` folder may still contain unrelated local WIP; do not reset it unless the user explicitly asks.
 
 ## Hard Rules
 
@@ -443,3 +443,10 @@ Important observations:
 - Setup builds a SHA-256 manifest from the embedded payload and verifies copied app/data files. It also verifies required app/runtime files after runtime provisioning.
 - New release ZIP payload no longer includes `install.cmd`; Setup EXE is the supported installer path.
 - Version bumped to `1.3.2` and `docs\RELEASE_NOTES_1.3.2.md` added.
+
+## 2026-06-22 1.3.3 Setup Display Hotfix
+
+- Fixed the setup path page layout for high-DPI/large-font environments by removing fixed label columns and fixed group heights.
+- Setup window is now resizable and uses wider path pickers/buttons.
+- Added `--ui-smoke` validation for setup layout, and `scripts\smoke.ps1` now renders/validates setup UI at normal, large, and extra-large font sizes.
+- Version bumped to `1.3.3` and `docs\RELEASE_NOTES_1.3.3.md` added.

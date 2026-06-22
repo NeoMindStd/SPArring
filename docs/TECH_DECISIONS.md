@@ -375,3 +375,13 @@ Decision:
 - Show visible progress/status during long copy/download/runtime setup steps.
 - Build a SHA-256 manifest from the embedded payload and verify the copied files after install. Also check required runtime files after StarCraft/BWAPI provisioning so antivirus quarantine or missing files surface as a clear user-facing error.
 - Remove the ZIP `install.cmd` fallback from new release payloads. Setup EXE is the supported installer path.
+
+## 2026-06-22 Setup UI Smoke Coverage
+
+Status: decided.
+
+Decision:
+
+- Setup UI must avoid fixed label columns and fixed group heights because high-DPI or large-font environments can clip Korean labels and buttons.
+- The setup window should remain resizable so users can recover if a display environment is unusual.
+- `scripts\smoke.ps1` includes setup UI smoke rendering at default, large, and extra-large font sizes. The smoke command fails if button text does not fit or controls exceed their parent bounds.

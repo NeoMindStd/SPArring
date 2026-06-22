@@ -18,7 +18,7 @@ internal sealed class SetupForm : Form
     private const string VcRedistCurrentUrl = "https://aka.ms/vs/17/release/vc_redist.x86.exe";
     private const string TemurinJdkUrl = "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jdk/hotspot/normal/eclipse";
 
-    private readonly Panel _pagePanel = new() { Dock = DockStyle.Fill, Padding = new Padding(24, 20, 24, 16) };
+    private readonly Panel _pagePanel = new() { Dock = DockStyle.Fill, Padding = new Padding(24, 20, 24, 16), AutoScroll = true };
     private readonly Label _headerTitle = new();
     private readonly Label _headerDescription = new();
     private readonly TextBox _installRootBox = new() { Text = DefaultInstallRoot };
@@ -27,9 +27,9 @@ internal sealed class SetupForm : Form
     private readonly ProgressBar _progressBar = new() { Minimum = 0, Maximum = 100 };
     private readonly Label _statusLabel = new();
     private readonly TextBox _logBox = new() { Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical };
-    private readonly Button _backButton = new() { Text = "< 뒤로", Width = 92, Height = 30 };
-    private readonly Button _nextButton = new() { Text = "다음 >", Width = 92, Height = 30 };
-    private readonly Button _cancelButton = new() { Text = "취소", Width = 92, Height = 30 };
+    private readonly Button _backButton = new() { Text = "< 뒤로" };
+    private readonly Button _nextButton = new() { Text = "다음 >" };
+    private readonly Button _cancelButton = new() { Text = "취소" };
 
     private TreeNode? _desktopShortcutNode;
     private TreeNode? _vcRedistsNode;
@@ -40,16 +40,19 @@ internal sealed class SetupForm : Form
     private bool _completed;
     private bool _failed;
 
-    public SetupForm()
+    public SetupForm(float fontSize = 9F)
     {
         Text = "StarAI Practice Client Setup";
-        ClientSize = new Size(700, 520);
-        MinimumSize = new Size(700, 520);
+        AutoScaleMode = AutoScaleMode.Dpi;
+        ClientSize = new Size(840, 680);
+        MinimumSize = new Size(780, 560);
         StartPosition = FormStartPosition.CenterScreen;
-        Font = new Font("Segoe UI", 9F);
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
+        Font = new Font("Segoe UI", fontSize);
+        FormBorderStyle = FormBorderStyle.Sizable;
+        MaximizeBox = true;
         BackColor = SystemColors.Control;
+
+        ConfigureWizardButtons();
 
         Controls.Add(_pagePanel);
         Controls.Add(CreateHeader());
@@ -64,10 +67,11 @@ internal sealed class SetupForm : Form
 
     private Control CreateHeader()
     {
+        var headerHeight = Math.Max(84, Font.Height * 4 + 24);
         var header = new Panel
         {
             Dock = DockStyle.Top,
-            Height = 78,
+            Height = headerHeight,
             BackColor = Color.White,
             Padding = new Padding(22, 12, 22, 8)
         };
@@ -82,7 +86,7 @@ internal sealed class SetupForm : Form
 
         _headerTitle.AutoSize = false;
         _headerTitle.Dock = DockStyle.Top;
-        _headerTitle.Height = 24;
+        _headerTitle.Height = Math.Max(26, Font.Height + 8);
         _headerTitle.Font = new Font(Font.FontFamily, 10F, FontStyle.Bold);
 
         _headerDescription.AutoSize = false;
@@ -100,7 +104,7 @@ internal sealed class SetupForm : Form
         var footer = new Panel
         {
             Dock = DockStyle.Bottom,
-            Height = 54,
+            Height = Math.Max(58, Font.Height + 44),
             BackColor = SystemColors.Control
         };
 
@@ -123,7 +127,8 @@ internal sealed class SetupForm : Form
         {
             FlowDirection = FlowDirection.RightToLeft,
             Dock = DockStyle.Fill,
-            Padding = new Padding(0, 12, 18, 0)
+            Padding = new Padding(0, 12, 18, 0),
+            WrapContents = false
         };
         buttons.Controls.Add(_cancelButton);
         buttons.Controls.Add(_nextButton);
@@ -131,6 +136,17 @@ internal sealed class SetupForm : Form
         footerLayout.Controls.Add(buttons, 0, 1);
         footer.Controls.Add(footerLayout);
         return footer;
+    }
+
+    private void ConfigureWizardButtons()
+    {
+        foreach (var button in new[] { _backButton, _nextButton, _cancelButton })
+        {
+            button.AutoSize = false;
+            button.Width = Math.Max(112, TextRenderer.MeasureText(button.Text, Font).Width + 32);
+            button.Height = Math.Max(34, Font.Height + 16);
+            button.Margin = new Padding(4, 0, 4, 0);
+        }
     }
 
     private void RenderPage()
@@ -194,72 +210,107 @@ internal sealed class SetupForm : Form
 
         layout.Controls.Add(CreatePathSection(), 0, 0);
         layout.Controls.Add(CreateStarCraftSection(), 0, 1);
-        layout.Controls.Add(CreateInstallNotice(), 0, 2);
         _pagePanel.Controls.Add(layout);
     }
 
     private Control CreatePathSection()
     {
-        var group = CreateGroupBox("설치 폴더", 112);
-        var layout = CreateTwoColumnLayout();
-        PreparePathTextBox(_installRootBox);
-        layout.Controls.Add(new Label
-        {
-            Text = "StarAI 설치 폴더:",
-            AutoSize = true,
-            Anchor = AnchorStyles.Left,
-            Margin = new Padding(0, 7, 8, 0)
-        }, 0, 0);
-        layout.Controls.Add(_installRootBox, 1, 0);
-        layout.Controls.Add(CreateBrowseButton("찾아보기...", BrowseInstallRoot), 2, 0);
-        layout.Controls.Add(new Label
-        {
-            Text = @"기본값은 C:\starai 입니다. 앱 파일, data 폴더, 선택 Java 런타임이 이 폴더 아래에 설치됩니다.",
-            AutoSize = true,
-            ForeColor = SystemColors.GrayText,
-            Margin = new Padding(0, 8, 0, 0)
-        }, 1, 1);
-        group.Controls.Add(layout);
-        return group;
+        return CreatePathPickerGroup(
+            "설치 폴더",
+            "StarAI 설치 폴더:",
+            _installRootBox,
+            BrowseInstallRoot,
+            @"기본값: C:\starai");
     }
 
     private Control CreateStarCraftSection()
     {
-        var group = CreateGroupBox("StarCraft 1.16.1 원본", 104);
-        var layout = CreateTwoColumnLayout();
-        PreparePathTextBox(_starCraftSourceBox);
-        layout.Controls.Add(new Label
-        {
-            Text = "원본 폴더:",
-            AutoSize = true,
-            Anchor = AnchorStyles.Left,
-            Margin = new Padding(0, 7, 8, 0)
-        }, 0, 0);
-        layout.Controls.Add(_starCraftSourceBox, 1, 0);
-        layout.Controls.Add(CreateBrowseButton("찾아보기...", BrowseStarCraftRoot), 2, 0);
-
         var link = new LinkLabel
         {
             Text = "StarCraft 1.16.1 준비 방법 보기",
             AutoSize = true,
-            Margin = new Padding(0, 8, 0, 0)
+            Margin = new Padding(0, 6, 0, 0)
         };
         link.LinkClicked += (_, _) => OpenUrl(StarCraftGuideUrl);
-        layout.Controls.Add(link, 1, 1);
-        group.Controls.Add(layout);
-        return group;
+        return CreatePathPickerGroup(
+            "StarCraft 1.16.1 원본",
+            "원본 폴더:",
+            _starCraftSourceBox,
+            BrowseStarCraftRoot,
+            link);
     }
 
-    private Control CreateInstallNotice()
+    private Control CreatePathPickerGroup(
+        string title,
+        string labelText,
+        TextBox textBox,
+        Action browse,
+        string helpText)
     {
-        return new Label
+        return CreatePathPickerGroup(
+            title,
+            labelText,
+            textBox,
+            browse,
+            new Label
+            {
+                Text = helpText,
+                AutoSize = true,
+                ForeColor = SystemColors.GrayText,
+                Margin = new Padding(0, 6, 0, 0)
+            });
+    }
+
+    private Control CreatePathPickerGroup(
+        string title,
+        string labelText,
+        TextBox textBox,
+        Action browse,
+        Control helpControl)
+    {
+        var group = CreateGroupBox(title);
+        var layout = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
-            AutoSize = false,
-            Height = 54,
-            Text = "선택한 StarCraft 원본 폴더는 수정하지 않습니다. 설치기는 사람용/AI용 로컬 런타임을 별도로 복사해 구성합니다.",
-            ForeColor = SystemColors.ControlText
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 1,
+            RowCount = 3
         };
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        layout.Controls.Add(new Label
+        {
+            Text = labelText,
+            AutoSize = true,
+            Margin = new Padding(0, 0, 0, 4)
+        }, 0, 0);
+
+        var row = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = new Padding(0)
+        };
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, Math.Max(142, Font.Height * 6)));
+        row.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        PreparePathTextBox(textBox);
+        row.Controls.Add(textBox, 0, 0);
+        row.Controls.Add(CreateBrowseButton("찾아보기...", browse), 1, 0);
+        layout.Controls.Add(row, 0, 1);
+
+        helpControl.Margin = new Padding(0, 6, 0, 0);
+        layout.Controls.Add(helpControl, 0, 2);
+        group.Controls.Add(layout);
+        return group;
     }
 
     private void RenderComponentsPage()
@@ -292,7 +343,7 @@ internal sealed class SetupForm : Form
         body.Controls.Add(tree, 0, 0);
         body.SetRowSpan(tree, 3);
 
-        var descriptionGroup = CreateGroupBox("설명", 0);
+        var descriptionGroup = CreateGroupBox("설명");
         descriptionGroup.Dock = DockStyle.Fill;
         _componentDescription.Dock = DockStyle.Fill;
         _componentDescription.ForeColor = SystemColors.ControlText;
@@ -408,43 +459,24 @@ internal sealed class SetupForm : Form
         return layout;
     }
 
-    private static GroupBox CreateGroupBox(string text, int height)
+    private static GroupBox CreateGroupBox(string text)
     {
-        var group = new GroupBox
+        return new GroupBox
         {
             Text = text,
             Dock = DockStyle.Top,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
             Padding = new Padding(12, 18, 12, 12),
             Margin = new Padding(0, 0, 0, 14)
         };
-        if (height > 0)
-        {
-            group.Height = height;
-        }
-
-        return group;
-    }
-
-    private static TableLayoutPanel CreateTwoColumnLayout()
-    {
-        var layout = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 3,
-            RowCount = 2
-        };
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 118));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 104));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        return layout;
     }
 
     private static void PreparePathTextBox(TextBox textBox)
     {
         textBox.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-        textBox.Margin = new Padding(0, 4, 12, 0);
+        textBox.Margin = new Padding(0, 2, 12, 0);
+        textBox.MinimumSize = new Size(120, textBox.Font.Height + 12);
     }
 
     private Button CreateBrowseButton(string text, Action browse)
@@ -452,8 +484,8 @@ internal sealed class SetupForm : Form
         var button = new Button
         {
             Text = text,
-            Width = 96,
-            Height = 28,
+            Width = Math.Max(132, TextRenderer.MeasureText(text, Font).Width + 36),
+            Height = Math.Max(32, Font.Height + 14),
             Anchor = AnchorStyles.Left | AnchorStyles.Right
         };
         button.Click += (_, _) => browse();
