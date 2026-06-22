@@ -385,3 +385,29 @@ Decision:
 - Setup UI must avoid fixed label columns and fixed group heights because high-DPI or large-font environments can clip Korean labels and buttons.
 - The setup window should remain resizable so users can recover if a display environment is unusual.
 - `scripts\smoke.ps1` includes setup UI smoke rendering at default, large, and extra-large font sizes. The smoke command fails if button text does not fit or controls exceed their parent bounds.
+
+## 2026-06-23 Startup Integrity Repair
+
+Status: decided.
+
+Decision:
+
+- The installer writes `install-manifest.json`, `install-state.json`, and `install-cache\payload.zip` into the install root.
+- The manifest contains SHA-256 hashes for the app payload, excluding the manifest, state file, and repair cache to avoid self-referential hash churn.
+- On launcher startup, StarAI verifies the manifest before building the main UI. Missing or changed payload files are restored from `install-cache\payload.zip` when possible.
+- The launcher does not overwrite the currently running `StarAI.PracticeClient.App.exe`; if the app executable itself is damaged, the user is told to rerun the installer.
+- Required runtime files under the player/AI runtime roots are checked on startup. If runtime files are missing, the launcher attempts a noninteractive `setup-runtime.ps1` repair using the stored StarCraft 1.16.1 source path when available.
+- If Defender, SmartScreen, or another antivirus removes files again, StarAI shows user-facing guidance to check Windows Security protection history and only allow/restore trusted official release files.
+- Release builds also write a checksums text file for the setup EXE and ZIP artifacts.
+
+## 2026-06-23 Free Security/Detection Mitigations
+
+Status: decided.
+
+Decision:
+
+- This hotfix only includes free packaging, checksum, repair, and user-guidance mitigations.
+- Build output now includes `StarAI-PracticeClient-<version>-setup-folder.zip`, containing a smaller Setup EXE plus external `payload.zip`.
+- Build output now includes `StarAI-PracticeClient-<version>-checksums.txt`.
+- Add `scripts\update-github-release-checksums.ps1` to append/update SHA256 checksums on a GitHub release page when a release is being published.
+- Add `scripts\new-defender-submission-package.ps1` to create a Microsoft Defender false-positive submission bundle with release artifacts, checksums, and an explanation template.

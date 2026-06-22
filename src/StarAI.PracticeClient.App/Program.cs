@@ -1,3 +1,5 @@
+using StarAI.PracticeClient.Core;
+
 namespace StarAI.PracticeClient.App;
 
 static class Program
@@ -21,6 +23,16 @@ static class Program
         }
 
         ApplicationConfiguration.Initialize();
+        var integrityReport = StartupIntegrityCheck.Run(PracticePaths.Defaults());
+        if (integrityReport.ShouldNotify)
+        {
+            MessageBox.Show(
+                StartupIntegrityCheck.FormatUserMessage(integrityReport),
+                "StarAI 설치 복구",
+                MessageBoxButtons.OK,
+                integrityReport.FullyRepaired ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+        }
+
         Application.Run(new MainForm());
         return 0;
     }

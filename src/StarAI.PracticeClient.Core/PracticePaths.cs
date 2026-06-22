@@ -74,7 +74,8 @@ public sealed record PracticePaths(
 
     private static bool HasBundledData(string root)
     {
-        return File.Exists(Path.Combine(root, "data", "bots", "bots.dat")) &&
+        return File.Exists(Path.Combine(root, InstallationVerifier.ManifestFileName)) ||
+               File.Exists(Path.Combine(root, "data", "bots", "bots.dat")) &&
                File.Exists(Path.Combine(root, "data", "maps", "maps.dat"));
     }
 }

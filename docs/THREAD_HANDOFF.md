@@ -7,7 +7,7 @@ Last updated: 2026-06-21
 - Repo: `C:\starai\StarAI.PracticeClient`
 - User entrypoint: desktop/start-menu shortcut targeting `StarAI.PracticeClient.App.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.3.3`
+- Current version: `1.3.4`
 - Last verified implementation state: 1.3.3 release candidate with DPI/large-font-safe Windows-wizard-style Setup EXE, default app install folder `C:\starai`, optional VC++/Java prerequisites, installer-selected StarCraft 1.16.1 source validation, payload checksum verification, required runtime file verification, EXE-direct shortcuts, automatic player/AI runtime provisioning, dynamic app-root asset discovery, and existing compatibility filters.
 - Current WIP after 1.3.3: none expected in the release worktree after release. The original `C:\starai\StarAI.PracticeClient` folder may still contain unrelated local WIP; do not reset it unless the user explicitly asks.
 
@@ -450,3 +450,33 @@ Important observations:
 - Setup window is now resizable and uses wider path pickers/buttons.
 - Added `--ui-smoke` validation for setup layout, and `scripts\smoke.ps1` now renders/validates setup UI at normal, large, and extra-large font sizes.
 - Version bumped to `1.3.3` and `docs\RELEASE_NOTES_1.3.3.md` added.
+
+## 2026-06-23 Startup Integrity Repair WIP
+
+- Added installed payload integrity repair:
+  - setup writes `install-manifest.json`, `install-state.json`, and `install-cache\payload.zip`.
+  - manifest excludes `install-manifest.json`, `install-state.json`, and `install-cache\*`.
+  - launcher startup verifies the payload manifest before opening `MainForm`.
+  - missing/hash-mismatched app payload files are restored from the cache when possible.
+  - the running `StarAI.PracticeClient.App.exe` is intentionally not overwritten.
+- Added runtime missing-file startup repair:
+  - launcher checks required app/runtime files with the same required-file list as setup.
+  - if player/AI runtime files are missing, launcher attempts noninteractive `scripts\setup-runtime.ps1` using the stored StarCraft source path when available.
+  - if repair fails or files continue to disappear, launcher displays Windows Defender/protection-history guidance.
+- `PracticePaths.ResolveApplicationRoot()` now treats a folder with `install-manifest.json` as an app root, so data-folder loss can still be repaired.
+- `scripts\build-release.ps1` now writes `install-manifest.json` into the payload stage and `StarAI-PracticeClient-<version>-checksums.txt` into `artifacts\release\dist`.
+- Added regression tests:
+  - `InstallationVerifierTests` for manifest save/load, metadata exclusion, zip repair, and runtime missing-file reporting.
+  - `StartupIntegrityCheckTests` for startup payload repair, cache-missing unresolved reporting, runtime repair callback, and Defender guidance text.
+
+## 2026-06-23 Free Security/SmartScreen Mitigation WIP
+
+- Added assembly metadata defaults in `Directory.Build.props`.
+- This hotfix only includes free packaging, checksum, repair, and user-guidance mitigations.
+- `scripts\build-release.ps1` now:
+  - passes version/file-version metadata into app/setup publishes.
+  - produces `StarAI-PracticeClient-<version>-setup-folder.zip`, a small setup EXE plus external `payload.zip`.
+  - produces `StarAI-PracticeClient-<version>-checksums.txt`.
+- Setup now supports `payload.zip` placed next to the setup EXE, not only embedded payload resources or a `payload` folder.
+- Added `scripts\update-github-release-checksums.ps1` for release-page SHA256 updates.
+- Added `scripts\new-defender-submission-package.ps1` for Microsoft Defender false-positive submission bundles.

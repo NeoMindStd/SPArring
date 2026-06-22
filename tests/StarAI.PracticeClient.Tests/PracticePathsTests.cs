@@ -16,6 +16,31 @@ public sealed class PracticePathsTests
     }
 
     [Fact]
+    public void ResolveApplicationRootAcceptsInstallManifestWhenBundledDataIsMissing()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "starai-root-manifest", Guid.NewGuid().ToString("N"));
+        var previous = Environment.GetEnvironmentVariable("STARAI_PRACTICECLIENT_ROOT");
+        try
+        {
+            Directory.CreateDirectory(root);
+            File.WriteAllText(Path.Combine(root, InstallationVerifier.ManifestFileName), "[]");
+            Environment.SetEnvironmentVariable("STARAI_PRACTICECLIENT_ROOT", root);
+
+            var resolved = PracticePaths.ResolveApplicationRoot();
+
+            Assert.Equal(Path.GetFullPath(root), resolved);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("STARAI_PRACTICECLIENT_ROOT", previous);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public void StarCraftInstallationRequiresClassic116Files()
     {
         var root = Path.Combine(Path.GetTempPath(), "starai-starcraft-root", Guid.NewGuid().ToString("N"));

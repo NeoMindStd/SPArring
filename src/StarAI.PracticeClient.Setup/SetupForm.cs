@@ -622,6 +622,14 @@ internal sealed class SetupForm : Form
             SetBusy(30, "복사된 설치 파일을 검증합니다.");
             await VerifyPayloadCopyAsync(installRoot, payloadManifest);
 
+            SetBusy(34, "설치 복구 캐시와 체크섬 기준을 저장합니다.");
+            await Task.Run(() => WriteRepairMetadata(
+                installRoot,
+                payload.Root,
+                payloadManifest,
+                starCraftSource,
+                InstallJava));
+
             SetProgress(42, "선택 구성 요소를 설치합니다.");
             await InstallSelectedPrerequisitesAsync(installRoot);
 
@@ -688,6 +696,34 @@ internal sealed class SetupForm : Form
 
     private bool LaunchAfterInstall => _launchAfterInstallNode?.Checked ?? true;
 
+    private static void WriteRepairMetadata(
+        string installRoot,
+        string payloadRoot,
+        IReadOnlyList<InstallationManifestEntry> payloadManifest,
+        string starCraftSource,
+        bool installJava)
+    {
+        InstallationVerifier.SaveManifest(
+            Path.Combine(installRoot, InstallationVerifier.ManifestFileName),
+            payloadManifest);
+
+        InstallationVerifier.SaveState(
+            Path.Combine(installRoot, InstallationVerifier.StateFileName),
+            new InstallationState(
+                StarCraftSourceRoot: starCraftSource,
+                InstallJava: installJava,
+                InstalledAtUtc: DateTime.UtcNow));
+
+        var cachePath = InstallationVerifier.RepairPayloadPath(installRoot);
+        Directory.CreateDirectory(Path.GetDirectoryName(cachePath)!);
+        if (File.Exists(cachePath))
+        {
+            File.Delete(cachePath);
+        }
+
+        ZipFile.CreateFromDirectory(payloadRoot, cachePath, CompressionLevel.Optimal, includeBaseDirectory: false);
+    }
+
     private async Task VerifyPayloadCopyAsync(
         string installRoot,
         IReadOnlyList<InstallationManifestEntry> payloadManifest)
@@ -698,42 +734,11 @@ internal sealed class SetupForm : Form
 
     private void VerifyRequiredInstalledFiles(string installRoot)
     {
-        var requiredFiles = new List<string>
-        {
-            Path.Combine(installRoot, "StarAI.PracticeClient.App.exe"),
-            Path.Combine(installRoot, "VERSION"),
-            Path.Combine(installRoot, "README.md"),
-            Path.Combine(installRoot, "scripts", "setup-runtime.ps1"),
-            Path.Combine(installRoot, "data", "bots", "bots.dat"),
-            Path.Combine(installRoot, "data", "maps", "maps.dat")
-        };
-
-        foreach (var root in new[] { PlayerRuntimeRoot, AiRuntimeRoot })
-        {
-            requiredFiles.AddRange(
-            [
-                Path.Combine(root, "StarCraft.exe"),
-                Path.Combine(root, "stardat.mpq"),
-                Path.Combine(root, "broodat.mpq"),
-                Path.Combine(root, "patch_rt.mpq"),
-                Path.Combine(root, "Chaoslauncher - MultiInstance.exe"),
-                Path.Combine(root, "Plugins", "BWAPI_PluginInjector.bwl"),
-                Path.Combine(root, "bwapi-data", "BWAPI.dll"),
-                Path.Combine(root, "bwapi-data", "bwapi.ini"),
-                Path.Combine(root, "bwapi-data", "TM", "TournamentModule.dll"),
-                Path.Combine(root, "ddraw.dll")
-            ]);
-        }
-
-        if (InstallJava)
-        {
-            requiredFiles.Add(Path.Combine(installRoot, "runtime", "jdk", "bin", "java.exe"));
-        }
-
-        var missing = requiredFiles
-            .Where(path => !File.Exists(path))
-            .Select(path => Path.GetRelativePath(installRoot, path))
-            .ToList();
+        var missing = InstallationVerifier.MissingRequiredRuntimeFiles(
+            installRoot,
+            PlayerRuntimeRoot,
+            AiRuntimeRoot,
+            InstallJava);
         if (missing.Count == 0)
         {
             Log("필수 파일 검증 완료.");
@@ -781,6 +786,12 @@ internal sealed class SetupForm : Form
             return new PayloadExtraction(fallbackPayload, DeleteAfterInstall: false);
         }
 
+        var externalPayloadZip = Path.Combine(AppContext.BaseDirectory, "payload.zip");
+        if (File.Exists(externalPayloadZip))
+        {
+            return ExtractPayloadZip(File.OpenRead(externalPayloadZip));
+        }
+
         var assembly = Assembly.GetExecutingAssembly();
         var resourceName = assembly.GetManifestResourceNames()
             .FirstOrDefault(name => name.EndsWith("payload.zip", StringComparison.OrdinalIgnoreCase));
@@ -789,10 +800,15 @@ internal sealed class SetupForm : Form
             throw new FileNotFoundException("Installer payload was not embedded.");
         }
 
-        var tempRoot = Path.Combine(Path.GetTempPath(), "StarAIPracticeClientSetup", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(tempRoot);
         using var stream = assembly.GetManifestResourceStream(resourceName)
             ?? throw new FileNotFoundException("Installer payload resource could not be opened.");
+        return ExtractPayloadZip(stream);
+    }
+
+    private static PayloadExtraction ExtractPayloadZip(Stream stream)
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), "StarAIPracticeClientSetup", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         archive.ExtractToDirectory(tempRoot);
         return new PayloadExtraction(tempRoot, DeleteAfterInstall: true);

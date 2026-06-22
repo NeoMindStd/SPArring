@@ -7,12 +7,27 @@ $setupProject = Join-Path $repo 'src\StarAI.PracticeClient.Setup\StarAI.Practice
 $releaseRoot = Join-Path $repo 'artifacts\release'
 $publishDir = Join-Path $releaseRoot "publish-app-$version"
 $setupPublishDir = Join-Path $releaseRoot "publish-setup-$version"
+$setupExternalPublishDir = Join-Path $releaseRoot "publish-setup-external-$version"
 $payloadStage = Join-Path $releaseRoot "payload-stage-$version"
+$externalSetupStage = Join-Path $releaseRoot "setup-folder-stage-$version"
 $payloadZip = Join-Path $releaseRoot "payload-$version.zip"
 $distDir = Join-Path $releaseRoot "dist"
 $zipPath = Join-Path $distDir "StarAI-PracticeClient-$version-win-x64.zip"
 $setupExePath = Join-Path $distDir "StarAI-PracticeClient-$version-setup.exe"
+$setupFolderZipPath = Join-Path $distDir "StarAI-PracticeClient-$version-setup-folder.zip"
 $dataRoot = Join-Path $repo 'data'
+$versionParts = $version.Split('.')
+while ($versionParts.Count -lt 4) {
+    $versionParts += '0'
+}
+
+$assemblyVersion = ($versionParts[0..3] -join '.')
+$versionProperties = @(
+    "-p:Version=$version",
+    "-p:AssemblyVersion=$assemblyVersion",
+    "-p:FileVersion=$assemblyVersion",
+    "-p:InformationalVersion=$version"
+)
 
 if (-not (Test-Path -LiteralPath (Join-Path $dataRoot 'bots\bots.dat')) -or
     -not (Test-Path -LiteralPath (Join-Path $dataRoot 'maps\maps.dat'))) {
@@ -23,8 +38,20 @@ if (-not (Test-Path -LiteralPath (Join-Path $repo 'scripts\setup-runtime.ps1')))
     throw "Runtime setup script is missing: scripts\setup-runtime.ps1"
 }
 
-Remove-Item -LiteralPath $publishDir, $setupPublishDir, $payloadStage, $payloadZip -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path $publishDir, $setupPublishDir, $payloadStage, $distDir | Out-Null
+function Convert-ToRelativePath([string] $Root, [string] $Path) {
+    $rootFullPath = [IO.Path]::GetFullPath($Root)
+    if (-not $rootFullPath.EndsWith([IO.Path]::DirectorySeparatorChar)) {
+        $rootFullPath += [IO.Path]::DirectorySeparatorChar
+    }
+
+    $pathFullPath = [IO.Path]::GetFullPath($Path)
+    $rootUri = [Uri]$rootFullPath
+    $pathUri = [Uri]$pathFullPath
+    return [Uri]::UnescapeDataString($rootUri.MakeRelativeUri($pathUri).ToString()).Replace('/', [IO.Path]::DirectorySeparatorChar)
+}
+
+Remove-Item -LiteralPath $publishDir, $setupPublishDir, $setupExternalPublishDir, $payloadStage, $externalSetupStage, $payloadZip -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Force -Path $publishDir, $setupPublishDir, $setupExternalPublishDir, $payloadStage, $externalSetupStage, $distDir | Out-Null
 
 dotnet publish $appProject `
     -c Release `
@@ -35,6 +62,7 @@ dotnet publish $appProject `
     -p:EnableCompressionInSingleFile=true `
     -p:DebugType=None `
     -p:DebugSymbols=false `
+    $versionProperties `
     -o $publishDir
 
 Copy-Item -LiteralPath (Join-Path $publishDir 'StarAI.PracticeClient.App.exe') -Destination (Join-Path $payloadStage 'StarAI.PracticeClient.App.exe') -Force
@@ -52,7 +80,24 @@ $installGuideTemplate = Get-Content -LiteralPath (Join-Path $repo 'docs\INSTALL_
 $readmeInstall = $installGuideTemplate.Replace('{{VERSION}}', $version)
 Set-Content -LiteralPath (Join-Path $payloadStage 'README-INSTALL.txt') -Value $readmeInstall -Encoding UTF8
 
-Remove-Item -LiteralPath $zipPath, $setupExePath -Force -ErrorAction SilentlyContinue
+$manifestPath = Join-Path $payloadStage 'install-manifest.json'
+$manifestEntries = Get-ChildItem -LiteralPath $payloadStage -Recurse -File |
+    ForEach-Object {
+        $relativePath = Convert-ToRelativePath $payloadStage $_.FullName
+        if (-not (
+            $relativePath -ieq 'install-manifest.json' -or
+            $relativePath -ieq 'install-state.json' -or
+            $relativePath.StartsWith("install-cache$([IO.Path]::DirectorySeparatorChar)", [StringComparison]::OrdinalIgnoreCase))) {
+            [pscustomobject]@{
+                RelativePath = $relativePath
+                Sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
+            }
+        }
+    } |
+    Sort-Object RelativePath
+@($manifestEntries) | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
+
+Remove-Item -LiteralPath $zipPath, $setupExePath, $setupFolderZipPath -Force -ErrorAction SilentlyContinue
 Compress-Archive -Path (Join-Path $payloadStage '*') -DestinationPath $payloadZip -Force
 Compress-Archive -Path (Join-Path $payloadStage '*') -DestinationPath $zipPath -Force
 
@@ -65,8 +110,37 @@ dotnet publish $setupProject `
     -p:EnableCompressionInSingleFile=true `
     -p:DebugType=None `
     -p:DebugSymbols=false `
+    $versionProperties `
     "-p:PayloadZipPath=$payloadZip" `
     -o $setupPublishDir
 
 Copy-Item -LiteralPath (Join-Path $setupPublishDir 'StarAI.PracticeClient.Setup.exe') -Destination $setupExePath -Force
-Get-Item -LiteralPath $setupExePath, $zipPath | Select-Object FullName, Length, LastWriteTime
+
+$setupObjRoot = Join-Path $repo 'src\StarAI.PracticeClient.Setup\obj\Release'
+Remove-Item -LiteralPath $setupObjRoot -Recurse -Force -ErrorAction SilentlyContinue
+dotnet publish $setupProject `
+    -c Release `
+    -r win-x64 `
+    --self-contained true `
+    -p:PublishSingleFile=true `
+    -p:IncludeNativeLibrariesForSelfExtract=true `
+    -p:EnableCompressionInSingleFile=true `
+    -p:DebugType=None `
+    -p:DebugSymbols=false `
+    $versionProperties `
+    -o $setupExternalPublishDir
+
+Copy-Item -LiteralPath (Join-Path $setupExternalPublishDir 'StarAI.PracticeClient.Setup.exe') -Destination (Join-Path $externalSetupStage "StarAI-PracticeClient-$version-setup.exe") -Force
+Copy-Item -LiteralPath $payloadZip -Destination (Join-Path $externalSetupStage 'payload.zip') -Force
+Copy-Item -LiteralPath (Join-Path $payloadStage 'README-INSTALL.txt') -Destination (Join-Path $externalSetupStage 'README-INSTALL.txt') -Force
+Compress-Archive -Path (Join-Path $externalSetupStage '*') -DestinationPath $setupFolderZipPath -Force
+
+$checksumPath = Join-Path $distDir "StarAI-PracticeClient-$version-checksums.txt"
+Get-Item -LiteralPath $setupExePath, $zipPath, $setupFolderZipPath |
+    ForEach-Object {
+        $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
+        "$hash  $($_.Name)"
+    } |
+    Set-Content -LiteralPath $checksumPath -Encoding ASCII
+
+Get-Item -LiteralPath $setupExePath, $zipPath, $setupFolderZipPath, $checksumPath | Select-Object FullName, Length, LastWriteTime
