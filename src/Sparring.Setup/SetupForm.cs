@@ -203,6 +203,9 @@ internal sealed class SetupForm : Form
     private void RenderPathPage()
     {
         var layout = CreateContentLayout();
+        layout.Dock = DockStyle.Top;
+        layout.AutoSize = true;
+        layout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));

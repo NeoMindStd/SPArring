@@ -49,6 +49,8 @@ public sealed class MainForm : Form
     private Label _hotkeyCommandMeta = null!;
     private Label _hotkeyDefaultText = null!;
     private Label _hotkeyCountLabel = null!;
+    private TextBox _hotkeyHelpText = null!;
+    private TextBox _hotkeyRuntimeHelpText = null!;
     private TextBox _replayRootText = null!;
     private TextBox _userMapRootText = null!;
     private TextBox _ladderMapRootText = null!;
@@ -86,9 +88,9 @@ public sealed class MainForm : Form
         _settings = _settingsStore.Load();
         Text = "Sparring";
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(980, 680);
-        Size = InitialWindowSize();
         AutoScaleMode = AutoScaleMode.Dpi;
+        MinimumSize = LauncherWindowSizing.MinimumSize;
+        Size = InitialWindowSize();
         BackColor = Color.FromArgb(5, 7, 5);
         ForeColor = Color.FromArgb(128, 218, 93);
 
@@ -217,9 +219,7 @@ public sealed class MainForm : Form
     private static Size InitialWindowSize()
     {
         var workingArea = Screen.PrimaryScreen?.WorkingArea ?? new Rectangle(0, 0, 1280, 720);
-        var width = Math.Clamp(1180, 980, Math.Max(980, workingArea.Width - 48));
-        var height = Math.Clamp(820, 680, Math.Max(680, workingArea.Height - 72));
-        return new Size(width, height);
+        return LauncherWindowSizing.InitialSize(workingArea);
     }
 
     private string CurrentVersion()
@@ -356,7 +356,7 @@ public sealed class MainForm : Form
         var refreshButton = CreateButton("새로고침", 1014, 20, 88, 32);
         refreshButton.Click += (_, _) => LoadCatalog();
 
-        _launchButton = CreateButton("스파링 시작", 922, 528, 180, 42);
+        _launchButton = CreateButton("스파링 시작", 922, 528, 220, 42);
         _launchButton.Font = new Font(Font.FontFamily, 11, FontStyle.Bold);
         _launchButton.Click += async (_, _) => await LaunchCurrentPlanAsync();
 
@@ -480,12 +480,12 @@ public sealed class MainForm : Form
         enemyLabel?.SetBounds(pad, 68, 74, 24);
         _enemyRaceFilter.SetBounds(pad + 84, 62, Math.Min(132, leftWidth - 90), 30);
         _searchBox.SetBounds(pad + 84, 98, leftWidth - 84, 30);
-        sortLabel?.SetBounds(pad, 138, 64, 24);
-        _sortCombo.SetBounds(pad + 84, 132, Math.Min(132, leftWidth - 90), 30);
+        sortLabel?.SetBounds(pad, 148, 64, 24);
+        _sortCombo.SetBounds(pad + 84, 142, Math.Min(132, leftWidth - 90), 30);
 
-        botLabel?.SetBounds(pad, 168, leftWidth, 24);
+        botLabel?.SetBounds(pad, 178, leftWidth, 24);
         var botHeight = compact ? Math.Max(160, Math.Min(260, height / 3)) : Math.Max(210, Math.Min(300, height - 500));
-        _botList.SetBounds(pad, 194, leftWidth, botHeight);
+        _botList.SetBounds(pad, 204, leftWidth, botHeight);
         mapLabel?.SetBounds(pad, _botList.Bottom + 22, leftWidth, 24);
         _mapList.SetBounds(pad, _botList.Bottom + 48, leftWidth, Math.Max(142, height - _botList.Bottom - 96));
 
@@ -495,12 +495,12 @@ public sealed class MainForm : Form
         _playerRaceCombo.SetBounds(topControlX + 86, 18, Math.Min(150, topControlWidth - 92), 30);
         buildLabel?.SetBounds(topControlX, 68, 76, 24);
         _buildCombo.SetBounds(topControlX + 86, 62, Math.Min(260, topControlWidth - 92), 30);
-        refreshButton?.SetBounds(width - pad - 92, 18, 92, 34);
+        refreshButton?.SetBounds(width - pad - 124, 18, 124, 34);
 
         _ladderRatingLabel.SetBounds(topControlX, 112, 118, 28);
         _ladderRatingText.SetBounds(topControlX + 126, 106, 70, 30);
-        _applyRatingButton.SetBounds(topControlX + 206, 104, 66, 34);
-        _resetRatingButton.SetBounds(topControlX + 282, 104, 106, 34);
+        _applyRatingButton.SetBounds(topControlX + 206, 104, 80, 34);
+        _resetRatingButton.SetBounds(topControlX + 296, 104, 160, 34);
         runtimeText?.SetBounds(topControlX, 150, Math.Max(320, rightWidth), 52);
 
         _difficultyLabel.SetBounds(middleX, compact ? 212 : 112, middleWidth, 74);
@@ -521,8 +521,9 @@ public sealed class MainForm : Form
         }
 
         _detailsText.SetBounds(detailsX, detailsY, Math.Max(300, detailsWidth), Math.Max(170, height - detailsY - 72));
-        _launchButton.SetBounds(width - pad - 184, height - 58, 184, 44);
-        page.AutoScrollMinSize = new Size(Math.Max(900, _detailsText.Right + pad), Math.Max(620, _launchButton.Bottom + 20));
+        const int launchButtonWidth = 220;
+        _launchButton.SetBounds(width - pad - launchButtonWidth, height - 58, launchButtonWidth, 44);
+        page.AutoScrollMinSize = new Size(Math.Max(900, _detailsText.Right + pad), Math.Max(620, _launchButton.Bottom + 8));
     }
 
     private TabPage BuildSettingsTab()
@@ -614,7 +615,7 @@ public sealed class MainForm : Form
         }
 
         var pad = 18;
-        var labelWidth = 130;
+        var labelWidth = 180;
         var gap = 12;
         var browseWidth = 90;
         var contentWidth = Math.Max(860, page.ClientSize.Width - (pad * 2));
@@ -654,7 +655,7 @@ public sealed class MainForm : Form
         _mouseScrollSpeedInput.SetBounds(inputX, 260, 82, 28);
         FindLabel(page, "키보드 스크롤")?.SetBounds(inputX + 124, 266, 110, 24);
         _keyboardScrollSpeedInput.SetBounds(inputX + 232, 260, 82, 28);
-        FindButton(page, "설정 저장")?.SetBounds(inputX, 314, 120, 34);
+        FindButton(page, "설정 저장")?.SetBounds(inputX, 314, 132, 34);
 
         foreach (var box in page.Controls.OfType<TextBox>().Where(box => box.Multiline && box.ReadOnly))
         {
@@ -687,7 +688,7 @@ public sealed class MainForm : Form
             RefreshHotkeyFilterButtons();
             RefreshHotkeyObjects();
         };
-        AddHotkeyFilterButtons(page, _hotkeyRaceFilter, _hotkeyRaceButtons, 342, 16, 74, 36);
+        AddHotkeyFilterButtons(page, _hotkeyRaceFilter, _hotkeyRaceButtons, 342, 16, 80, 36);
 
         page.Controls.Add(CreateLabel("분류", 298, 68));
         _hotkeyCategoryFilter = CreateCombo(-1000, -1000, 128);
@@ -700,15 +701,15 @@ public sealed class MainForm : Form
         };
         AddHotkeyFilterButtons(page, _hotkeyCategoryFilter, _hotkeyCategoryButtons, 342, 58, 82, 30);
 
-        var importButton = CreateButton("Sparring 기본값", 752, 18, 110, 32);
+        var importButton = CreateButton("기본값", 752, 18, 110, 32);
         importButton.Click += (_, _) => ImportHotkeys();
-        var importBattleNetButton = CreateButton("Battle.net", 872, 18, 110, 32);
+        var importBattleNetButton = CreateButton("배틀넷", 872, 18, 110, 32);
         importBattleNetButton.Click += (_, _) => ImportRemasteredHotkeysFromDetectedLocation();
-        var importFolderButton = CreateButton("폴더 지정", 992, 18, 112, 32);
+        var importFolderButton = CreateButton("폴더", 992, 18, 112, 32);
         importFolderButton.Click += (_, _) => ImportRemasteredHotkeysFromFolder();
-        var saveButton = CreateButton("CSV 저장", 872, 96, 110, 32);
+        var saveButton = CreateButton("CSV", 872, 96, 110, 32);
         saveButton.Click += (_, _) => SaveHotkeys(applyMpq: false);
-        var applyButton = CreateButton("런타임 반영", 992, 96, 112, 32);
+        var applyButton = CreateButton("반영", 992, 96, 112, 32);
         applyButton.Click += (_, _) => SaveHotkeys(applyMpq: true);
         page.Controls.Add(importButton);
         page.Controls.Add(importBattleNetButton);
@@ -819,22 +820,22 @@ public sealed class MainForm : Form
         page.Controls.Add(_hotkeyKeyText);
         page.Controls.Add(applyKeyButton);
 
-        var hotkeyHelp = CreateReadOnlyBlock(
+        _hotkeyHelpText = CreateReadOnlyBlock(
             730,
             370,
             366,
             142,
             "선택한 항목은 3x3 게임 명령 카드로 표시합니다.\r\nSparring 기본값은 내장 CSV를 사람 런타임으로 복사합니다.\r\nBattle.net/폴더 지정은 Remastered STR_* 핫키를 현재 작업 CSV에 반영합니다.\r\nCSV 저장은 작업 파일만 갱신합니다.\r\n런타임 반영은 사람 런타임 patch_rt.mpq에만 적용합니다.");
-        var runtimeHelp = CreateReadOnlyBlock(
+        _hotkeyRuntimeHelpText = CreateReadOnlyBlock(
             18,
             580,
             1078,
             38,
             "봇/AI 런타임에는 사람 핫키를 반영하지 않습니다. 사람 런타임만 커스텀 핫키를 사용합니다.");
-        page.Controls.Add(hotkeyHelp);
-        page.Controls.Add(runtimeHelp);
-        hotkeyHelp.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-        runtimeHelp.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+        page.Controls.Add(_hotkeyHelpText);
+        page.Controls.Add(_hotkeyRuntimeHelpText);
+        _hotkeyHelpText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        _hotkeyRuntimeHelpText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         LoadHotkeys();
         page.Resize += (_, _) => LayoutHotkeyTab(page);
         LayoutHotkeyTab(page);
@@ -867,31 +868,33 @@ public sealed class MainForm : Form
             detailsWidth = Math.Max(360, width - detailsX - pad);
         }
 
-        FindLabel(page, "검색")?.SetBounds(pad, 26, 44, 24);
-        _hotkeySearch.SetBounds(pad + 44, 20, Math.Max(160, leftWidth - 52), 30);
-        FindLabel(page, "종족")?.SetBounds(commandX, 24, 44, 24);
-        LayoutButtonGroup(_hotkeyRaceButtons, commandX + 48, 16, 74, 36);
-        FindLabel(page, "분류")?.SetBounds(commandX, 66, 44, 24);
+        const int hotkeyFilterLabelWidth = 88;
+        const int hotkeyFilterControlOffset = hotkeyFilterLabelWidth + 4;
+        FindLabel(page, "검색")?.SetBounds(pad, 26, hotkeyFilterLabelWidth, 24);
+        _hotkeySearch.SetBounds(pad + hotkeyFilterControlOffset, 20, Math.Max(160, leftWidth - hotkeyFilterControlOffset - 8), 30);
+        FindLabel(page, "종족")?.SetBounds(commandX, 24, hotkeyFilterLabelWidth, 24);
+        LayoutButtonGroup(_hotkeyRaceButtons, commandX + hotkeyFilterControlOffset, 16, 80, 36);
+        FindLabel(page, "분류")?.SetBounds(commandX, 66, hotkeyFilterLabelWidth, 24);
         var categoryBottom = compact
-            ? LayoutButtonWrap(_hotkeyCategoryButtons, commandX + 48, 58, width - pad, 82, 30, 6)
-            : LayoutButtonGroup(_hotkeyCategoryButtons, commandX + 48, 58, 82, 30);
+            ? LayoutButtonWrap(_hotkeyCategoryButtons, commandX + hotkeyFilterControlOffset, 58, width - pad, 82, 30, 6)
+            : LayoutButtonGroup(_hotkeyCategoryButtons, commandX + hotkeyFilterControlOffset, 58, 82, 30);
 
         var cardY = compact ? categoryBottom + 8 : 92;
-        FindLabel(page, "카드")?.SetBounds(commandX, cardY + 6, 44, 24);
+        FindLabel(page, "카드")?.SetBounds(commandX, cardY + 6, hotkeyFilterLabelWidth, 24);
         var pageBottom = compact
-            ? LayoutButtonWrap(_hotkeyPageButtons, commandX + 48, cardY, width - pad, 100, 30, 6)
-            : LayoutButtonGroup(_hotkeyPageButtons, commandX + 48, 92, 100, 30);
+            ? LayoutButtonWrap(_hotkeyPageButtons, commandX + hotkeyFilterControlOffset, cardY, width - pad, 100, 30, 6)
+            : LayoutButtonGroup(_hotkeyPageButtons, commandX + hotkeyFilterControlOffset, 92, 100, 30);
 
         var actionBottom = 128;
         if (compact)
         {
             actionBottom = LayoutButtonWrap(
                 [
-                    (FindButton(page, "Sparring 기본값"), 110),
-                    (FindButton(page, "Battle.net"), 108),
-                    (FindButton(page, "폴더 지정"), 112),
-                    (FindButton(page, "CSV 저장"), 108),
-                    (FindButton(page, "런타임 반영"), 112)
+                    (FindButton(page, "기본값"), 110),
+                    (FindButton(page, "배틀넷"), 110),
+                    (FindButton(page, "폴더"), 110),
+                    (FindButton(page, "CSV"), 110),
+                    (FindButton(page, "반영"), 110)
                 ],
                 commandX,
                 pageBottom + 8,
@@ -901,18 +904,18 @@ public sealed class MainForm : Form
         }
         else
         {
-            FindButton(page, "Sparring 기본값")?.SetBounds(width - 352, 18, 110, 32);
-            FindButton(page, "Battle.net")?.SetBounds(width - 234, 18, 108, 32);
-            FindButton(page, "폴더 지정")?.SetBounds(width - 118, 18, 112, 32);
-            FindButton(page, "CSV 저장")?.SetBounds(width - 234, 96, 108, 32);
-            FindButton(page, "런타임 반영")?.SetBounds(width - 118, 96, 112, 32);
+            FindButton(page, "기본값")?.SetBounds(width - 346, 18, 110, 32);
+            FindButton(page, "배틀넷")?.SetBounds(width - 228, 18, 110, 32);
+            FindButton(page, "폴더")?.SetBounds(width - 110, 18, 110, 32);
+            FindButton(page, "CSV")?.SetBounds(width - 228, 96, 110, 32);
+            FindButton(page, "반영")?.SetBounds(width - 110, 96, 110, 32);
         }
 
         _hotkeyCountLabel.SetBounds(pad, 98, leftWidth, 22);
 
         var contentTop = compact ? Math.Max(180, actionBottom + 36) : 154;
         FindLabel(page, "선택 항목")?.SetBounds(pad, contentTop - 26, leftWidth, 24);
-        _hotkeyObjectList.SetBounds(pad, contentTop, leftWidth, Math.Max(320, height - contentTop - 56));
+        _hotkeyObjectList.SetBounds(pad, contentTop, leftWidth, Math.Max(260, height - contentTop - 118));
         FindLabel(page, "명령")?.SetBounds(commandX, contentTop - 26, commandSize, 24);
         _hotkeyCommandPanel.SetBounds(commandX, contentTop, commandSize, commandSize);
 
@@ -924,37 +927,27 @@ public sealed class MainForm : Form
         _hotkeyDefaultText.SetBounds(detailsX, _hotkeyCommandMeta.Bottom + 4, detailsWidth, 56);
         FindLabel(page, "현재 키")?.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 20, 64, 24);
         _hotkeyKeyText.SetBounds(detailsX + 64, _hotkeyDefaultText.Bottom + 14, 84, 30);
-        FindButton(page, "키 적용")?.SetBounds(detailsX + 162, _hotkeyDefaultText.Bottom + 10, 90, 36);
+        FindButton(page, "키 적용")?.SetBounds(detailsX + 162, _hotkeyDefaultText.Bottom + 10, 110, 36);
 
-        TextBox? hotkeyHelpBox = null;
-        TextBox? runtimeHelpBox = null;
-        foreach (var box in page.Controls.OfType<TextBox>().Where(box => box.Multiline && box.ReadOnly))
-        {
-            if (box.Text.StartsWith("선택한 항목", StringComparison.Ordinal))
-            {
-                box.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 72, detailsWidth, 142);
-                hotkeyHelpBox = box;
-            }
-            else if (box.Text.StartsWith("봇/AI 런타임", StringComparison.Ordinal))
-            {
-                runtimeHelpBox = box;
-            }
-        }
+        _hotkeyHelpText.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 72, detailsWidth, 142);
 
-        if (runtimeHelpBox is not null)
-        {
-            var runtimeHelpTop = Math.Max(_hotkeyObjectList.Bottom + 10, _hotkeyCommandPanel.Bottom + 20);
-            if (hotkeyHelpBox is not null)
-            {
-                runtimeHelpTop = Math.Max(runtimeHelpTop, hotkeyHelpBox.Bottom + 14);
-            }
+        var runtimeHelpTop = Math.Max(_hotkeyObjectList.Bottom + 36, _hotkeyCommandPanel.Bottom + 36);
+        runtimeHelpTop = Math.Max(runtimeHelpTop, _hotkeyHelpText.Bottom + 36);
+        _hotkeyRuntimeHelpText.SetBounds(pad, runtimeHelpTop, width - (pad * 2), 42);
 
-            runtimeHelpBox.SetBounds(pad, runtimeHelpTop, width - (pad * 2), 42);
-        }
+        var scrollWidth = Math.Max(980, Math.Max(width, detailsX + detailsWidth + pad));
+        var scrollHeight = Math.Max(680, page.Controls.Cast<Control>().Max(control => control.Bottom) + 20);
+        page.AutoScrollMinSize = ShouldUseCompactScroll(page, 680, 430)
+            ? new Size(scrollWidth, scrollHeight)
+            : Size.Empty;
+    }
 
-        page.AutoScrollMinSize = new Size(
-            Math.Max(980, Math.Max(width, detailsX + detailsWidth + pad)),
-            Math.Max(680, page.Controls.Cast<Control>().Max(control => control.Bottom) + 20));
+    private bool ShouldUseCompactScroll(Control page, int visibleWidthThreshold, int visibleHeightThreshold)
+    {
+        var dpi = Math.Max(96, DeviceDpi);
+        var visibleWidth = page.ClientSize.Width * 96 / dpi;
+        var visibleHeight = page.ClientSize.Height * 96 / dpi;
+        return visibleWidth < visibleWidthThreshold || visibleHeight < visibleHeightThreshold;
     }
 
     private static int LayoutButtonGroup(IReadOnlyList<Button> buttons, int x, int y, int buttonWidth, int buttonHeight)
@@ -1084,7 +1077,7 @@ public sealed class MainForm : Form
         }
 
         var pad = 18;
-        FindButton(page, "새로고침")?.SetBounds(pad, 18, 96, 32);
+        FindButton(page, "새로고침")?.SetBounds(pad, 18, 124, 34);
         _historyGrid.SetBounds(
             pad,
             64,
@@ -1403,7 +1396,7 @@ public sealed class MainForm : Form
         for (var index = 0; index < source.Items.Count; index++)
         {
             var value = source.Items[index]?.ToString() ?? string.Empty;
-            var button = CreateButton(value, x + index * (buttonWidth + 6), y, buttonWidth, buttonHeight);
+            var button = CreateButton(HotkeyFilterDisplayText(value), x + index * (buttonWidth + 6), y, buttonWidth, buttonHeight);
             button.Tag = value;
             button.Click += (_, _) =>
             {
@@ -1416,6 +1409,20 @@ public sealed class MainForm : Form
         }
 
         RefreshHotkeyFilterButtons();
+    }
+
+    private static string HotkeyFilterDisplayText(string value)
+    {
+        return value switch
+        {
+            "Terran" => "Terr",
+            "Protoss" => "Prot",
+            "Common" => "공통",
+            "업그레이드" => "업글",
+            HotkeyCommandLayout.PageBasicStructures => "기본",
+            HotkeyCommandLayout.PageAdvancedStructures => "고급",
+            _ => value
+        };
     }
 
     private void RefreshHotkeyFilterButtons()
@@ -2471,6 +2478,13 @@ public sealed class MainForm : Form
                 PracticeSessionLaunchOptions.Defaults()));
             var borderlessApplied = false;
 
+            if (report.Ai.StarCraftProcessId is not null)
+            {
+                _aiMinimizeKeeper = new StarCraftWindowMinimizeOnceWhenReady(
+                    report.Ai.StarCraftProcessId.Value,
+                    TimeSpan.FromSeconds(18));
+            }
+
             if (report.Player.StarCraftProcessId is not null)
             {
                 borderlessApplied = cncDdrawHandlesPlayerDisplay ||
@@ -2478,13 +2492,6 @@ public sealed class MainForm : Form
                         report.Player.StarCraftProcessId.Value,
                         screenBounds,
                         TimeSpan.FromSeconds(8)).Applied);
-            }
-
-            if (report.Ai.StarCraftProcessId is not null)
-            {
-                _aiMinimizeKeeper = new StarCraftWindowMinimizeOnceWhenReady(
-                    report.Ai.StarCraftProcessId.Value,
-                    TimeSpan.FromSeconds(18));
             }
 
             if (report.Player.StarCraftProcessId is not null && !cncDdrawHandlesPlayerDisplay)
@@ -3115,7 +3122,8 @@ public sealed class MainForm : Form
         return new Label
         {
             Text = text,
-            AutoSize = true,
+            AutoSize = false,
+            Size = new Size(120, 24),
             ForeColor = Color.FromArgb(128, 218, 93),
             Location = new Point(x, y)
         };

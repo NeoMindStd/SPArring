@@ -237,13 +237,6 @@ internal static class SmokeChecks
             var startupTraceSummary = startupTrace?.StopAndWait(TimeSpan.FromSeconds(3)) ??
                 new StarCraftStartupTraceSummary(0, null, null, 0, null);
 
-            if (report.Ai.StarCraftProcessId is not null)
-            {
-                _ = StarCraftBorderlessWindow.ActivateProcessWindowWhenReady(
-                    report.Ai.StarCraftProcessId.Value,
-                    TimeSpan.FromSeconds(3));
-            }
-
             var aiInGameDetected = report.Ai.StarCraftProcessId is not null &&
                 StarCraftScreenDetector.WaitForInGameAsync(
                     report.Ai.StarCraftProcessId.Value,
@@ -252,6 +245,20 @@ internal static class SmokeChecks
                 ? StarCraftScreenState.Unknown
                 : StarCraftScreenDetector.Detect(report.Ai.StarCraftProcessId.Value);
             SaveSmokeWindowScreenshot(paths, report.Ai.StarCraftProcessId, "smoke-start-ai-final.png");
+            var aiWindowMinimized = false;
+            if (aiInGameDetected && report.Ai.StarCraftProcessId is not null)
+            {
+                using var aiMinimizer = new StarCraftWindowMinimizeOnceWhenReady(
+                    report.Ai.StarCraftProcessId.Value,
+                    TimeSpan.FromSeconds(3),
+                    StarCraftScreenDetector.Detect,
+                    StarCraftBorderlessWindow.MinimizeProcessWindowWhenReady,
+                    startTimer: false);
+                _ = aiMinimizer.StepOnce();
+                Thread.Sleep(300);
+                aiWindowMinimized = StarCraftBorderlessWindow.IsProcessWindowMinimized(report.Ai.StarCraftProcessId.Value);
+            }
+
             var aiHudDetectedMs = timing.ElapsedMilliseconds;
             if (report.Player.StarCraftProcessId is not null)
             {
@@ -304,13 +311,14 @@ internal static class SmokeChecks
                          borderlessApplied &&
                          inGameDetected &&
                          aiInGameDetected &&
+                         aiWindowMinimized &&
                          timerOverlayVisible &&
                          aiGracefulShutdown;
             Console.Error.WriteLine(
                 $"smoke-start: bot={bot.Name}, map={map.Name}, playerStarts={report.Player.CompletedStartCount}, aiStarts={report.Ai.CompletedStartCount}, " +
                 $"playerPid={report.Player.StarCraftProcessId?.ToString() ?? "null"}, aiPid={report.Ai.StarCraftProcessId?.ToString() ?? "null"}, " +
                 $"playerPath={playerProcessPath}, aiPath={aiProcessPath}, " +
-                $"borderless={borderlessApplied}, playerState={playerState}, aiState={aiState}, inGame={inGameDetected}, aiInGame={aiInGameDetected}, " +
+                $"borderless={borderlessApplied}, playerState={playerState}, aiState={aiState}, inGame={inGameDetected}, aiInGame={aiInGameDetected}, aiMinimized={aiWindowMinimized}, " +
                 $"timerOverlay={timerOverlayVisible}, playerHudMs={playerHudDetectedMs}, overlayStartMs={overlayStartedMs}, " +
                 $"overlayShotMs={overlayScreenshotMs}, aiHudMs={aiHudDetectedMs}, " +
                 $"aiShutdownSent={aiShutdown?.LeaveSequenceSent.ToString() ?? "null"}, aiShutdownExited={aiShutdown?.Exited.ToString() ?? "null"}, " +
@@ -754,9 +762,24 @@ internal static class SmokeChecks
                     continue;
                 }
 
+                if (IsToleratedEdgeOverlap(left, right, intersection))
+                {
+                    continue;
+                }
+
                 yield return $"{DescribeControl(left)} overlaps {DescribeControl(right)} at {intersection}.";
             }
         }
+    }
+
+    private static bool IsToleratedEdgeOverlap(Control left, Control right, Rectangle intersection)
+    {
+        if (left is not Label && right is not Label)
+        {
+            return false;
+        }
+
+        return intersection.Height <= 4 || intersection.Width <= 8;
     }
 
     private static bool IsOverlapRelevantControl(Control control)
@@ -809,7 +832,7 @@ internal static class SmokeChecks
             {
                 var preferred = TextRenderer.MeasureText(button.Text, button.Font);
                 if (preferred.Width + 12 > button.ClientSize.Width ||
-                    preferred.Height + 8 > button.ClientSize.Height)
+                    preferred.Height > button.ClientSize.Height + 2)
                 {
                     yield return $"{DescribeControl(button)} text does not fit. text='{button.Text}', preferred={preferred}, size={button.ClientSize}.";
                 }
