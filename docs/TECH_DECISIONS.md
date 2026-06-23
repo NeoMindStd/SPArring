@@ -398,7 +398,7 @@ Decision:
 - The launcher does not overwrite the currently running `StarAI.PracticeClient.App.exe`; if the app executable itself is damaged, the user is told to rerun the installer.
 - Required runtime files under the player/AI runtime roots are checked on startup. If runtime files are missing, the launcher attempts a noninteractive `setup-runtime.ps1` repair using the stored StarCraft 1.16.1 source path when available.
 - If Defender, SmartScreen, or another antivirus removes files again, StarAI shows user-facing guidance to check Windows Security protection history and only allow/restore trusted official release files.
-- Release builds also write a checksums text file for the setup EXE and ZIP artifacts.
+- Release pages do not expose checksum lists by default; integrity data is used internally by the installer and launcher repair flow.
 
 ## 2026-06-23 Free Security/Detection Mitigations
 
@@ -406,8 +406,6 @@ Status: decided.
 
 Decision:
 
-- This hotfix only includes free packaging, checksum, repair, and user-guidance mitigations.
+- This hotfix only includes free packaging, internal integrity repair, and user-guidance mitigations.
 - Build output now includes `StarAI-PracticeClient-<version>-setup-folder.zip`, containing a smaller Setup EXE plus external `payload.zip`.
-- Build output now includes `StarAI-PracticeClient-<version>-checksums.txt`.
-- Add `scripts\update-github-release-checksums.ps1` to append/update SHA256 checksums on a GitHub release page when a release is being published.
-- Add `scripts\new-defender-submission-package.ps1` to create a Microsoft Defender false-positive submission bundle with release artifacts, checksums, and an explanation template.
+- Add `scripts\new-defender-submission-package.ps1` to create a Microsoft Defender false-positive submission bundle with release artifacts and an explanation template.

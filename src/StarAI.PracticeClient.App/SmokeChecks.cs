@@ -32,6 +32,18 @@ internal static class SmokeChecks
             return 1;
         }
 
+        var mapIssues = ValidateBundledLadderMaps(catalog, paths);
+        if (mapIssues.Count > 0)
+        {
+            Console.Error.WriteLine("smoke: bundled ladder map issues were found:");
+            foreach (var issue in mapIssues)
+            {
+                Console.Error.WriteLine("- " + issue);
+            }
+
+            return 1;
+        }
+
         var launcherUi = CaptureLauncherScreenshots(paths);
         if (!launcherUi.HasMapPreviewBox || !launcherUi.HasMapPreviewImage)
         {
@@ -39,7 +51,60 @@ internal static class SmokeChecks
             return 1;
         }
 
+        if (launcherUi.LayoutIssues.Count > 0)
+        {
+            Console.Error.WriteLine("smoke: launcher UI layout issues were found:");
+            foreach (var issue in launcherUi.LayoutIssues)
+            {
+                Console.Error.WriteLine("- " + issue);
+            }
+
+            return 1;
+        }
+
         return 0;
+    }
+
+    private static IReadOnlyList<string> ValidateBundledLadderMaps(PracticeCatalog catalog, PracticePaths paths)
+    {
+        var issues = new List<string>();
+        var requiredNames = new[]
+        {
+            "(4)Fighting Spirit 1.4",
+            "(4)Allegro 1.1",
+            "(4)Retro 1.2",
+            "(4)Polypoid 1.65",
+            "(2)Eclipse",
+            "(2)Cross Game"
+        };
+
+        foreach (var requiredName in requiredNames)
+        {
+            var map = catalog.Maps.FirstOrDefault(candidate =>
+                candidate.Name.Equals(requiredName, StringComparison.OrdinalIgnoreCase));
+            if (map is null)
+            {
+                issues.Add($"{requiredName}: catalog entry missing");
+                continue;
+            }
+
+            var mapPath = map.SourcePath ?? Path.Combine(paths.AssetRoot, "maps", map.FileName);
+            if (!File.Exists(mapPath))
+            {
+                issues.Add($"{requiredName}: map file missing ({mapPath})");
+            }
+
+            if (!string.IsNullOrWhiteSpace(map.ImagePath))
+            {
+                var imagePath = Path.Combine(paths.AssetRoot, map.ImagePath);
+                if (!File.Exists(imagePath))
+                {
+                    issues.Add($"{requiredName}: preview image missing ({imagePath})");
+                }
+            }
+        }
+
+        return issues;
     }
 
     public static int RunStart(IReadOnlyList<string>? args = null)
@@ -534,9 +599,8 @@ internal static class SmokeChecks
         var screenshotDirectory = Path.Combine(paths.RepositoryRoot, "artifacts", "screenshots");
         Directory.CreateDirectory(screenshotDirectory);
 
-        var form = new MainForm
+        using var form = new MainForm
         {
-            Size = new Size(1180, 820),
             StartPosition = FormStartPosition.Manual,
             Location = new Point(-32000, -32000),
             ShowInTaskbar = false
@@ -544,36 +608,55 @@ internal static class SmokeChecks
         try
         {
             CreateControlTree(form);
-            form.PerformLayout();
             _ = ShowWindow(form.Handle, ShowWindowNoActivate);
-            Application.DoEvents();
-            SelectFirstConcreteItem(form, "MapList");
-            Application.DoEvents();
-            var mapPreviewBox = FindControls<PictureBox>(form)
-                .FirstOrDefault(control => string.Equals(control.Name, "MapPreviewBox", StringComparison.Ordinal));
-            var summary = new LauncherUiSmokeSummary(
-                HasMapPreviewBox: mapPreviewBox is not null,
-                HasMapPreviewImage: mapPreviewBox?.Image is not null);
-            SaveFormScreenshot(form, Path.Combine(screenshotDirectory, "starai-launcher-smoke.png"));
-
-            var modeCombo = FindControls<ComboBox>(form)
-                .FirstOrDefault(combo => combo.Items.Cast<object>().Any(item => item.ToString() == "래더"));
-            if (modeCombo is not null)
+            var layoutIssues = new List<string>();
+            var hasMapPreviewBox = false;
+            var hasMapPreviewImage = false;
+            var sizes = new[]
             {
-                modeCombo.SelectedItem = "래더";
+                ("small", new Size(980, 700)),
+                ("default", new Size(1180, 820)),
+                ("wide", new Size(1600, 900))
+            };
+
+            foreach (var (name, size) in sizes)
+            {
+                form.Size = size;
+                form.PerformLayout();
                 Application.DoEvents();
-                SaveFormScreenshot(form, Path.Combine(screenshotDirectory, "starai-launcher-ladder-smoke.png"));
+                SelectFirstConcreteItem(form, "MapList");
+                Application.DoEvents();
+                var mapPreviewBox = FindControls<PictureBox>(form)
+                    .FirstOrDefault(control => string.Equals(control.Name, "MapPreviewBox", StringComparison.Ordinal));
+                hasMapPreviewBox |= mapPreviewBox is not null;
+                hasMapPreviewImage |= mapPreviewBox?.Image is not null;
+                layoutIssues.AddRange(FindLayoutIssues(form).Select(issue => $"{name}: {issue}"));
+                SaveFormScreenshot(form, Path.Combine(screenshotDirectory, $"starai-launcher-{name}-smoke.png"));
+
+                var modeCombo = FindControls<ComboBox>(form)
+                    .FirstOrDefault(combo => combo.Items.Cast<object>().Any(item => item.ToString() == "래더"));
+                if (modeCombo is not null)
+                {
+                    modeCombo.SelectedItem = "래더";
+                    Application.DoEvents();
+                    layoutIssues.AddRange(FindLayoutIssues(form).Select(issue => $"{name} ladder: {issue}"));
+                    SaveFormScreenshot(form, Path.Combine(screenshotDirectory, $"starai-launcher-{name}-ladder-smoke.png"));
+                }
             }
 
-            var tabs = form.Controls.OfType<TabControl>().FirstOrDefault();
+            var tabs = FindControls<TabControl>(form).FirstOrDefault();
             if (tabs is not null && tabs.TabPages.Count > 2)
             {
                 tabs.SelectedIndex = 2;
                 Application.DoEvents();
+                layoutIssues.AddRange(FindLayoutIssues(form).Select(issue => $"hotkeys: {issue}"));
                 SaveFormScreenshot(form, Path.Combine(screenshotDirectory, "starai-launcher-hotkeys-smoke.png"));
             }
 
-            return summary;
+            return new LauncherUiSmokeSummary(
+                HasMapPreviewBox: hasMapPreviewBox,
+                HasMapPreviewImage: hasMapPreviewImage,
+                LayoutIssues: layoutIssues);
         }
         finally
         {
@@ -603,6 +686,61 @@ internal static class SmokeChecks
         {
             CreateControlTree(child);
         }
+    }
+
+    private static IEnumerable<string> FindLayoutIssues(Control root)
+    {
+        foreach (Control child in root.Controls)
+        {
+            if (!child.Visible)
+            {
+                continue;
+            }
+
+            if (child.Parent is { } parent &&
+                parent is not ScrollableControl { AutoScroll: true })
+            {
+                var parentBounds = parent.ClientRectangle;
+                if (child.Right > parentBounds.Right + 4 || child.Bottom > parentBounds.Bottom + 4)
+                {
+                    yield return $"{DescribeControl(child)} exceeds parent bounds {parentBounds}.";
+                }
+            }
+
+            if (child is Button button && !string.IsNullOrWhiteSpace(button.Text))
+            {
+                var preferred = TextRenderer.MeasureText(button.Text, button.Font);
+                if (preferred.Width + 12 > button.ClientSize.Width ||
+                    preferred.Height + 8 > button.ClientSize.Height)
+                {
+                    yield return $"{DescribeControl(button)} text does not fit. text='{button.Text}', preferred={preferred}, size={button.ClientSize}.";
+                }
+            }
+
+            if (child is ComboBox combo)
+            {
+                if (combo.DrawMode != DrawMode.OwnerDrawFixed)
+                {
+                    yield return $"{DescribeControl(combo)} uses the default white dropdown rendering.";
+                }
+
+                if (combo.BackColor.GetBrightness() > 0.18f)
+                {
+                    yield return $"{DescribeControl(combo)} dropdown background is too bright. color={combo.BackColor}.";
+                }
+            }
+
+            foreach (var issue in FindLayoutIssues(child))
+            {
+                yield return issue;
+            }
+        }
+    }
+
+    private static string DescribeControl(Control control)
+    {
+        var text = string.IsNullOrWhiteSpace(control.Text) ? control.Name : control.Text;
+        return $"{control.GetType().Name}({text})";
     }
 
     private static void SelectFirstConcreteItem(Control root, string controlName)
@@ -640,7 +778,10 @@ internal static class SmokeChecks
         }
     }
 
-    private sealed record LauncherUiSmokeSummary(bool HasMapPreviewBox, bool HasMapPreviewImage);
+    private sealed record LauncherUiSmokeSummary(
+        bool HasMapPreviewBox,
+        bool HasMapPreviewImage,
+        IReadOnlyList<string> LayoutIssues);
 
     private const int ShowWindowHide = 0;
     private const int ShowWindowNoActivate = 4;

@@ -41,6 +41,20 @@ if ($coachMatches) {
     throw 'CoachAI reference found in source or tests.'
 }
 
+$setupForm = Join-Path $repo 'src\StarAI.PracticeClient.Setup\SetupForm.cs'
+if (Select-String -LiteralPath $setupForm -Pattern 'ProgressBarStyle.Marquee|SetBusy' -Quiet) {
+    throw 'Setup progress must use determinate progress, not marquee/busy animation.'
+}
+
+$buildRelease = Join-Path $repo 'scripts\build-release.ps1'
+if (Select-String -LiteralPath $buildRelease -Pattern 'checksums\.txt' -Quiet) {
+    throw 'Release build must not generate a public checksum text asset.'
+}
+
+if (Test-Path -LiteralPath (Join-Path $repo 'scripts\update-github-release-checksums.ps1')) {
+    throw 'Release checksum updater script must not be restored.'
+}
+
 Invoke-NativeChecked -Name 'dotnet build' -Command { dotnet build $solution -c Release --nologo }
 Invoke-NativeChecked -Name 'launcher smoke' -Command { dotnet run --project $appProject -c Release -- --smoke }
 

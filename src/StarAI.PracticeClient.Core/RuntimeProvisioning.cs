@@ -12,6 +12,8 @@ public static partial class RuntimeProvisioner
     {
         Directory.CreateDirectory(plan.Player.RuntimeRoot);
         Directory.CreateDirectory(plan.Ai.RuntimeRoot);
+        EnsureRuntimeWorkDirectories(plan.Player.RuntimeRoot);
+        EnsureRuntimeWorkDirectories(plan.Ai.RuntimeRoot);
 
         var playerMap = ProvisionMap(plan.Map, plan.Player.RuntimeRoot);
         _ = ProvisionMap(plan.Map, plan.Ai.RuntimeRoot);
@@ -50,6 +52,19 @@ public static partial class RuntimeProvisioner
         }
 
         return aiRoot;
+    }
+
+    private static void EnsureRuntimeWorkDirectories(string runtimeRoot)
+    {
+        foreach (var relativePath in new[]
+        {
+            Path.Combine("bwapi-data", "write"),
+            Path.Combine("bwapi-data", "logs"),
+            "Errors"
+        })
+        {
+            Directory.CreateDirectory(Path.Combine(runtimeRoot, relativePath));
+        }
     }
 
     public static ProvisionedMap ProvisionMap(PracticeMap map, string runtimeRoot)

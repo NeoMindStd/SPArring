@@ -135,12 +135,4 @@ Copy-Item -LiteralPath $payloadZip -Destination (Join-Path $externalSetupStage '
 Copy-Item -LiteralPath (Join-Path $payloadStage 'README-INSTALL.txt') -Destination (Join-Path $externalSetupStage 'README-INSTALL.txt') -Force
 Compress-Archive -Path (Join-Path $externalSetupStage '*') -DestinationPath $setupFolderZipPath -Force
 
-$checksumPath = Join-Path $distDir "StarAI-PracticeClient-$version-checksums.txt"
-Get-Item -LiteralPath $setupExePath, $zipPath, $setupFolderZipPath |
-    ForEach-Object {
-        $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
-        "$hash  $($_.Name)"
-    } |
-    Set-Content -LiteralPath $checksumPath -Encoding ASCII
-
-Get-Item -LiteralPath $setupExePath, $zipPath, $setupFolderZipPath, $checksumPath | Select-Object FullName, Length, LastWriteTime
+Get-Item -LiteralPath $setupExePath, $zipPath, $setupFolderZipPath | Select-Object FullName, Length, LastWriteTime

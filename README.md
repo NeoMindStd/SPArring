@@ -5,7 +5,7 @@ StarAI Practice Client는 StarCraft 1.16.1 + BWAPI 기반의 로컬 AI 스파링
 ## 쉬운 설치
 
 1. StarCraft 1.16.1 원본 클라이언트를 먼저 준비합니다. 자세한 기준은 아래 [StarCraft 1.16.1 준비](#starcraft-1161-준비)를 참고하세요.
-2. GitHub Releases에서 최신 `StarAI-PracticeClient-1.3.4-setup.exe`를 다운로드합니다.
+2. GitHub Releases에서 최신 `StarAI-PracticeClient-1.4.0-setup.exe`를 다운로드합니다.
 3. 설치 프로그램을 실행합니다.
 4. 선택 구성요소를 확인합니다. VC++ x86 런타임은 봇 호환성을 위해 권장하고, Java 런타임은 커스텀 단축키 반영에 필요합니다.
 5. 설치 경로를 확인하고, StarCraft 1.16.1 원본 폴더를 지정합니다.
@@ -42,9 +42,7 @@ StarAI 릴리즈 패키지는 StarCraft 게임 본체를 포함하지 않습니�
 
 일부 봇 DLL/EXE, BWAPI 계열 도구, 오래된 32비트 런타임 파일은 Windows Defender 또는 백신에서 오탐으로 차단될 수 있습니다. 설치 또는 실행 중 파일이 사라지거나 봇이 바로 종료되면 Windows 보안의 `보호 기록`에서 차단 항목을 확인한 뒤, 신뢰 가능한 StarAI 설치 파일/설치 폴더라면 복원 또는 허용 처리해 주세요.
 
-StarAI 런처는 시작할 때 설치 파일 체크섬과 필수 런타임 파일을 확인합니다. 설치 파일이 누락되었거나 손상된 경우 설치 시 저장한 복구 캐시에서 가능한 파일만 자동 복구하고, 계속 사라지는 파일이 있으면 Windows 보안에서 격리/차단 여부를 확인하라는 안내를 표시합니다.
-
-릴리즈 페이지에 함께 제공되는 SHA256 체크섬으로 다운로드 파일이 공식 산출물과 일치하는지 확인할 수 있습니다.
+StarAI 런처는 시작할 때 설치 파일과 필수 런타임 파일을 확인합니다. 설치 파일이 누락되었거나 손상된 경우 설치 시 저장한 복구 캐시에서 가능한 파일만 자동 복구하고, 계속 사라지는 파일이 있으면 Windows 보안에서 격리/차단 여부를 확인하라는 안내를 표시합니다.
 
 반복 차단되는 경우 Windows 보안에서 StarAI 설치 폴더와 런타임 폴더를 예외로 추가할 수 있습니다. 예외 추가 방법은 [Microsoft Windows 보안 예외 안내](https://support.microsoft.com/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)를 참고하세요. 내려받은 파일의 출처가 불분명하거나 StarAI 릴리즈 파일이 아니라면 예외 처리하지 말고 삭제하는 쪽이 안전합니다.
 
@@ -87,7 +85,7 @@ StarAI 봇/맵 기본 카탈로그는 릴리즈 패키지에 포함됩니다. �
 ## English Install Guide
 
 1. Prepare a legally obtained StarCraft 1.16.1 source folder first. StarAI does not redistribute the game files.
-2. Download `StarAI-PracticeClient-1.3.4-setup.exe` from GitHub Releases.
+2. Download `StarAI-PracticeClient-1.4.0-setup.exe` from GitHub Releases.
 3. Run the installer.
 4. Review optional prerequisites. VC++ x86 is recommended for older native bots; Java is needed for custom hotkey MPQ patching.
 5. Choose the install folder and select the StarCraft 1.16.1 source folder.

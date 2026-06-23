@@ -71,6 +71,7 @@ public sealed class ChaosLauncherConfigurator
     public const string EnabledKey = @"Software\Chaoslauncher\PluginsEnabled";
     public const string RunIncompatibleKey = @"Software\Chaoslauncher\PluginsRunIncompatible";
     public const string StarCraftInstallKey = @"SOFTWARE\WOW6432Node\Blizzard Entertainment\StarCraft";
+    public const string StarCraftUserSettingsKey = @"Software\Blizzard Entertainment\StarCraft";
     public const string BwapiPlugin = "BWAPI 4.4.0 Injector [RELEASE]";
     public const string BwapiDebugPlugin = "BWAPI 4.4.0 Injector [DEBUG]";
     public const string WModePlugin = "W-MODE 1.02";
@@ -128,6 +129,9 @@ public sealed class ChaosLauncherConfigurator
             Dword(RegistryHiveKind.CurrentUser, RunIncompatibleKey, BwapiPlugin, 0),
             Dword(RegistryHiveKind.CurrentUser, RunIncompatibleKey, BwapiDebugPlugin, 0),
             Dword(RegistryHiveKind.CurrentUser, RunIncompatibleKey, ApmAlertPlugin, 0),
+            Dword(RegistryHiveKind.CurrentUser, StarCraftUserSettingsKey, "intro", 0x200),
+            Dword(RegistryHiveKind.CurrentUser, StarCraftUserSettingsKey, "introX", 0),
+            Dword(RegistryHiveKind.CurrentUser, StarCraftUserSettingsKey, "tip", 0),
             String(RegistryHiveKind.LocalMachine, StarCraftInstallKey, "InstallPath", root),
             String(RegistryHiveKind.LocalMachine, StarCraftInstallKey, "Program", starCraftExe)
         ];

@@ -52,7 +52,7 @@ C:\starai
 
 일부 봇 DLL/EXE, BWAPI 계열 도구, 오래된 32비트 런타임 파일은 Windows Defender 또는 백신에서 오탐으로 차단될 수 있습니다.
 
-StarAI 런처는 시작할 때 설치 파일 체크섬과 필수 런타임 파일을 확인합니다. 파일이 누락되었거나 손상된 경우 설치 시 저장한 복구 캐시에서 가능한 파일만 자동 복구하고, 복구할 수 없는 파일이 있으면 Windows 보안 확인 안내를 표시합니다.
+StarAI 런처는 시작할 때 설치 파일과 필수 런타임 파일을 확인합니다. 파일이 누락되었거나 손상된 경우 설치 시 저장한 복구 캐시에서 가능한 파일만 자동 복구하고, 복구할 수 없는 파일이 있으면 Windows 보안 확인 안내를 표시합니다.
 
 차단이 의심되면 Windows 보안의 `보호 기록`에서 항목을 확인하고, 신뢰 가능한 StarAI 릴리즈 파일/설치 폴더라면 복원 또는 허용 처리해 주세요. 반복 차단되는 경우 [Microsoft Windows 보안 예외 안내](https://support.microsoft.com/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)를 참고해 StarAI 설치 폴더와 `C:\starai\SC116AI`, `C:\starai\SC116AI_ai`를 예외로 추가할 수 있습니다.
 

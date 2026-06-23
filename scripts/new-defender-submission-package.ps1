@@ -44,11 +44,6 @@ else {
     }
 }
 
-$checksum = Join-Path $dist "StarAI-PracticeClient-$Version-checksums.txt"
-if (Test-Path -LiteralPath $checksum -PathType Leaf) {
-    $artifacts.Add($checksum)
-}
-
 foreach ($path in $artifacts) {
     Copy-Item -LiteralPath $path -Destination (Join-Path $packageRoot (Split-Path -Leaf $path)) -Force
 }
@@ -74,11 +69,10 @@ StarAI Practice Client는 StarCraft 1.16.1 + BWAPI 기반 로컬 AI 스파링 �
 ## 포함 자료
 
 - 탐지된 파일 또는 대표 설치 파일
-- SHA256 checksums
 
 ## 재현/확인 요청
 
-첨부 파일이 공식 릴리즈 산출물과 일치하는지 SHA256으로 확인한 뒤, 오탐 여부를 재분석해 주세요.
+첨부 파일은 공식 GitHub 릴리즈에서 내려받은 StarAI Practice Client 산출물입니다. 오탐 여부를 재분석해 주세요.
 "@
 
 Set-Content -LiteralPath (Join-Path $packageRoot 'false-positive-report.md') -Value $report -Encoding UTF8

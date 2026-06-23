@@ -7,7 +7,7 @@ Last updated: 2026-06-21
 - Repo: `C:\starai\StarAI.PracticeClient`
 - User entrypoint: desktop/start-menu shortcut targeting `StarAI.PracticeClient.App.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.3.4`
+- Current version: `1.4.0`
 - Last verified implementation state: 1.3.3 release candidate with DPI/large-font-safe Windows-wizard-style Setup EXE, default app install folder `C:\starai`, optional VC++/Java prerequisites, installer-selected StarCraft 1.16.1 source validation, payload checksum verification, required runtime file verification, EXE-direct shortcuts, automatic player/AI runtime provisioning, dynamic app-root asset discovery, and existing compatibility filters.
 - Current WIP after 1.3.3: none expected in the release worktree after release. The original `C:\starai\StarAI.PracticeClient` folder may still contain unrelated local WIP; do not reset it unless the user explicitly asks.
 
@@ -464,7 +464,7 @@ Important observations:
   - if player/AI runtime files are missing, launcher attempts noninteractive `scripts\setup-runtime.ps1` using the stored StarCraft source path when available.
   - if repair fails or files continue to disappear, launcher displays Windows Defender/protection-history guidance.
 - `PracticePaths.ResolveApplicationRoot()` now treats a folder with `install-manifest.json` as an app root, so data-folder loss can still be repaired.
-- `scripts\build-release.ps1` now writes `install-manifest.json` into the payload stage and `StarAI-PracticeClient-<version>-checksums.txt` into `artifacts\release\dist`.
+- `scripts\build-release.ps1` writes `install-manifest.json` into the payload stage for installer/launcher repair, but does not create a public checksum text asset.
 - Added regression tests:
   - `InstallationVerifierTests` for manifest save/load, metadata exclusion, zip repair, and runtime missing-file reporting.
   - `StartupIntegrityCheckTests` for startup payload repair, cache-missing unresolved reporting, runtime repair callback, and Defender guidance text.
@@ -472,11 +472,31 @@ Important observations:
 ## 2026-06-23 Free Security/SmartScreen Mitigation WIP
 
 - Added assembly metadata defaults in `Directory.Build.props`.
-- This hotfix only includes free packaging, checksum, repair, and user-guidance mitigations.
+- This hotfix only includes free packaging, internal integrity repair, and user-guidance mitigations.
 - `scripts\build-release.ps1` now:
   - passes version/file-version metadata into app/setup publishes.
   - produces `StarAI-PracticeClient-<version>-setup-folder.zip`, a small setup EXE plus external `payload.zip`.
-  - produces `StarAI-PracticeClient-<version>-checksums.txt`.
 - Setup now supports `payload.zip` placed next to the setup EXE, not only embedded payload resources or a `payload` folder.
-- Added `scripts\update-github-release-checksums.ps1` for release-page SHA256 updates.
+- Release pages should not expose checksum lists by default; integrity data is internal to setup/launcher repair.
 - Added `scripts\new-defender-submission-package.ps1` for Microsoft Defender false-positive submission bundles.
+
+## 2026-06-23 1.4.0 Responsive UX Follow-up
+
+- User-facing release/README/install text must stay focused on normal StarCraft users. Do not add chat-specific notes, private validation details, or public checksum sections to release pages.
+- Launcher UX:
+  - launcher shell and main tabs resize with the window instead of leaving fixed-position dead space.
+  - game tab is checked at small/default/wide sizes in launcher smoke.
+  - combo boxes use a dark StarCraft-like owner-drawn style; smoke fails if default white dropdown rendering returns.
+  - last mode, race filters, player race, bot, and map selection are persisted in `%APPDATA%\StarAI.PracticeClient\settings.json`.
+  - bot descriptions summarize English-only notes into Korean style/build/player-facing text.
+- In-game overlay:
+  - overlay width is measured from the actual timer/APM text and clamped to the game bounds to avoid clipping at different resolutions/DPI.
+- Setup:
+  - setup progress is determinate. `ProgressBarStyle.Marquee` / `SetBusy` is disallowed by `scripts\smoke.ps1`.
+  - file copy and dependency download progress use actual copied/downloaded bytes where available.
+- Runtime:
+  - ChaosLauncher runtime registry writes temporarily set StarCraft intro/tip values so first-run intro screens are skipped, then restore the previous values after launch.
+  - player/AI runtime preparation now creates `bwapi-data\write`, `bwapi-data\logs`, and `Errors` directories.
+  - bundled ladder map presence is checked by launcher smoke.
+- Release packaging:
+  - `scripts\build-release.ps1` produces setup EXE, win-x64 ZIP, and setup-folder ZIP only. No public checksum text asset is generated.

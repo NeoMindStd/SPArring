@@ -45,6 +45,12 @@ public sealed class RuntimeProvisionerTests
         Assert.True(File.Exists(Path.Combine(aiRoot, prepared.Ai.BotExecutable)));
         Assert.Equal(prepared.Ai.BotExecutable, prepared.Ai.AiModule);
         Assert.Equal(Path.Combine("maps", "StarAI", "(2)Test.scx"), prepared.Player.MapFileName);
+        Assert.True(Directory.Exists(Path.Combine(playerRoot, "bwapi-data", "write")));
+        Assert.True(Directory.Exists(Path.Combine(playerRoot, "bwapi-data", "logs")));
+        Assert.True(Directory.Exists(Path.Combine(playerRoot, "Errors")));
+        Assert.True(Directory.Exists(Path.Combine(aiRoot, "bwapi-data", "write")));
+        Assert.True(Directory.Exists(Path.Combine(aiRoot, "bwapi-data", "logs")));
+        Assert.True(Directory.Exists(Path.Combine(aiRoot, "Errors")));
     }
 
     [Fact]

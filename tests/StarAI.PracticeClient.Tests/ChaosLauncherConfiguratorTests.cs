@@ -24,6 +24,9 @@ public sealed class ChaosLauncherConfiguratorTests
         Assert.Equal(0, DwordValue(writes, ChaosLauncherConfigurator.EnabledKey, ChaosLauncherConfigurator.BwapiDebugPlugin));
         Assert.Equal(0, DwordValue(writes, ChaosLauncherConfigurator.EnabledKey, ChaosLauncherConfigurator.ApmAlertPlugin));
         Assert.Equal(1, DwordValue(writes, ChaosLauncherConfigurator.LauncherKey, "RunScOnStartup"));
+        Assert.Equal(0x200, DwordValue(writes, ChaosLauncherConfigurator.StarCraftUserSettingsKey, "intro"));
+        Assert.Equal(0, DwordValue(writes, ChaosLauncherConfigurator.StarCraftUserSettingsKey, "introX"));
+        Assert.Equal(0, DwordValue(writes, ChaosLauncherConfigurator.StarCraftUserSettingsKey, "tip"));
         Assert.Equal(@"C:\starai\SC116AI", StringValue(writes, ChaosLauncherConfigurator.StarCraftInstallKey, "InstallPath"));
         Assert.Equal(@"C:\starai\SC116AI\StarCraft.exe", StringValue(writes, ChaosLauncherConfigurator.StarCraftInstallKey, "Program"));
     }
@@ -33,6 +36,7 @@ public sealed class ChaosLauncherConfiguratorTests
     {
         var registry = new FakeRegistryAccess();
         registry.WriteValue(RegistryHiveKind.CurrentUser, ChaosLauncherConfigurator.EnabledKey, ChaosLauncherConfigurator.BwapiPlugin, 0, RegistryValueKind.DWord);
+        registry.WriteValue(RegistryHiveKind.CurrentUser, ChaosLauncherConfigurator.StarCraftUserSettingsKey, "intro", 0, RegistryValueKind.DWord);
         registry.WriteValue(RegistryHiveKind.LocalMachine, ChaosLauncherConfigurator.StarCraftInstallKey, "InstallPath", @"D:\Games\StarCraft", RegistryValueKind.String);
 
         var configurator = new ChaosLauncherConfigurator(registry);
@@ -44,11 +48,13 @@ public sealed class ChaosLauncherConfiguratorTests
             EnableApmAlert: false));
 
         Assert.Equal(1, registry.ReadValue(RegistryHiveKind.CurrentUser, ChaosLauncherConfigurator.EnabledKey, ChaosLauncherConfigurator.BwapiPlugin).Value);
+        Assert.Equal(0x200, registry.ReadValue(RegistryHiveKind.CurrentUser, ChaosLauncherConfigurator.StarCraftUserSettingsKey, "intro").Value);
         Assert.Equal(@"C:\starai\SC116AI_ai", registry.ReadValue(RegistryHiveKind.LocalMachine, ChaosLauncherConfigurator.StarCraftInstallKey, "InstallPath").Value);
 
         restorePoint.Restore();
 
         Assert.Equal(0, registry.ReadValue(RegistryHiveKind.CurrentUser, ChaosLauncherConfigurator.EnabledKey, ChaosLauncherConfigurator.BwapiPlugin).Value);
+        Assert.Equal(0, registry.ReadValue(RegistryHiveKind.CurrentUser, ChaosLauncherConfigurator.StarCraftUserSettingsKey, "intro").Value);
         Assert.Equal(@"D:\Games\StarCraft", registry.ReadValue(RegistryHiveKind.LocalMachine, ChaosLauncherConfigurator.StarCraftInstallKey, "InstallPath").Value);
         Assert.False(registry.ReadValue(RegistryHiveKind.CurrentUser, ChaosLauncherConfigurator.EnabledKey, ChaosLauncherConfigurator.ApmAlertPlugin).Exists);
     }

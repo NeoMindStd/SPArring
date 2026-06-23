@@ -29,6 +29,7 @@ public sealed class MainForm : Form
     private ComboBox _sortCombo = null!;
     private ComboBox _playerRaceCombo = null!;
     private ComboBox _buildCombo = null!;
+    private TabControl _tabs = null!;
     private Label _statusLabel = null!;
     private TextBox _detailsText = null!;
     private Label _difficultyLabel = null!;
@@ -80,7 +81,9 @@ public sealed class MainForm : Form
         _settings = _settingsStore.Load();
         Text = "StarAI Practice Client";
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(1180, 820);
+        MinimumSize = new Size(980, 680);
+        Size = InitialWindowSize();
+        AutoScaleMode = AutoScaleMode.Dpi;
         BackColor = Color.FromArgb(5, 7, 5);
         ForeColor = Color.FromArgb(128, 218, 93);
 
@@ -118,49 +121,84 @@ public sealed class MainForm : Form
             Location = new Point(20, 58)
         };
 
-        var tabs = new TabControl
+        _tabs = new TabControl
         {
             Location = new Point(12, 92),
-            Size = new Size(1128, 638),
+            Size = new Size(ClientSize.Width - 24, ClientSize.Height - 136),
             Appearance = TabAppearance.Normal
         };
-        tabs.TabPages.Add(BuildPracticeTab());
-        tabs.TabPages.Add(BuildSettingsTab());
-        tabs.TabPages.Add(BuildHotkeyTab());
-        tabs.TabPages.Add(BuildHistoryTab());
+        _tabs.TabPages.Add(BuildPracticeTab());
+        _tabs.TabPages.Add(BuildSettingsTab());
+        _tabs.TabPages.Add(BuildHotkeyTab());
+        _tabs.TabPages.Add(BuildHistoryTab());
 
         _statusLabel = new Label
         {
-            AutoSize = true,
-            Location = new Point(18, 742),
+            AutoSize = false,
+            Location = new Point(18, ClientSize.Height - 36),
+            Size = new Size(ClientSize.Width - 36, 24),
             ForeColor = Color.FromArgb(128, 218, 93)
         };
 
         Controls.Add(title);
         Controls.Add(subtitle);
-        Controls.Add(tabs);
+        Controls.Add(_tabs);
         Controls.Add(_statusLabel);
+        Resize += (_, _) => LayoutShell();
+        LayoutShell();
+    }
+
+    private static Size InitialWindowSize()
+    {
+        var workingArea = Screen.PrimaryScreen?.WorkingArea ?? new Rectangle(0, 0, 1280, 720);
+        var width = Math.Clamp(1180, 980, Math.Max(980, workingArea.Width - 48));
+        var height = Math.Clamp(820, 680, Math.Max(680, workingArea.Height - 72));
+        return new Size(width, height);
+    }
+
+    private void LayoutShell()
+    {
+        if (_tabs is null || _statusLabel is null)
+        {
+            return;
+        }
+
+        _tabs.SetBounds(12, 92, Math.Max(640, ClientSize.Width - 24), Math.Max(420, ClientSize.Height - 136));
+        _statusLabel.SetBounds(18, Math.Max(0, ClientSize.Height - 36), Math.Max(180, ClientSize.Width - 36), 24);
     }
 
     private TabPage BuildPracticeTab()
     {
         var page = CreateTabPage("게임");
+        page.AutoScroll = true;
 
         _modeCombo = CreateCombo(84, 22, 132);
         _modeCombo.DataSource = new[] { "스파링", "래더" };
+        SelectComboValue(_modeCombo, _settings.LastMode ?? "스파링");
         _modeCombo.SelectedIndexChanged += (_, _) =>
         {
             UpdateModeControls();
             ApplyBotFilters();
+            SaveLastGameSelections();
         };
 
         _enemyRaceFilter = CreateCombo(84, 66, 132);
         _enemyRaceFilter.DataSource = new[] { "모두", "테란", "저그", "프로토스", "랜덤" };
-        _enemyRaceFilter.SelectedIndexChanged += (_, _) => ApplyBotFilters();
+        SelectComboValue(_enemyRaceFilter, _settings.LastEnemyRace ?? "모두");
+        _enemyRaceFilter.SelectedIndexChanged += (_, _) =>
+        {
+            ApplyBotFilters();
+            SaveLastGameSelections();
+        };
 
         _sortCombo = CreateCombo(84, 110, 132);
         _sortCombo.DataSource = new[] { "ELO 높은순", "ELO 낮은순", "이름순" };
-        _sortCombo.SelectedIndexChanged += (_, _) => ApplyBotFilters();
+        SelectComboValue(_sortCombo, _settings.LastSort ?? "ELO 높은순");
+        _sortCombo.SelectedIndexChanged += (_, _) =>
+        {
+            ApplyBotFilters();
+            SaveLastGameSelections();
+        };
 
         _searchBox = CreateTextBox(236, 66, 244, 28);
         _searchBox.PlaceholderText = "상대 이름 검색";
@@ -168,7 +206,11 @@ public sealed class MainForm : Form
 
         _botList = CreateListBox(16, 156, 332, 216);
         _botList.Name = "BotList";
-        _botList.SelectedIndexChanged += (_, _) => OnBotChanged();
+        _botList.SelectedIndexChanged += (_, _) =>
+        {
+            OnBotChanged();
+            SaveLastGameSelections();
+        };
 
         _mapList = CreateListBox(16, 424, 332, 156);
         _mapList.Name = "MapList";
@@ -180,6 +222,7 @@ public sealed class MainForm : Form
             }
 
             UpdateDetails();
+            SaveLastGameSelections();
         };
 
         _playerRaceCombo = CreateCombo(32, 218, 180);
@@ -193,7 +236,12 @@ public sealed class MainForm : Form
 
         _playerRaceCombo.Location = new Point(780, 22);
         _playerRaceCombo.Size = new Size(132, 28);
-        _playerRaceCombo.SelectedIndexChanged += (_, _) => UpdateDetails();
+        _playerRaceCombo.SelectedItem = _settings.LastPlayerRace ?? StarCraftRace.Protoss;
+        _playerRaceCombo.SelectedIndexChanged += (_, _) =>
+        {
+            UpdateDetails();
+            SaveLastGameSelections();
+        };
 
         _buildCombo = CreateCombo(780, 66, 240);
         _buildCombo.DataSource = new[] { "봇 기본 빌드 (자동)", "랜덤 빌드 (지원 봇만)" };
@@ -265,9 +313,11 @@ public sealed class MainForm : Form
         page.Controls.Add(_botList);
         page.Controls.Add(CreateLabel("맵 선택", 16, 400));
         page.Controls.Add(_mapList);
-        page.Controls.Add(CreateLabel("내 종족", 724, 26));
+        var playerRaceLabel = CreateLabel("내 종족", 724, 26);
+        page.Controls.Add(playerRaceLabel);
         page.Controls.Add(_playerRaceCombo);
-        page.Controls.Add(CreateLabel("빌드", 724, 70));
+        var buildLabel = CreateLabel("빌드", 724, 70);
+        page.Controls.Add(buildLabel);
         page.Controls.Add(_buildCombo);
         page.Controls.Add(_ladderRatingLabel);
         page.Controls.Add(_ladderRatingText);
@@ -280,6 +330,18 @@ public sealed class MainForm : Form
         page.Controls.Add(_mapPreviewBox);
         page.Controls.Add(_detailsText);
         page.Controls.Add(_launchButton);
+        refreshButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        playerRaceLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        buildLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        _playerRaceCombo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        _buildCombo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        _ladderRatingLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        _ladderRatingText.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        _applyRatingButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        _resetRatingButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        runtimeText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        _detailsText.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        _launchButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         UpdateModeControls();
 
         return page;
@@ -288,6 +350,7 @@ public sealed class MainForm : Form
     private TabPage BuildSettingsTab()
     {
         var page = CreateTabPage("설정");
+        page.AutoScroll = true;
         page.Controls.Add(CreateLabel("리플레이 저장 루트", 18, 28));
         _replayRootText = CreateTextBox(160, 24, 760, 28);
         _replayRootText.Text = _settings.ReplayRoot;
@@ -329,18 +392,27 @@ public sealed class MainForm : Form
         page.Controls.Add(browseLadderMapButton);
         page.Controls.Add(_hideAiNameCheck);
         page.Controls.Add(saveButton);
-        page.Controls.Add(CreateReadOnlyBlock(
+        var note = CreateReadOnlyBlock(
             18,
             276,
             1040,
             138,
-            "사람 StarCraft는 W-MODE 기반 테두리 없는 전체 창모드로 실행합니다.\r\nAI 클라이언트는 창모드, 음소거, 커서 클립 OFF로 별도 실행합니다.\r\n사용자 맵과 Remastered 래더맵은 .scm/.scx 파일을 읽어 StarAI 런타임 maps\\StarAI 폴더로 복사합니다."));
+            "사람 StarCraft는 W-MODE 기반 테두리 없는 전체 창모드로 실행합니다.\r\nAI 클라이언트는 창모드, 음소거, 커서 클립 OFF로 별도 실행합니다.\r\n사용자 맵과 Remastered 래더맵은 .scm/.scx 파일을 읽어 StarAI 런타임 maps\\StarAI 폴더로 복사합니다.");
+        page.Controls.Add(note);
+        _replayRootText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        _userMapRootText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        _ladderMapRootText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        browseReplayButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        browseMapButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        browseLadderMapButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        note.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         return page;
     }
 
     private TabPage BuildHotkeyTab()
     {
         var page = CreateTabPage("Hotkeys");
+        page.AutoScroll = true;
 
         page.Controls.Add(CreateLabel("검색", 18, 26));
         _hotkeySearch = CreateTextBox(62, 22, 220, 28);
@@ -385,6 +457,11 @@ public sealed class MainForm : Form
         page.Controls.Add(importFolderButton);
         page.Controls.Add(saveButton);
         page.Controls.Add(applyButton);
+        importButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        importBattleNetButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        importFolderButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        saveButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        applyButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
         _hotkeyCountLabel = new Label
         {
@@ -449,6 +526,9 @@ public sealed class MainForm : Form
         page.Controls.Add(_hotkeyCommandTitle);
         page.Controls.Add(_hotkeyCommandMeta);
         page.Controls.Add(_hotkeyDefaultText);
+        _hotkeyCommandTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        _hotkeyCommandMeta.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        _hotkeyDefaultText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
         page.Controls.Add(CreateLabel("현재 키", 730, 316));
         _hotkeyKeyText = CreateTextBox(794, 312, 84, 30);
@@ -465,18 +545,22 @@ public sealed class MainForm : Form
         page.Controls.Add(_hotkeyKeyText);
         page.Controls.Add(applyKeyButton);
 
-        page.Controls.Add(CreateReadOnlyBlock(
+        var hotkeyHelp = CreateReadOnlyBlock(
             730,
             370,
             366,
             142,
-            "선택한 항목은 3x3 게임 명령 카드로 표시합니다.\r\nStarAI 기본값은 내장 CSV를 사람 런타임으로 복사합니다.\r\nBattle.net/폴더 지정은 Remastered STR_* 핫키를 현재 작업 CSV에 반영합니다.\r\nCSV 저장은 작업 파일만 갱신합니다.\r\n런타임 반영은 사람 런타임 patch_rt.mpq에만 적용합니다."));
-        page.Controls.Add(CreateReadOnlyBlock(
+            "선택한 항목은 3x3 게임 명령 카드로 표시합니다.\r\nStarAI 기본값은 내장 CSV를 사람 런타임으로 복사합니다.\r\nBattle.net/폴더 지정은 Remastered STR_* 핫키를 현재 작업 CSV에 반영합니다.\r\nCSV 저장은 작업 파일만 갱신합니다.\r\n런타임 반영은 사람 런타임 patch_rt.mpq에만 적용합니다.");
+        var runtimeHelp = CreateReadOnlyBlock(
             18,
             580,
             1078,
             38,
-            "봇/AI 런타임에는 사람 핫키를 반영하지 않습니다. 사람 런타임만 커스텀 핫키를 사용합니다."));
+            "봇/AI 런타임에는 사람 핫키를 반영하지 않습니다. 사람 런타임만 커스텀 핫키를 사용합니다.");
+        page.Controls.Add(hotkeyHelp);
+        page.Controls.Add(runtimeHelp);
+        hotkeyHelp.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        runtimeHelp.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
         LoadHotkeys();
         return page;
     }
@@ -484,6 +568,7 @@ public sealed class MainForm : Form
     private TabPage BuildHistoryTab()
     {
         var page = CreateTabPage("전적");
+        page.AutoScroll = true;
         var refreshButton = CreateButton("새로고침", 18, 18, 96, 32);
         refreshButton.Click += (_, _) => RefreshHistory();
         _historyGrid = new DataGridView
@@ -522,6 +607,7 @@ public sealed class MainForm : Form
 
         page.Controls.Add(refreshButton);
         page.Controls.Add(_historyGrid);
+        _historyGrid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         RefreshHistory();
         return page;
     }
@@ -626,14 +712,16 @@ public sealed class MainForm : Form
 
     private void SaveSettingsFromUi()
     {
-        _settings = new PracticeClientSettings(
-            ReplayRoot: string.IsNullOrWhiteSpace(_replayRootText.Text)
+        _settings = _settings with
+        {
+            ReplayRoot = string.IsNullOrWhiteSpace(_replayRootText.Text)
                 ? PracticeRuntimeOptions.Defaults().ReplayRoot
                 : _replayRootText.Text.Trim(),
-            UserMapRoot: _userMapRootText.Text.Trim(),
-            LadderMapRoot: _ladderMapRootText.Text.Trim(),
-            HideAiName: _hideAiNameCheck.Checked,
-            UseBotNameAsAiCharacter: null);
+            UserMapRoot = _userMapRootText.Text.Trim(),
+            LadderMapRoot = _ladderMapRootText.Text.Trim(),
+            HideAiName = _hideAiNameCheck.Checked,
+            UseBotNameAsAiCharacter = null
+        };
         _settingsStore.Save(_settings);
         LoadCatalog();
         MessageBox.Show(this, "설정을 저장했습니다.", "설정");
@@ -840,6 +928,69 @@ public sealed class MainForm : Form
         return combo.SelectedIndex >= 0 && combo.SelectedIndex < combo.Items.Count
             ? combo.Items[combo.SelectedIndex]?.ToString() ?? fallback
             : fallback;
+    }
+
+    private static void SelectComboValue(ComboBox combo, string value)
+    {
+        for (var index = 0; index < combo.Items.Count; index++)
+        {
+            if (string.Equals(combo.Items[index]?.ToString(), value, StringComparison.OrdinalIgnoreCase))
+            {
+                combo.SelectedIndex = index;
+                return;
+            }
+        }
+    }
+
+    private void SaveLastGameSelections()
+    {
+        if (_updatingSelections ||
+            _modeCombo is null ||
+            _enemyRaceFilter is null ||
+            _sortCombo is null ||
+            _playerRaceCombo is null ||
+            _botList is null ||
+            _mapList is null)
+        {
+            return;
+        }
+
+        _settings = _settings with
+        {
+            LastMode = SelectedComboText(_modeCombo, "스파링"),
+            LastEnemyRace = SelectedComboText(_enemyRaceFilter, "모두"),
+            LastSort = SelectedComboText(_sortCombo, "ELO 높은순"),
+            LastPlayerRace = _playerRaceCombo.SelectedItem is StarCraftRace race ? race : StarCraftRace.Protoss,
+            LastBotName = (_botList.SelectedItem as BotItem)?.Bot?.Name,
+            LastMapName = (_mapList.SelectedItem as MapItem)?.Map?.Name
+        };
+        _settingsStore.Save(_settings);
+    }
+
+    private void SelectBotItem(List<BotItem> items, string? preferredName)
+    {
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        var selected = !string.IsNullOrWhiteSpace(preferredName)
+            ? items.FirstOrDefault(item => string.Equals(item.Bot?.Name, preferredName, StringComparison.OrdinalIgnoreCase))
+            : null;
+        _botList.SelectedItem = selected ?? items.First();
+    }
+
+    private void SelectMapItem(List<MapItem> items, string? preferredName)
+    {
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        var selected = !string.IsNullOrWhiteSpace(preferredName)
+            ? items.FirstOrDefault(item => string.Equals(item.Map?.Name, preferredName, StringComparison.OrdinalIgnoreCase))
+            : null;
+        _mapList.SelectedItem = selected ?? items.First();
     }
 
     private static HotkeyEntry?[] BuildHotkeyCommandSlots(IReadOnlyList<HotkeyEntry> entries)
@@ -1409,7 +1560,9 @@ public sealed class MainForm : Form
                 items.Insert(0, BotItem.Random);
             }
 
+            var previousBotName = (_botList.SelectedItem as BotItem)?.Bot?.Name ?? _settings.LastBotName;
             _botList.DataSource = items;
+            SelectBotItem(items, previousBotName);
         }
         finally
         {
@@ -1443,6 +1596,7 @@ public sealed class MainForm : Form
         try
         {
             var previousMapId = (_mapList.SelectedItem as MapItem)?.Map?.Id;
+            var previousMapName = (_mapList.SelectedItem as MapItem)?.Map?.Name ?? _settings.LastMapName;
             var maps = botItem.Bot is null
                 ? _catalog.Maps
                     .Where(map => map.Enabled)
@@ -1455,7 +1609,9 @@ public sealed class MainForm : Form
                 .ToList();
             items.Insert(0, MapItem.Random);
             _mapList.DataSource = items;
-            var restore = items.FirstOrDefault(item => item.Map?.Id == previousMapId) ?? items.FirstOrDefault();
+            var restore = items.FirstOrDefault(item => item.Map?.Id == previousMapId) ??
+                items.FirstOrDefault(item => string.Equals(item.Map?.Name, previousMapName, StringComparison.OrdinalIgnoreCase)) ??
+                items.FirstOrDefault();
             if (restore is not null)
             {
                 _mapList.SelectedItem = restore;
@@ -1549,27 +1705,23 @@ public sealed class MainForm : Form
         var map = mapItem?.Map;
         var compatibleMapCount = PracticeCatalogCompatibility.MapsForBot(_catalog, bot.Id).Count;
         var difficulty = LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo);
+        var profile = BotProfileSummarizer.Summarize(bot);
         _difficultyLabel.Text = difficulty is null
             ? "난이도\r\nSCR 환산 미확인"
             : $"난이도\r\n{difficulty.Label}";
 
         _detailsText.Text = string.Join(Environment.NewLine, new[]
         {
-            $"봇: {bot.Name}",
+            $"AI: {bot.Name}",
             $"종족: {bot.Race}",
-            $"ELO: {bot.Elo?.ToString() ?? "알 수 없음"}",
-            $"실행 형식: {bot.ExecutableKind} / {bot.ExecutableName}",
-            $"BWAPI: {bot.BwapiVersion}",
-            $"SCR 래더 참고 환산: {difficulty?.Label ?? "미확인"}",
-            $"환산 주의: {difficulty?.Disclaimer ?? "ELO 정보가 없어 환산하지 않았습니다."}",
+            $"난이도: {difficulty?.Label ?? $"ELO {bot.Elo?.ToString() ?? "미확인"}"}",
+            $"성향: {profile.StyleLabel}",
+            $"빌드: {profile.BuildLabel}",
             $"호환 맵: {compatibleMapCount}개",
             $"선택 맵: {(map is null ? "Random" : $"{map.Name} ({map.FileName})")}",
-            $"맵 종류: {(map?.IsUserMap == true ? "사용자 추가 맵 (호환성 제약 미확인)" : "StarAI 내장 맵")}",
-            "빌드: 봇 기본 빌드 (공통 BWAPI 빌드 선택 규격이 없어 아직 봇별 강제 선택은 보류)",
-            $"봇 원본 폴더: {bot.SourceDirectory ?? "미확인"}",
-            $"맵 원본 파일: {map?.SourcePath ?? "미확인"}",
             "",
-            bot.Description ?? ""
+            "설명",
+            profile.PlayerSummary
         });
     }
 
@@ -1693,7 +1845,9 @@ public sealed class MainForm : Form
                 .Select(map => new MapItem(map))
                 .ToList();
             maps.Insert(0, MapItem.Random);
+            var previousMapName = (_mapList.SelectedItem as MapItem)?.Map?.Name ?? _settings.LastMapName;
             _mapList.DataSource = maps;
+            SelectMapItem(maps, previousMapName);
         }
         finally
         {
@@ -1777,8 +1931,8 @@ public sealed class MainForm : Form
             $"래더 봇 후보: {candidates.Count}개",
             $"난이도 범위: {difficultyRange}",
             "매칭: 선택 맵 안에서 현재 MMR 근처 봇을 높은 확률로 선택합니다.",
-            "빌드: 선택된 봇의 기본 빌드 (봇별 빌드 선택 API 조사/구현 전)",
-            $"맵 원본 파일: {map?.SourcePath ?? "미확인"}",
+            "승리하면 Elo 계산식 기준으로 점수가 오르고, 승리 보상은 최소 +1점입니다.",
+            "패배하면 상대 MMR과 현재 MMR 차이에 따라 점수가 내려갑니다.",
             "",
             "MMR 근접 후보 미리보기",
             string.Join(Environment.NewLine, preview)
@@ -2457,14 +2611,10 @@ public sealed class MainForm : Form
 
     private static ComboBox CreateCombo(int x, int y, int width)
     {
-        return new ComboBox
+        return new StarAiComboBox
         {
-            DropDownStyle = ComboBoxStyle.DropDownList,
             Location = new Point(x, y),
-            Size = new Size(width, 28),
-            BackColor = Color.Black,
-            ForeColor = Color.FromArgb(166, 255, 126),
-            FlatStyle = FlatStyle.Flat
+            Size = new Size(width, 28)
         };
     }
 

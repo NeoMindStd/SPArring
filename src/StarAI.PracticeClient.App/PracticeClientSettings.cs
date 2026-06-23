@@ -9,7 +9,13 @@ internal sealed record PracticeClientSettings(
     string UserMapRoot,
     string LadderMapRoot = "",
     bool HideAiName = true,
-    bool? UseBotNameAsAiCharacter = null)
+    bool? UseBotNameAsAiCharacter = null,
+    string? LastMode = null,
+    string? LastEnemyRace = null,
+    string? LastSort = null,
+    StarCraftRace? LastPlayerRace = null,
+    string? LastBotName = null,
+    string? LastMapName = null)
 {
     [JsonIgnore]
     public bool EffectiveHideAiName => UseBotNameAsAiCharacter is { } showBotName
@@ -22,7 +28,11 @@ internal sealed record PracticeClientSettings(
             PracticeRuntimeOptions.Defaults().ReplayRoot,
             string.Empty,
             RemasteredLadderMapCatalogReader.DefaultDirectory(),
-            HideAiName: true);
+            HideAiName: true,
+            LastMode: "스파링",
+            LastEnemyRace: "모두",
+            LastSort: "ELO 높은순",
+            LastPlayerRace: StarCraftRace.Protoss);
     }
 }
 
@@ -31,7 +41,8 @@ internal sealed class PracticeClientSettingsStore
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new JsonStringEnumConverter() }
     };
 
     public PracticeClientSettingsStore(string settingsPath)
@@ -56,8 +67,15 @@ internal sealed class PracticeClientSettingsStore
             return PracticeClientSettings.Defaults();
         }
 
-        return JsonSerializer.Deserialize<PracticeClientSettings>(File.ReadAllText(SettingsPath), JsonOptions)
-            ?? PracticeClientSettings.Defaults();
+        try
+        {
+            return JsonSerializer.Deserialize<PracticeClientSettings>(File.ReadAllText(SettingsPath), JsonOptions)
+                ?? PracticeClientSettings.Defaults();
+        }
+        catch (JsonException)
+        {
+            return PracticeClientSettings.Defaults();
+        }
     }
 
     public void Save(PracticeClientSettings settings)

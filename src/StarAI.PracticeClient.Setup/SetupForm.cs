@@ -616,13 +616,12 @@ internal sealed class SetupForm : Form
             payload = ExtractEmbeddedPayload();
             payloadManifest = await Task.Run(() => InstallationVerifier.BuildManifest(payload.Root));
 
-            SetBusy(12, "앱 파일과 내장 데이터를 복사합니다.");
-            await Task.Run(() => CopyDirectory(payload.Root, installRoot));
+            await CopyDirectoryWithProgressAsync(payload.Root, installRoot, 8, 30, "앱 파일과 내장 데이터를 복사합니다.");
 
-            SetBusy(30, "복사된 설치 파일을 검증합니다.");
+            SetProgress(31, "복사된 설치 파일을 검증합니다.");
             await VerifyPayloadCopyAsync(installRoot, payloadManifest);
 
-            SetBusy(34, "설치 복구 캐시와 체크섬 기준을 저장합니다.");
+            SetProgress(34, "설치 복구 데이터를 저장합니다.");
             await Task.Run(() => WriteRepairMetadata(
                 installRoot,
                 payload.Root,
@@ -631,7 +630,7 @@ internal sealed class SetupForm : Form
                 InstallJava));
 
             SetProgress(42, "선택 구성 요소를 설치합니다.");
-            await InstallSelectedPrerequisitesAsync(installRoot);
+            await InstallSelectedPrerequisitesAsync(installRoot, 42, 62);
 
             SetProgress(62, "바로가기를 구성합니다.");
             RemoveLegacyCmdLaunchers(installRoot);
@@ -642,10 +641,10 @@ internal sealed class SetupForm : Form
 
             CreateStartMenuShortcut(installRoot);
 
-            SetBusy(72, "StarCraft/BWAPI 런타임을 구성합니다.");
+            SetProgress(72, "StarCraft/BWAPI 런타임을 구성합니다.");
             await RunRuntimeSetupAsync(installRoot, starCraftSource);
 
-            SetBusy(90, "설치 결과를 최종 검증합니다.");
+            SetProgress(90, "설치 결과를 최종 검증합니다.");
             await VerifyPayloadCopyAsync(installRoot, payloadManifest);
             VerifyRequiredInstalledFiles(installRoot);
 
@@ -814,7 +813,23 @@ internal sealed class SetupForm : Form
         return new PayloadExtraction(tempRoot, DeleteAfterInstall: true);
     }
 
-    private static void CopyDirectory(string sourceDirectory, string targetDirectory)
+    private Task CopyDirectoryWithProgressAsync(string sourceDirectory, string targetDirectory, int start, int end, string message)
+    {
+        return Task.Run(() => CopyDirectory(sourceDirectory, targetDirectory, (copiedBytes, totalBytes) =>
+        {
+            if (totalBytes <= 0)
+            {
+                SetProgress(end, message, writeLog: false);
+                return;
+            }
+
+            var ratio = Math.Clamp((double)copiedBytes / totalBytes, 0, 1);
+            var value = start + (int)Math.Round((end - start) * ratio);
+            SetProgress(value, message, writeLog: false);
+        }));
+    }
+
+    private static void CopyDirectory(string sourceDirectory, string targetDirectory, Action<long, long>? progress = null)
     {
         Directory.CreateDirectory(targetDirectory);
         foreach (var directory in Directory.EnumerateDirectories(sourceDirectory, "*", SearchOption.AllDirectories))
@@ -822,12 +837,43 @@ internal sealed class SetupForm : Form
             Directory.CreateDirectory(Path.Combine(targetDirectory, Path.GetRelativePath(sourceDirectory, directory)));
         }
 
-        foreach (var sourcePath in Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories))
+        var files = Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories)
+            .Select(path => new FileInfo(path))
+            .ToList();
+        var totalBytes = files.Sum(file => file.Length);
+        long copiedBytes = 0;
+        progress?.Invoke(copiedBytes, totalBytes);
+
+        foreach (var sourceFile in files)
         {
+            var sourcePath = sourceFile.FullName;
             var relativePath = Path.GetRelativePath(sourceDirectory, sourcePath);
             var targetPath = Path.Combine(targetDirectory, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
-            File.Copy(sourcePath, targetPath, overwrite: true);
+            CopyFileWithProgress(sourcePath, targetPath, sourceFile.Length, bytes =>
+            {
+                copiedBytes += bytes;
+                progress?.Invoke(copiedBytes, totalBytes);
+            });
+        }
+    }
+
+    private static void CopyFileWithProgress(string sourcePath, string targetPath, long sourceLength, Action<long> progress)
+    {
+        const int BufferSize = 1024 * 1024;
+        using var source = File.OpenRead(sourcePath);
+        using var target = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None, BufferSize);
+        var buffer = new byte[BufferSize];
+        int read;
+        while ((read = source.Read(buffer, 0, buffer.Length)) > 0)
+        {
+            target.Write(buffer, 0, read);
+            progress(read);
+        }
+
+        if (sourceLength == 0)
+        {
+            progress(0);
         }
     }
 
@@ -875,26 +921,30 @@ internal sealed class SetupForm : Form
         shortcut.Save();
     }
 
-    private async Task InstallSelectedPrerequisitesAsync(string installRoot)
+    private async Task InstallSelectedPrerequisitesAsync(string installRoot, int start, int end)
     {
         if (!InstallVcRedists && !InstallJava)
         {
             Log("선택 구성 요소 설치를 건너뜁니다.");
+            SetProgress(end, "선택 구성 요소 설치를 건너뜁니다.");
             return;
         }
 
+        var current = start;
         if (InstallVcRedists)
         {
-            await InstallVcRedistsAsync();
+            var vcEnd = InstallJava ? start + ((end - start) / 2) : end;
+            await InstallVcRedistsAsync(current, vcEnd);
+            current = vcEnd;
         }
 
         if (InstallJava)
         {
-            await InstallJavaRuntimeAsync(installRoot);
+            await InstallJavaRuntimeAsync(installRoot, current, end);
         }
     }
 
-    private async Task InstallVcRedistsAsync()
+    private async Task InstallVcRedistsAsync(int start, int end)
     {
         Log("VC++ x86 런타임을 확인/설치합니다.");
         var packages = new[]
@@ -905,36 +955,56 @@ internal sealed class SetupForm : Form
             new RedistPackage("VC++ 2015-2022 x86", VcRedistCurrentUrl, "vc2015-2022_x86.exe", "/install /quiet /norestart")
         };
 
-        foreach (var package in packages)
+        for (var index = 0; index < packages.Length; index++)
         {
-            SetBusy(46, $"{package.Name} 설치 파일을 준비합니다.");
-            var installerPath = await DownloadDependencyAsync(package.Url, Path.Combine("vcredist", package.FileName));
-            SetBusy(50, $"{package.Name} 설치를 실행합니다.");
+            var package = packages[index];
+            var segmentStart = start + (int)Math.Round((end - start) * (index / (double)packages.Length));
+            var segmentEnd = start + (int)Math.Round((end - start) * ((index + 1) / (double)packages.Length));
+            var downloadEnd = segmentStart + Math.Max(1, (segmentEnd - segmentStart) / 2);
+            SetProgress(segmentStart, $"{package.Name} 설치 파일을 준비합니다.");
+            var installerPath = await DownloadDependencyAsync(
+                package.Url,
+                Path.Combine("vcredist", package.FileName),
+                segmentStart,
+                downloadEnd,
+                $"{package.Name} 설치 파일을 다운로드합니다.");
+            SetProgress(downloadEnd, $"{package.Name} 설치를 실행합니다.");
             await RunExternalProcessAsync(
                 installerPath,
                 package.Arguments,
                 Path.GetDirectoryName(installerPath)!,
                 [0, 1638, 3010]);
+            SetProgress(segmentEnd, $"{package.Name} 설치가 완료되었습니다.");
         }
     }
 
-    private async Task InstallJavaRuntimeAsync(string installRoot)
+    private async Task InstallJavaRuntimeAsync(string installRoot, int start, int end)
     {
         var targetRoot = Path.Combine(installRoot, "runtime", "jdk");
         var javaExe = Path.Combine(targetRoot, "bin", "java.exe");
         if (File.Exists(javaExe))
         {
             Log($"Java 런타임이 이미 준비되어 있습니다: {javaExe}");
+            SetProgress(end, "Java 런타임이 이미 준비되어 있습니다.");
             return;
         }
 
-        SetBusy(54, "OpenJDK 17 런타임을 준비합니다.");
-        var archivePath = await DownloadDependencyAsync(TemurinJdkUrl, Path.Combine("java", "temurin-jdk17-windows-x64.zip"));
+        SetProgress(start, "OpenJDK 17 런타임을 준비합니다.");
+        var downloadEnd = start + (int)Math.Round((end - start) * 0.45);
+        var extractEnd = start + (int)Math.Round((end - start) * 0.65);
+        var archivePath = await DownloadDependencyAsync(
+            TemurinJdkUrl,
+            Path.Combine("java", "temurin-jdk17-windows-x64.zip"),
+            start,
+            downloadEnd,
+            "OpenJDK 17 런타임을 다운로드합니다.");
         var tempRoot = Path.Combine(Path.GetTempPath(), "StarAIPracticeClientSetup", "jdk-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempRoot);
         try
         {
+            SetProgress(downloadEnd, "OpenJDK 17 런타임 압축을 풉니다.");
             await Task.Run(() => ZipFile.ExtractToDirectory(archivePath, tempRoot));
+            SetProgress(extractEnd, "OpenJDK 17 런타임 파일을 복사합니다.");
             var extractedJava = Directory
                 .EnumerateFiles(tempRoot, "java.exe", SearchOption.AllDirectories)
                 .FirstOrDefault(path => path.EndsWith(Path.Combine("bin", "java.exe"), StringComparison.OrdinalIgnoreCase))
@@ -947,7 +1017,7 @@ internal sealed class SetupForm : Form
                 Directory.Delete(targetRoot, recursive: true);
             }
 
-            await Task.Run(() => CopyDirectory(jdkRoot, targetRoot));
+            await CopyDirectoryWithProgressAsync(jdkRoot, targetRoot, extractEnd, end, "OpenJDK 17 런타임 파일을 복사합니다.");
             Log($"Java 런타임 준비 완료: {javaExe}");
         }
         finally
@@ -963,7 +1033,12 @@ internal sealed class SetupForm : Form
         }
     }
 
-    private async Task<string> DownloadDependencyAsync(string url, string relativePath)
+    private async Task<string> DownloadDependencyAsync(
+        string url,
+        string relativePath,
+        int start,
+        int end,
+        string message)
     {
         var cacheRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -974,18 +1049,39 @@ internal sealed class SetupForm : Form
         if (File.Exists(destination))
         {
             Log($"캐시 사용: {destination}");
+            SetProgress(end, message + " (캐시 사용)");
             return destination;
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         Log($"다운로드: {url}");
+        SetProgress(start, message);
         using var client = new HttpClient();
         client.Timeout = TimeSpan.FromMinutes(10);
         using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
+        var totalBytes = response.Content.Headers.ContentLength;
+        long downloadedBytes = 0;
         await using var source = await response.Content.ReadAsStreamAsync();
         await using var target = File.Create(destination);
-        await source.CopyToAsync(target);
+        var buffer = new byte[1024 * 1024];
+        int read;
+        var lastProgress = start;
+        while ((read = await source.ReadAsync(buffer)) > 0)
+        {
+            await target.WriteAsync(buffer.AsMemory(0, read));
+            downloadedBytes += read;
+            var progress = totalBytes is > 0
+                ? start + (int)Math.Round((end - start) * Math.Clamp(downloadedBytes / (double)totalBytes.Value, 0, 1))
+                : Math.Min(end - 1, start + (int)(downloadedBytes / (8 * 1024 * 1024)));
+            if (progress != lastProgress)
+            {
+                lastProgress = progress;
+                SetProgress(progress, message, writeLog: false);
+            }
+        }
+
+        SetProgress(end, message);
         return destination;
     }
 
@@ -1087,32 +1183,21 @@ internal sealed class SetupForm : Form
         }
     }
 
-    private void SetProgress(int value, string message)
+    private void SetProgress(int value, string message, bool writeLog = true)
     {
         if (InvokeRequired)
         {
-            BeginInvoke(new Action<int, string>(SetProgress), value, message);
+            BeginInvoke(new Action<int, string, bool>(SetProgress), value, message, writeLog);
             return;
         }
 
         _progressBar.Style = ProgressBarStyle.Continuous;
         _progressBar.Value = Math.Clamp(value, _progressBar.Minimum, _progressBar.Maximum);
         _statusLabel.Text = message;
-        Log(message);
-    }
-
-    private void SetBusy(int value, string message)
-    {
-        if (InvokeRequired)
+        if (writeLog)
         {
-            BeginInvoke(new Action<int, string>(SetBusy), value, message);
-            return;
+            Log(message);
         }
-
-        _progressBar.Style = ProgressBarStyle.Marquee;
-        _progressBar.Value = Math.Clamp(value, _progressBar.Minimum, _progressBar.Maximum);
-        _statusLabel.Text = message;
-        Log(message);
     }
 
     private void Log(string message)

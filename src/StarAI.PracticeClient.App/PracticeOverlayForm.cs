@@ -9,6 +9,7 @@ internal sealed class PracticeOverlayForm : Form
     private readonly System.Windows.Forms.Timer _timer;
     private PracticeSessionClock? _clock;
     private ActionRateCounter? _counter;
+    private Rectangle _gameBounds;
 
     public PracticeOverlayForm()
     {
@@ -17,7 +18,7 @@ internal sealed class PracticeOverlayForm : Form
         TopMost = true;
         BackColor = Color.Black;
         Opacity = 0.78;
-        Size = new Size(230, 38);
+        Size = OverlaySizing.MeasureOverlaySize("00:00  APM 0", Font);
 
         _label = new Label
         {
@@ -52,7 +53,7 @@ internal sealed class PracticeOverlayForm : Form
     {
         _clock = new PracticeSessionClock(startedAtUtc);
         _counter = counter;
-        Location = new Point(screenBounds.Left + 18, screenBounds.Top + 18);
+        _gameBounds = screenBounds;
         RefreshText();
         Show();
         KeepAboveGame();
@@ -93,12 +94,23 @@ internal sealed class PracticeOverlayForm : Form
     {
         if (_clock is not { } clock || _counter is not { } counter)
         {
-            _label.Text = "00:00  APM 0";
+            ApplyOverlayText("00:00  APM 0");
             return;
         }
 
-        _label.Text = clock.FormatOverlayText(DateTime.UtcNow, counter);
+        ApplyOverlayText(clock.FormatOverlayText(DateTime.UtcNow, counter));
         KeepAboveGame();
+    }
+
+    private void ApplyOverlayText(string text)
+    {
+        _label.Text = text;
+        var bounds = _gameBounds.IsEmpty
+            ? Screen.FromControl(this).Bounds
+            : _gameBounds;
+        var size = OverlaySizing.MeasureOverlaySize(text, _label.Font);
+        Size = size;
+        Location = OverlaySizing.ChooseLocation(bounds, size);
     }
 
     [DllImport("user32.dll", SetLastError = true)]
