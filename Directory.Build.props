@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Company>NeoMindStd</Company>
     <Authors>NeoMindStd</Authors>
-    <Product>StarAI Practice Client</Product>
+    <Product>Sparring</Product>
     <Description>Local StarCraft 1.16.1 BWAPI AI sparring launcher</Description>
     <Copyright>Copyright (c) NeoMindStd</Copyright>
     <PackageProjectUrl>https://github.com/NeoMindStd/SPArring</PackageProjectUrl>

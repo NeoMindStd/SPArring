@@ -1,4 +1,4 @@
-# StarAI Practice Client 1.3.4
+# Sparring 1.3.4
 
 설치 파일이 백신 또는 Windows 보안에 의해 일부 제거되는 상황을 더 잘 복구하도록 개선한 핫픽스입니다.
 
@@ -13,6 +13,6 @@
 ## 설치 방법
 
 1. StarCraft 1.16.1 원본 폴더를 준비합니다.
-2. `StarAI-PracticeClient-1.3.4-setup.exe`를 실행합니다.
+2. `Sparring-1.3.4-setup.exe`를 실행합니다.
 3. 설치 프로그램에서 StarCraft 1.16.1 원본 폴더를 지정합니다.
-4. 설치가 끝나면 `StarAI Practice Client` 바로가기로 실행합니다.
+4. 설치가 끝나면 `Sparring` 바로가기로 실행합니다.

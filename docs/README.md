@@ -1,6 +1,6 @@
 # SPArring Docs
 
-SPArring은 "StarCraft Practice with AI"의 줄임말이며, 현재 배포/앱상의 이름인 StarAI Practice Client와 같은 프로젝트를 가리킨다.
+SPArring은 "StarCraft Practice with AI"의 줄임말이며, 현재 배포/앱상의 이름인 Sparring와 같은 프로젝트를 가리킨다.
 
 이 디렉터리는 사람과 AI 작업자가 프로젝트의 목적, 구조, 불변조건, 실행 흐름을 빠르게 해석하도록 만든 장기 스펙 문서 모음이다. 스레드별 최신 작업 상태는 `docs/THREAD_HANDOFF.md`를 먼저 확인하고, 제품/구조 해석은 이 `docs` 디렉터리의 스펙 문서를 기준으로 삼는다.
 

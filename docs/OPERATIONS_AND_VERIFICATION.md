@@ -5,19 +5,19 @@
 사용자 진입점은 설치 프로그램이 만든 바탕화면/시작 메뉴 바로가기다. 바로가기는 설치 폴더의 EXE를 직접 실행한다.
 
 ```text
-C:\starai\StarAI.PracticeClient.App.exe
+C:\sparring\Sparring.Client.exe
 ```
 
-`C:\starai\Start-StarAI-PracticeClient.cmd`는 1.3.1부터 생성하지 않는 레거시 진입점이다.
+`C:\sparring\Start-Sparring.cmd`는 1.3.1부터 생성하지 않는 레거시 진입점이다.
 
 ## 개발 작업 전 확인
 
 작업 시작 시 우선 읽을 문서:
 
 ```text
-C:\starai\StarAI.PracticeClient\AGENTS.md
-C:\starai\StarAI.PracticeClient\docs\THREAD_HANDOFF.md
-C:\starai\StarAI.PracticeClient\docs\README.md
+C:\sparring\Sparring\AGENTS.md
+C:\sparring\Sparring\docs\THREAD_HANDOFF.md
+C:\sparring\Sparring\docs\README.md
 ```
 
 현재 작업트리가 dirty일 수 있다. 사용자가 명시적으로 요청하지 않는 한 reset/revert로 기존 변경을 날리지 않는다.
@@ -27,7 +27,7 @@ C:\starai\StarAI.PracticeClient\docs\README.md
 코드 변경 후 기본 검증:
 
 ```powershell
-dotnet test .\StarAI.PracticeClient.sln -v:minimal
+dotnet test .\Sparring.sln -v:minimal
 .\scripts\smoke.ps1
 ```
 
@@ -132,9 +132,9 @@ known-bad 봇이 후보에서 빠졌는지는 강제 지정 dry-run이 실패하
 
 정리 대상:
 
-- `C:\starai\SC116AI` 아래에서 실행된 `StarCraft.exe`
-- `C:\starai\SC116AI_ai` 아래에서 실행된 `StarCraft.exe`
-- `C:\starai` 아래 로컬 ChaosLauncher
+- `C:\sparring\SC116AI` 아래에서 실행된 `StarCraft.exe`
+- `C:\sparring\SC116AI_ai` 아래에서 실행된 `StarCraft.exe`
+- `C:\sparring` 아래 로컬 ChaosLauncher
 
 정리 금지:
 

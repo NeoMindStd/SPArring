@@ -1,10 +1,10 @@
 $ErrorActionPreference = 'Stop'
 
 $repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
-$solution = Join-Path $repo 'StarAI.PracticeClient.sln'
+$solution = Join-Path $repo 'Sparring.sln'
 $version = Join-Path $repo 'VERSION'
-$appProject = Join-Path $repo 'src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj'
-$setupProject = Join-Path $repo 'src\StarAI.PracticeClient.Setup\StarAI.PracticeClient.Setup.csproj'
+$appProject = Join-Path $repo 'src\Sparring.Client\Sparring.Client.csproj'
+$setupProject = Join-Path $repo 'src\Sparring.Setup\Sparring.Setup.csproj'
 $screenshotRoot = Join-Path $repo 'artifacts\screenshots'
 
 if (-not (Test-Path -LiteralPath $version)) {
@@ -41,7 +41,7 @@ if ($coachMatches) {
     throw 'CoachAI reference found in source or tests.'
 }
 
-$setupForm = Join-Path $repo 'src\StarAI.PracticeClient.Setup\SetupForm.cs'
+$setupForm = Join-Path $repo 'src\Sparring.Setup\SetupForm.cs'
 if (Select-String -LiteralPath $setupForm -Pattern 'ProgressBarStyle.Marquee|SetBusy' -Quiet) {
     throw 'Setup progress must use determinate progress, not marquee/busy animation.'
 }
@@ -59,7 +59,7 @@ Invoke-NativeChecked -Name 'dotnet build' -Command { dotnet build $solution -c R
 Invoke-NativeChecked -Name 'launcher smoke' -Command { dotnet run --project $appProject -c Release -- --smoke }
 
 New-Item -ItemType Directory -Force -Path $screenshotRoot | Out-Null
-$setupDll = Join-Path $repo 'src\StarAI.PracticeClient.Setup\bin\Release\net8.0-windows\StarAI.PracticeClient.Setup.dll'
+$setupDll = Join-Path $repo 'src\Sparring.Setup\bin\Release\net8.0-windows\Sparring.Setup.dll'
 if (-not (Test-Path -LiteralPath $setupDll)) {
     throw "Setup smoke target is missing: $setupDll"
 }

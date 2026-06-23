@@ -1,24 +1,24 @@
-# StarAI Practice Client Thread Handoff
+# Sparring Thread Handoff
 
-Last updated: 2026-06-21
+Last updated: 2026-06-23
 
 ## Repository
 
-- Repo: `C:\starai\StarAI.PracticeClient`
-- User entrypoint: desktop/start-menu shortcut targeting `StarAI.PracticeClient.App.exe`
+- Repo: `C:\starai\StarAI.PracticeClient-1.3.0` / installed app root `C:\sparring`
+- User entrypoint: desktop/start-menu shortcut targeting `Sparring.Client.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.4.0`
-- Last verified implementation state: 1.3.3 release candidate with DPI/large-font-safe Windows-wizard-style Setup EXE, default app install folder `C:\starai`, optional VC++/Java prerequisites, installer-selected StarCraft 1.16.1 source validation, payload checksum verification, required runtime file verification, EXE-direct shortcuts, automatic player/AI runtime provisioning, dynamic app-root asset discovery, and existing compatibility filters.
-- Current WIP after 1.3.3: none expected in the release worktree after release. The original `C:\starai\StarAI.PracticeClient` folder may still contain unrelated local WIP; do not reset it unless the user explicitly asks.
+- Current version: `1.5.0`
+- Last verified implementation state: 1.5.0 release candidate with Sparring naming, responsive launcher tabs, dark combo boxes, command-card hotkey UI, game speed/scroll settings, GitHub release update prompt, bundled map cleanup, screen-state blocked-dialog regression coverage, internal install repair, and existing compatibility filters.
+- Current WIP: release packaging/publish may still be pending until the current turn completes. Do not reset/revert local changes unless the user explicitly asks.
 
 ## Hard Rules
 
 - 답변과 보고는 한국어 존댓말로 한다.
 - release/tag/push/installer 배포는 사용자가 명시적으로 요청할 때만 한다.
-- StarAI 제품 실행은 기본 설치 기준 `C:\starai\data` 내장 자산을 사용해야 한다. SCHNAIL은 개발/릴리즈 import 소스일 뿐 최종 사용자 필수 조건이 아니다.
+- Sparring 제품 실행은 기본 설치 기준 `C:\sparring\data` 내장 자산을 사용해야 한다. SCHNAIL은 개발/릴리즈 import 소스일 뿐 최종 사용자 필수 조건이 아니다.
 - SCHNAIL/Remastered 원본은 읽기 전용이다.
-- 사람 런타임: `C:\starai\SC116AI`
-- AI 런타임: `C:\starai\SC116AI_ai`
+- 사람 런타임: `C:\sparring\SC116AI`
+- AI 런타임: `C:\sparring\SC116AI_ai`
 - 사람 `bwapi.ini`의 `ai` 값은 비워야 한다.
 - AI 클라이언트는 창모드, 음소거, APMAlert OFF가 기본이다.
 - 독점 전체화면은 금지한다. 현재는 cnc-ddraw 기반 borderless/fullscreen 설정으로 해상도 강제변경을 피한다.
@@ -29,23 +29,23 @@ Last updated: 2026-06-21
 
 - Core:
   - `PracticePaths` / `RuntimeWritePolicy`
-  - StarAI `data` asset catalog loader and SCHNAIL-compatible `bots.dat` / `maps.dat` parser
+  - Sparring `data` asset catalog loader and SCHNAIL-compatible `bots.dat` / `maps.dat` parser
   - bot-map compatibility filter
   - initial `PracticeLaunchPlanBuilder`
   - hotkey CSV editor model, `stat_txt.txt` patcher, TBL compiler integration, SFmpq runtime MPQ insert helper
   - Remastered/Battle.net `STR_*` hotkey importer for working CSV entries
   - SCHNAIL ELO -> SCR MMR/grade reference estimator
   - player-only ladder rating store and ELO result calculator
-  - runtime provisioning for StarAI bundled maps/bots into player/AI runtime folders
+  - runtime provisioning for Sparring bundled maps/bots into player/AI runtime folders
   - user map catalog reader for `.scm`/`.scx`
   - Remastered ladder map reader with SCHNAIL compatibility map IDs
   - player/AI `bwapi.ini` and `wmode.ini` generation
   - session history store for launch/APM/result/MMR records
 - App:
   - SCHNAIL-inspired Korean WinForms UI with Game/Settings/Hotkeys/History tabs
-  - Hotkeys tab can import StarAI default CSV, import Battle.net/Remastered key-value hotkeys, save working CSV, and apply to `C:\starai\SC116AI\patch_rt.mpq`
-  - Game tab shows ladder rating controls in ladder mode. Settings tab stores replay root, user map folder, Remastered ladder map folder, and the `AI 이름 가리기` option under `%APPDATA%\StarAI.PracticeClient\settings.json`
-  - History tab reads `%APPDATA%\StarAI.PracticeClient\history.json` and displays mode/result/MMR delta/result source with a dark table style
+  - Hotkeys tab can import Sparring default CSV, import Battle.net/Remastered key-value hotkeys, save working CSV, and apply to `C:\sparring\SC116AI\patch_rt.mpq`
+  - Game tab shows ladder rating controls in ladder mode. Settings tab stores replay root, user map folder, Remastered ladder map folder, and the `AI 이름 가리기` option under `%APPDATA%\Sparring\settings.json`
+  - History tab reads `%APPDATA%\Sparring\history.json` and displays mode/result/MMR delta/result source with a dark table style
   - Launch flow starts player StarCraft with cnc-ddraw borderless/fullscreen settings and starts the AI client muted, then minimizes it after join/start timing
   - Overlay shows timer/APM without enabling APMAlert, starts only after in-game HUD detection, and is disposed on game end
   - After HUD detection, auto_menu is disabled in both local runtimes to avoid returning to the room/menu automation after the user leaves the game
@@ -70,32 +70,32 @@ During development, unsafe direct `JMpqEditor` write attempts damaged local `pat
 ## Verification
 
 ```powershell
-dotnet test .\StarAI.PracticeClient.sln -v:minimal
+dotnet test .\Sparring.sln -v:minimal
 .\scripts\smoke.ps1
 .\scripts\smoke-app-start.ps1
 ```
 
 Latest 1.3.0 release-candidate verification:
 
-- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 147 passed.
+- `dotnet test .\Sparring.sln -v:minimal`: 147 passed.
 - `.\scripts\smoke.ps1`: build warning 0 / error 0, launcher smoke passed.
-- `.\scripts\build-release.ps1`: produced `StarAI-PracticeClient-1.3.0-setup.exe` and `StarAI-PracticeClient-1.3.0-win-x64.zip`.
-- Isolated runtime setup smoke using a temporary fake StarCraft 1.16.1 source and temporary player/AI runtime roots: passed; BWAPI, TournamentModule, cnc-ddraw, and AI runtime files were created without touching `C:\starai\SC116AI`.
+- `.\scripts\build-release.ps1`: produced `Sparring-1.3.0-setup.exe` and `Sparring-1.3.0-win-x64.zip`.
+- Isolated runtime setup smoke using a temporary fake StarCraft 1.16.1 source and temporary player/AI runtime roots: passed; BWAPI, TournamentModule, cnc-ddraw, and AI runtime files were created without touching `C:\sparring\SC116AI`.
 - `.\scripts\audit-compatibility.ps1`: `issues=0`.
 - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]'`: selected a compatible DLL Terran bot.
 
 1.3.0 packaging notes:
 
-- Primary user installer: `StarAI-PracticeClient-1.3.0-setup.exe`.
+- Primary user installer: `Sparring-1.3.0-setup.exe`.
 - The setup app is a self-contained WinForms installer with an embedded payload ZIP.
 - The setup app asks for install path, StarCraft 1.16.1 source folder, desktop shortcut option, and optional launch after install.
 - The setup app validates `StarCraft.exe`, `stardat.mpq`, `broodat.mpq`, and `patch_rt.mpq` before copying.
-- `scripts\setup-runtime.ps1` copies the user-provided StarCraft source into `C:\starai\SC116AI`, installs public BWAPI/cnc-ddraw/TournamentModule runtime files, then seeds `C:\starai\SC116AI_ai`.
-- `C:\starai\Start-StarAI-PracticeClient.cmd` is no longer created from 1.3.1 onward; desktop/start-menu shortcuts target `StarAI.PracticeClient.App.exe`.
+- `scripts\setup-runtime.ps1` copies the user-provided StarCraft source into `C:\sparring\SC116AI`, installs public BWAPI/cnc-ddraw/TournamentModule runtime files, then seeds `C:\sparring\SC116AI_ai`.
+- `C:\sparring\Start-Sparring.cmd` is no longer created from 1.3.1 onward; desktop/start-menu shortcuts target `Sparring.Client.exe`.
 
 Last known local verification:
 
-- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 74 passed
+- `dotnet test .\Sparring.sln -v:minimal`: 74 passed
 - `.\scripts\smoke.ps1`: Release build warning 0 / error 0
 - `.\scripts\smoke-app-start.ps1 -BotName 'Dragon' -MapName '(4)Fighting Spirit'`: passed on 2026-06-07
   - `playerState=InGame`
@@ -104,7 +104,7 @@ Last known local verification:
   - `aiInGame=True`
   - `timerOverlay=True`
   - Actual evidence: `artifacts\screenshots\smoke-start-player-overlay.png`, `smoke-start-player-final.png`, `smoke-start-ai-final.png`
-  - During smoke the player `bwapi.ini` kept `ai =` empty and the AI `bwapi.ini` used `bwapi-data\AI\StarAI\Bots\Dragon\dragon.dll`
+  - During smoke the player `bwapi.ini` kept `ai =` empty and the AI `bwapi.ini` used `bwapi-data\AI\Sparring\Bots\Dragon\dragon.dll`
 
 ## 2026-06-07 Continuation Notes
 
@@ -122,11 +122,11 @@ Last known local verification:
   - ELO update for ladder only, with fixed AI rating from bot ELO and player-only rating persistence.
   - DLL-only bot candidates for UI/random/ladder matching.
   - Random bot/map options and Remastered ladder maps using SCHNAIL compatibility IDs.
-  - `AI 이름 가리기` option: default hides as `StarAIBot`; unchecked reveals the selected bot name as the AI character name.
+  - `AI 이름 가리기` option: default hides as `SparringBot`; unchecked reveals the selected bot name as the AI character name.
   - Dark History tab with mode/result/MMR/source columns.
   - Remastered/Battle.net hotkey importer and SCHNAIL icon-based 3x3 command-card hotkey UI.
   - Known-bad runtime compatibility filter for Fighting Spirit variants:
-    - `Feint` is blocked after `Steamhammer.dll` access-violation crashes were found in `C:\starai\SC116AI_ai\Errors\2026 Jun 07.txt` for `(4)Fighting_Spirit 1.4.scx`.
+    - `Feint` is blocked after `Steamhammer.dll` access-violation crashes were found in `C:\sparring\SC116AI_ai\Errors\2026 Jun 07.txt` for `(4)Fighting_Spirit 1.4.scx`.
     - `ICELab` is blocked on Fighting Spirit variants after user-observed in-game stop on the same local runtime/map family.
 - Remaining known limitation:
   - Natural win/loss without a bot result log still needs a stronger replay/BWAPI event/score-screen parser. Current fallback is intentionally conservative and does not assign a ladder win/loss from player quit/process exit alone.
@@ -138,20 +138,20 @@ The current worktree is intentionally dirty and not committed. Do not reset it u
 Modified tracked files:
 
 - `scripts\smoke-app-start.ps1`
-- `src\StarAI.PracticeClient.App\MainForm.cs`
-- `src\StarAI.PracticeClient.App\PracticeOverlayForm.cs`
-- `src\StarAI.PracticeClient.App\Program.cs`
-- `src\StarAI.PracticeClient.App\SmokeChecks.cs`
-- `src\StarAI.PracticeClient.App\StarCraftBorderlessWindow.cs`
-- `src\StarAI.PracticeClient.Core\SessionMetrics.cs`
-- `tests\StarAI.PracticeClient.Tests\StarAI.PracticeClient.Tests.csproj`
+- `src\Sparring.Client\MainForm.cs`
+- `src\Sparring.Client\PracticeOverlayForm.cs`
+- `src\Sparring.Client\Program.cs`
+- `src\Sparring.Client\SmokeChecks.cs`
+- `src\Sparring.Client\StarCraftBorderlessWindow.cs`
+- `src\Sparring.Core\SessionMetrics.cs`
+- `tests\Sparring.Tests\Sparring.Tests.csproj`
 
 Untracked WIP files:
 
-- `src\StarAI.PracticeClient.App\Properties\AssemblyInfo.cs`
-- `src\StarAI.PracticeClient.App\StarCraftScreenState.cs`
-- `tests\StarAI.PracticeClient.Tests\PracticeSessionClockTests.cs`
-- `tests\StarAI.PracticeClient.Tests\StarCraftScreenAnalyzerTests.cs`
+- `src\Sparring.Client\Properties\AssemblyInfo.cs`
+- `src\Sparring.Client\StarCraftScreenState.cs`
+- `tests\Sparring.Tests\PracticeSessionClockTests.cs`
+- `tests\Sparring.Tests\StarCraftScreenAnalyzerTests.cs`
 
 Implemented in this WIP:
 
@@ -165,7 +165,7 @@ Implemented in this WIP:
 
 Important observations:
 
-- A user Remastered StarCraft window may be open during verification. Ignore it and never kill it. Only local runtimes under `C:\starai\SC116AI` and `C:\starai\SC116AI_ai` are test/control targets.
+- A user Remastered StarCraft window may be open during verification. Ignore it and never kill it. Only local runtimes under `C:\sparring\SC116AI` and `C:\sparring\SC116AI_ai` are test/control targets.
 - In the latest successful actual smoke, both local clients entered the game and the Dragon bot DLL loaded on the AI client.
 - The player screen can still show `ERROR: Failed to load the AI Module ""` because the human `bwapi.ini` intentionally keeps `ai =` empty. BWAPI source inspection indicates this is the human client's empty module warning, not proof that the AI bot failed. Do not “fix” it by putting a bot/CoachAI DLL into the human runtime. If suppressing this message is pursued, find a way that preserves a human `ai` value that is effectively empty/no-op and does not reattach CoachAI or player unit control.
 - A temporary ignored reference clone was created under `artifacts\deps\bwapi-src` to inspect BWAPI source; it is under ignored `artifacts/` and should not be committed.
@@ -174,7 +174,7 @@ Important observations:
 ## 2026-06-08 Runtime Fix Notes
 
 - The startup chat error was reproduced with early trace screenshots, not inferred:
-  - `ERROR: Could not find ai under ai in "C:\starai\SC116AI\bwapi-data\bwapi.ini".`
+  - `ERROR: Could not find ai under ai in "C:\sparring\SC116AI\bwapi-data\bwapi.ini".`
   - `ERROR: Failed to load the AI Module ""`.
 - Root cause:
   - The human client still needs BWAPI for `auto_menu` room automation, but a plain BWAPI player runtime without tournament mode tries to load a normal AI module.
@@ -201,9 +201,9 @@ Important observations:
 ## 2026-06-08 Ladder Compatibility and Map Preview Follow-up
 
 - Verified before editing:
-  - `C:\starai\SC116AI_ai\Errors\2026 Jun 08.txt` contained `Stone.dll` access violations on `(4)Jade.scx`.
+  - `C:\sparring\SC116AI_ai\Errors\2026 Jun 08.txt` contained `Stone.dll` access violations on `(4)Jade.scx`.
   - The same log contained `LetaBot.dll` access violations on `(4)Fighting_Spirit 1.4.scx`.
-  - `Sapphire`/`Gems` config existed under `bwapi-data\AI\StarAI\Bots\Sapphire\Gems_config.json`, while the bot error screen expected `bwapi-data\AI\Gems_config.json`.
+  - `Sapphire`/`Gems` config existed under `bwapi-data\AI\Sparring\Bots\Sapphire\Gems_config.json`, while the bot error screen expected `bwapi-data\AI\Gems_config.json`.
   - Current launcher smoke screenshots showed the map preview panel was gone.
   - `scripts\smoke.ps1` printed launcher smoke failure but returned exit code 0 because native command exit codes were not checked.
 - Implemented:
@@ -212,18 +212,18 @@ Important observations:
     - `Stone` + Fighting Spirit variants
     - `Stone` + Jade variants
   - The exclusions live in `PracticeCatalogCompatibility`, so bot list, map list, ladder candidates, and random pair generation share the same filter.
-  - AI runtime provisioning mirrors selected bot config sidecars such as `Gems_config.json` into `bwapi-data\AI` while still copying the full bot folder under `bwapi-data\AI\StarAI\Bots\<BotName>`.
+  - AI runtime provisioning mirrors selected bot config sidecars such as `Gems_config.json` into `bwapi-data\AI` while still copying the full bot folder under `bwapi-data\AI\Sparring\Bots\<BotName>`.
   - `scripts\smoke.ps1` now fails if `dotnet build` or launcher smoke returns non-zero.
   - `smoke-app-start.ps1` now accepts `-Mode`, `-PlayerRace`, and `-EnemyRace`.
   - Game tab map preview panel is restored. Remastered ladder maps reuse the linked SCHNAIL map preview image when their own image is absent.
   - Launcher smoke now selects a concrete map and fails if the map preview control/image is missing.
 - Latest verification:
-  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 99 passed.
+  - `dotnet test .\Sparring.sln -v:minimal`: 99 passed.
   - `.\scripts\smoke.ps1`: passed, warning 0 / error 0.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]'`: selected compatible Terran bot.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'LetaBot'`: failed as expected because blocked.
   - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Stone'`: failed as expected because blocked.
-  - `.\scripts\smoke-app-start.ps1 -PrepareOnly -BotName 'Sapphire' -MapName '(4)Fighting Spirit' -PlayerRace Protoss -EnemyRace Terran`: passed; `C:\starai\SC116AI_ai\bwapi-data\AI\Gems_config.json` exists.
+  - `.\scripts\smoke-app-start.ps1 -PrepareOnly -BotName 'Sapphire' -MapName '(4)Fighting Spirit' -PlayerRace Protoss -EnemyRace Terran`: passed; `C:\sparring\SC116AI_ai\bwapi-data\AI\Gems_config.json` exists.
   - `.\scripts\smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Dragon'`: passed with `inGame=True`, `aiInGame=True`, `timerOverlay=True`, `aiGracefulShutdown=True`.
   - No local StarCraft/ChaosLauncher processes remained after cleanup.
 
@@ -266,12 +266,12 @@ Important observations:
   - `Yuanheng Zhu` + `(4)Andromeda`
 - This is exhaustive static/log auditing, not exhaustive dynamic boot testing for all 1003 compatible pairs.
 
-## 2026-06-08 StarAI Bundled Asset Follow-up
+## 2026-06-08 Sparring Bundled Asset Follow-up
 
 - User clarified that SCHNAIL was only a development reference and must not be a product/runtime dependency.
 - Added `PracticeAssetCatalogReader` and `PracticeAssetPaths`.
-- Product catalog/hotkey/map preview loading now uses StarAI-owned `data` under the resolved app root. The default installed app root is now `C:\starai`.
-- Added `scripts\import-schnail-assets.ps1` to copy local SCHNAIL assets into StarAI-owned `data` during development/release preparation.
+- Product catalog/hotkey/map preview loading now uses Sparring-owned `data` under the resolved app root. The default installed app root is now `C:\sparring`.
+- Added `scripts\import-schnail-assets.ps1` to copy local SCHNAIL assets into Sparring-owned `data` during development/release preparation.
 - Imported current local assets:
   - `data\bots`: 100 bot folders plus `bots.dat`
   - `data\maps`: 59 map/preview files plus `maps.dat`
@@ -283,8 +283,8 @@ Important observations:
 ## 2026-06-08 Ladder Result GameState Follow-up
 
 - Reproduced the user-reported Halo ladder match result issue from local evidence before editing:
-  - `%APPDATA%\StarAI.PracticeClient\history.json` had the latest Halo ladder match as `Outcome=Unknown` with `ResultSource=player-left-ingame:GameRoom`.
-  - `C:\starai\SC116AI\bwapi-data\gameState.txt` was written during the same match and reported `defeated=0`, `victorious=1`, `gameOver=1` for `StarAIHuman`.
+  - `%APPDATA%\Sparring\history.json` had the latest Halo ladder match as `Outcome=Unknown` with `ResultSource=player-left-ingame:GameRoom`.
+  - `C:\sparring\SC116AI\bwapi-data\gameState.txt` was written during the same match and reported `defeated=0`, `victorious=1`, `gameOver=1` for `SparringHuman`.
   - The AI runtime did not have a fresh bot result log for that match, so the previous resolver could not confirm the result.
 - Added `TournamentGameStateReader` as a second result source after bot result logs and before quit/process-exit fallback.
 - Ladder result precedence is now:
@@ -292,7 +292,7 @@ Important observations:
   - human runtime TournamentModule `bwapi-data\gameState.txt` if it is fresh for the session
   - existing conservative fallback (`Unknown` for ladder player quit/process exit)
 - Corrected the latest local Halo history record to `PlayerWin`, based on the gameState evidence.
-- Follow-up scoring rule: 1453 beating Halo 692 produced a zero-point rounded Elo change with the original formula, so StarAI now applies a custom ladder floor where every win grants at least +1 point.
+- Follow-up scoring rule: 1453 beating Halo 692 produced a zero-point rounded Elo change with the original formula, so Sparring now applies a custom ladder floor where every win grants at least +1 point.
 - The same local Halo record and current rating were adjusted to `PlayerRatingAfter=1454`, `RatingDelta=+1`, `RatingText=1454 (+1)`.
 
 ## 2026-06-08 Ladder MMR Matching Follow-up
@@ -325,7 +325,7 @@ Important observations:
   - Another release-candidate UI verification selected `Yuanheng Zhu` / `Juno.dll` on `(4)Andromeda.scx` and reproduced another AI-side access violation.
 - Implemented:
   - `GlobalInputActionHook` now intercepts Alt+F4 only when the foreground process is the captured player StarCraft PID.
-  - The intercepted Alt+F4 is not passed directly to StarCraft. StarAI sends the normal in-game leave sequence (`F10`, `Q`, `Q`), closes the player process, then runs the existing AI graceful shutdown/finalization path.
+  - The intercepted Alt+F4 is not passed directly to StarCraft. Sparring sends the normal in-game leave sequence (`F10`, `Q`, `Q`), closes the player process, then runs the existing AI graceful shutdown/finalization path.
   - `RedRum` is excluded from all declared compatible maps until a validated supported-map whitelist exists.
   - `Stone` is excluded from all declared compatible maps until runtime safety is proven.
   - `CUBOT` is blocked on Fighting Spirit variants.
@@ -335,7 +335,7 @@ Important observations:
   - `GlobalInputActionHookTests` verifies Alt+F4 interception is limited to the captured player PID and does not catch other keys/windows.
   - `PracticeCatalogCompatibilityTests` covers `RedRum` Jade/Fighting Spirit blocking while keeping other whitelisted RedRum maps selectable, `Stone` + `(2)Benzene`, full `Stone` map exclusion, `CUBOT` Fighting Spirit variants, and `Yuanheng Zhu` + `(4)Andromeda`.
 - Latest verification:
-  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 121 passed.
+  - `dotnet test .\Sparring.sln -v:minimal`: 121 passed.
   - `.\scripts\smoke.ps1`: warning 0 / error 0.
   - `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1024`, `blockedDeclaredDllPairs=26`, `issues=0`, `runtimeCrashes=10`.
   - `.\scripts\smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'Dragon'`: passed with `inGame=True`, `aiInGame=True`, `timerOverlay=True`, `aiGracefulShutdown=True`.
@@ -348,10 +348,10 @@ Important observations:
 ## 2026-06-12 RedRum Fighting Spirit Follow-up
 
 - Verified before editing:
-  - `C:\starai\SC116AI_ai\Errors\2026 Jun 12.txt` had repeated `RedRum.dll` access violations on `(4)Fighting_Spirit 1.4.scx`.
+  - `C:\sparring\SC116AI_ai\Errors\2026 Jun 12.txt` had repeated `RedRum.dll` access violations on `(4)Fighting_Spirit 1.4.scx`.
   - Earlier runtime evidence also had `RedRum.dll` access violation on `(4)Jade.scx`.
   - A partially executed RedRum runtime matrix added `RedRum.dll` access-violation evidence on `(2)Benzene`, `(2)Destination`, `(2)Heartbreak Ridge`, `(3)Neo Moon Glaive`, and `(3)Tau Cross`.
-  - `%APPDATA%\StarAI.PracticeClient\history.json` had `RedRum` ladder entries on `(4)Fighting Spirit 1.4 [Remastered Ladder]` ending as `AI 종료` after 1-6 seconds.
+  - `%APPDATA%\Sparring\history.json` had `RedRum` ladder entries on `(4)Fighting Spirit 1.4 [Remastered Ladder]` ending as `AI 종료` after 1-6 seconds.
 - Implemented:
   - `RedRum` is now excluded from all declared maps until a validated supported-map whitelist exists.
   - Local package inspection found no trustworthy supported-map list in `bots.dat`, `RedRum.zip`, or `RedRum-0_1.json`; the only map-specific RedRum read data references Fighting Spirit, which has crash evidence.
@@ -363,7 +363,7 @@ Important observations:
   - `PracticeCatalogCompatibilityTests.KnownBadRuntimePairsAreNotCompatible` covers the Steamhammer-family Fighting Spirit variants.
   - `PracticeCompatibilityAuditorTests.AuditReportsSharedDllCrashForEveryStillCompatibleCandidate` covers shared-DLL crash promotion.
 - Latest verification:
-  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 133 passed.
+  - `dotnet test .\Sparring.sln -v:minimal`: 133 passed.
   - `.\scripts\smoke.ps1`: warning 0 / error 0.
   - `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1003`, `blockedDeclaredDllPairs=47`, `issues=0`, `runtimeCrashes=24`.
   - Compatibility audit CSV check: `RedRum` compatible pairs = 0, blocked declared pairs = 16.
@@ -380,11 +380,11 @@ Important observations:
 ## 2026-06-12 Short History Compatibility Follow-up
 
 - Verified before editing without Computer Use or foreground focus changes:
-  - `%APPDATA%\StarAI.PracticeClient\history.json` had 14 records under 60 seconds with `Unknown` or AI-exit style sources, grouped into 13 bot-map pairs.
+  - `%APPDATA%\Sparring\history.json` had 14 records under 60 seconds with `Unknown` or AI-exit style sources, grouped into 13 bot-map pairs.
   - None of those exact bot-map pairs had a normal win/loss history result.
   - `.\scripts\audit-compatibility.ps1` failed before the fix with 16 runtime crash issues from fresh local AI error logs.
 - Classified and handled:
-  - `KillAlll`, `Iron bot`, and `XIAOYICOG2019` are blocked on Fighting Spirit variants because `C:\starai\SC116AI_ai\Errors\2026 Jun 12.txt` has repeated DLL access-violation evidence there.
+  - `KillAlll`, `Iron bot`, and `XIAOYICOG2019` are blocked on Fighting Spirit variants because `C:\sparring\SC116AI_ai\Errors\2026 Jun 12.txt` has repeated DLL access-violation evidence there.
   - `Zia bot` is blocked on Fighting Spirit variants because local history shows immediate AI exit on Fighting Spirit 1.4, the DLL/source sidecars exist, and no trustworthy supported-map whitelist was found.
   - `Crazyhammer` + `(4)Empire of the Sun`, `McRaveZ` + `(4)La Mancha1.1`, and `PurpleWave` + `(4)Polypoid 1.65` are exact-pair blocked from short unresolved history records with no matching normal result.
   - `Dragon` + Fighting Spirit and `Sapphire` + Fighting Spirit are intentionally kept compatible because previous local verification/config-sidecar fixes showed those runtime paths can work and no current crash evidence was found for them.
@@ -397,11 +397,11 @@ Important observations:
 
 - Verified before editing:
   - SSCAIT/BWAPI tutorial still exists, but old direct StarCraft 1.16.1 mirror links can return 403/404.
-  - Local SCHNAIL install contains `starcraft_bundled`, `starcraft_bundled_forAI`, `jre`, and `redists`, but this is not StarAI redistribution permission.
+  - Local SCHNAIL install contains `starcraft_bundled`, `starcraft_bundled_forAI`, `jre`, and `redists`, but this is not Sparring redistribution permission.
   - Bot DLL/EXE scan found x86 runtime dependencies including `MSVCP90/MSVCR90`, `MSVCP120/MSVCR120`, `VCRUNTIME140/MSVCP140`, and `api-ms-win-crt-*`.
   - Recent local AI error logs are mostly `EXCEPTION_ACCESS_VIOLATION`, not clear missing-runtime loader errors, so previous map-bot crashes were not reclassified as VC++ issues.
 - Implemented:
-  - StarAI setup still does not include StarCraft game files; users must point the installer at a valid StarCraft 1.16.1 source folder.
+  - Sparring setup still does not include StarCraft game files; users must point the installer at a valid StarCraft 1.16.1 source folder.
   - Setup UI now shows optional prerequisites before path selection:
     - VC++ x86 runtime install, checked by default and described as recommended for native bot loading.
     - Java runtime preparation, checked by default and described as required for custom hotkey MPQ patching.
@@ -411,23 +411,23 @@ Important observations:
   - Hotkey MPQ patching now resolves bundled Java from `<app root>\runtime\jdk\bin\java.exe` before falling back to system Java.
   - Added `docs\INSTALL.md` and updated `README.md`/`docs\TECH_DECISIONS.md`.
 - Latest verification:
-  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 148 passed.
+  - `dotnet test .\Sparring.sln -v:minimal`: 148 passed.
   - `.\scripts\smoke.ps1`: Release build warning 0 / error 0.
-  - `.\scripts\build-release.ps1`: produced updated `StarAI-PracticeClient-1.3.0-setup.exe` and `StarAI-PracticeClient-1.3.0-win-x64.zip`.
+  - `.\scripts\build-release.ps1`: produced updated `Sparring-1.3.0-setup.exe` and `Sparring-1.3.0-win-x64.zip`.
   - VC++/Adoptium dependency URLs returned HTTP 200 in HEAD checks.
   - No StarCraft/ChaosLauncher launch flow was changed, so `smoke-app-start.ps1` was not required for this change.
 
 ## 2026-06-21 1.3.1 Release Follow-up
 
 - Implemented:
-  - Removed the `C:\starai\Start-StarAI-PracticeClient.cmd` entrypoint from new setup generation and smoke requirements.
-  - Setup now cleans up legacy `Start-StarAI-PracticeClient.cmd` files on a best-effort basis.
+  - Removed the `C:\sparring\Start-Sparring.cmd` entrypoint from new setup generation and smoke requirements.
+  - Setup now cleans up legacy `Start-Sparring.cmd` files on a best-effort basis.
   - Release/install docs now point users to multiple public 1.16.1 preparation pages with Markdown links instead of exposing a dead direct mirror URL.
   - Battle.net/Remastered 1.23.x downgrade is explicitly not supported; users must provide a separate 1.16.1 folder.
   - Added Windows Defender/antivirus false-positive guidance and links to Microsoft exclusion instructions.
 - Version bumped to `1.3.1` and `docs\RELEASE_NOTES_1.3.1.md` added.
 - Required verification for the release:
-  - `dotnet test .\StarAI.PracticeClient.sln -v:minimal`
+  - `dotnet test .\Sparring.sln -v:minimal`
   - `.\scripts\smoke.ps1`
   - `.\scripts\build-release.ps1`
   - Because launch flow itself was not changed, actual `smoke-app-start.ps1` is not required unless later changes touch StarCraft/ChaosLauncher execution.
@@ -439,7 +439,7 @@ Important observations:
   - component selection page
   - progress/log page
   - finish state
-- Default install path changed from `C:\starai\StarAI.PracticeClient` to `C:\starai`.
+- Default install path changed from `C:\sparring\Sparring` to `C:\sparring`.
 - Setup builds a SHA-256 manifest from the embedded payload and verifies copied app/data files. It also verifies required app/runtime files after runtime provisioning.
 - New release ZIP payload no longer includes `install.cmd`; Setup EXE is the supported installer path.
 - Version bumped to `1.3.2` and `docs\RELEASE_NOTES_1.3.2.md` added.
@@ -458,7 +458,7 @@ Important observations:
   - manifest excludes `install-manifest.json`, `install-state.json`, and `install-cache\*`.
   - launcher startup verifies the payload manifest before opening `MainForm`.
   - missing/hash-mismatched app payload files are restored from the cache when possible.
-  - the running `StarAI.PracticeClient.App.exe` is intentionally not overwritten.
+  - the running `Sparring.Client.exe` is intentionally not overwritten.
 - Added runtime missing-file startup repair:
   - launcher checks required app/runtime files with the same required-file list as setup.
   - if player/AI runtime files are missing, launcher attempts noninteractive `scripts\setup-runtime.ps1` using the stored StarCraft source path when available.
@@ -475,7 +475,7 @@ Important observations:
 - This hotfix only includes free packaging, internal integrity repair, and user-guidance mitigations.
 - `scripts\build-release.ps1` now:
   - passes version/file-version metadata into app/setup publishes.
-  - produces `StarAI-PracticeClient-<version>-setup-folder.zip`, a small setup EXE plus external `payload.zip`.
+  - produces `Sparring-<version>-setup-folder.zip`, a small setup EXE plus external `payload.zip`.
 - Setup now supports `payload.zip` placed next to the setup EXE, not only embedded payload resources or a `payload` folder.
 - Release pages should not expose checksum lists by default; integrity data is internal to setup/launcher repair.
 - Added `scripts\new-defender-submission-package.ps1` for Microsoft Defender false-positive submission bundles.
@@ -487,7 +487,7 @@ Important observations:
   - launcher shell and main tabs resize with the window instead of leaving fixed-position dead space.
   - game tab is checked at small/default/wide sizes in launcher smoke.
   - combo boxes use a dark StarCraft-like owner-drawn style; smoke fails if default white dropdown rendering returns.
-  - last mode, race filters, player race, bot, and map selection are persisted in `%APPDATA%\StarAI.PracticeClient\settings.json`.
+  - last mode, race filters, player race, bot, and map selection are persisted in `%APPDATA%\Sparring\settings.json`.
   - bot descriptions summarize English-only notes into Korean style/build/player-facing text.
 - In-game overlay:
   - overlay width is measured from the actual timer/APM text and clamped to the game bounds to avoid clipping at different resolutions/DPI.
@@ -500,3 +500,24 @@ Important observations:
   - bundled ladder map presence is checked by launcher smoke.
 - Release packaging:
   - `scripts\build-release.ps1` produces setup EXE, win-x64 ZIP, and setup-folder ZIP only. No public checksum text asset is generated.
+
+## 2026-06-23 1.5.0 Sparring UX and Map Cleanup
+
+- Product naming:
+  - Source projects, solution, setup/client process names, release artifacts, README, and user-visible launcher title use `Sparring`.
+  - Default installed app root remains `C:\sparring`; player/AI runtimes remain `C:\sparring\SC116AI` and `C:\sparring\SC116AI_ai`.
+- Launcher UX:
+  - Game/settings/hotkeys/history tabs are validated at compact/default/FHD/QHD/UHD sizes.
+  - `SmokeChecks` now fails on visible important-control overlap in captured launcher tabs.
+  - Hotkey UI groups worker command-card pages as general/basic structures/advanced structures/all.
+  - Game speed, mouse scroll speed, and keyboard scroll speed can be configured before launching.
+  - The update checker calls the GitHub latest-release API and prompts for download/install, later, or skip-version.
+- Map cleanup:
+  - `Fighting_Spirit_1.41_Official.scm` was excluded from bundled maps after actual 1.16.1 launch produced `The selected scenario is not valid.`
+  - Keep `(4)Fighting Spirit 1.4` as the current bundled Fighting Spirit ladder variant unless a valid 1.16.1-compatible 1.41 file is obtained and verified.
+  - `StarCraftScreenAnalyzer` now classifies create-screen red-frame/dialog states before HUD colors so invalid-scenario modals do not start the timer/APM path.
+- Latest verification before release packaging:
+  - `dotnet test .\Sparring.sln -v:minimal`: 179 passed.
+  - `.\scripts\smoke.ps1`: warning 0 / error 0.
+  - `.\scripts\audit-compatibility.ps1`: issues 0 / runtimeCrashes 0.
+  - `.\scripts\smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4' -BotName 'Dragon'`: passed with `playerState=InGame`, `aiState=InGame`, `inGame=True`, `aiInGame=True`, `timerOverlay=True`, `aiGracefulShutdown=True`.

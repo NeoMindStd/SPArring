@@ -32,8 +32,8 @@ Last updated: 2026-06-05
 
 ## 최근 검증 증거
 
-- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 36개 통과
+- `dotnet test .\Sparring.sln -v:minimal`: 36개 통과
 - `.\scripts\smoke.ps1`: Release 빌드 경고 0 / 오류 0
 - 실제 실행 스크린샷: `artifacts\screenshots\human-starcraft-borderless-overlay-clean.png`
-- 런처 UI 스크린샷: `artifacts\screenshots\starai-launcher-history-tab.png`
+- 런처 UI 스크린샷: `artifacts\screenshots\sparring-launcher-history-tab.png`
 - 창 좌표 확인: 사람 StarCraft `0,0 2560x1440`, AI StarCraft `2333,287 650x517`, 런처 최소화, 오버레이 `230x38`

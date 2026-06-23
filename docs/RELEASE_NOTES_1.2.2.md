@@ -1,4 +1,4 @@
-# StarAI Practice Client 1.2.2
+# Sparring 1.2.2
 
 봇-맵 호환성 필터를 보강한 핫픽스 릴리즈입니다.
 
@@ -10,7 +10,7 @@
 
 ## 설치 방법
 
-1. `StarAI-PracticeClient-1.2.2-win-x64.zip`을 다운로드합니다.
+1. `Sparring-1.2.2-win-x64.zip`을 다운로드합니다.
 2. ZIP 파일의 압축을 풉니다.
 3. 압축을 푼 폴더에서 `install.cmd`를 실행합니다.
-4. 설치 후 `C:\starai\Start-StarAI-PracticeClient.cmd`로 실행합니다.
+4. 설치 후 `C:\sparring\Start-Sparring.cmd`로 실행합니다.

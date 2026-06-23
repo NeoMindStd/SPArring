@@ -46,9 +46,9 @@ Last updated: 2026-06-05
 | ChaosLauncher 플러그인 또는 별도 패처 사용 | 1.16.1에 적용 가능성이 높음 | 플러그인 의존/크래시 리스크 | SCHNAIL bundled plugin 조사 |
 | 런처 내부 CSV 편집 + 런타임 패치 파일 생성 | UI 제어권과 테스트 가능성 좋음 | MPQ writer 선택을 잘못하면 파일 손상 가능 | 채택 |
 
-결정 기준: 원본 수정 없이 `C:\starai\SC116AI`와 `C:\starai\SC116AI_ai`에만 반영 가능하고, 게임 실행 후 실제 단축키가 바뀌는 방식.
+결정 기준: 원본 수정 없이 `C:\sparring\SC116AI`와 `C:\sparring\SC116AI_ai`에만 반영 가능하고, 게임 실행 후 실제 단축키가 바뀌는 방식.
 
-현재 선택: SCHNAIL `sc_hotkeys.csv`를 편집하고 `stat_txt.txt`를 패치한 뒤 `sctblcmp.exe`로 `stat_txt.tbl`을 만든다. 실제 삽입은 SCHNAIL 실행 파일 안의 `org.jasperge.mpq.MPQEditor`/`SFmpq` 기반 `addFile`을 사용한다. `JMpqEditor` 직접 쓰기는 listfile 누락 시 MPQ를 줄여버리는 손상 위험이 확인되어 금지한다. 적용 대상은 작업용 사람 런타임 `C:\starai\SC116AI\patch_rt.mpq`뿐이다.
+현재 선택: SCHNAIL `sc_hotkeys.csv`를 편집하고 `stat_txt.txt`를 패치한 뒤 `sctblcmp.exe`로 `stat_txt.tbl`을 만든다. 실제 삽입은 SCHNAIL 실행 파일 안의 `org.jasperge.mpq.MPQEditor`/`SFmpq` 기반 `addFile`을 사용한다. `JMpqEditor` 직접 쓰기는 listfile 누락 시 MPQ를 줄여버리는 손상 위험이 확인되어 금지한다. 적용 대상은 작업용 사람 런타임 `C:\sparring\SC116AI\patch_rt.mpq`뿐이다.
 
 검증: 임시 복사본 MPQ에 `rez\stat_txt.tbl`을 삽입한 뒤 `rez\minimappreview.bin`과 삽입된 TBL을 읽기 전용으로 확인하는 테스트를 둔다.
 
@@ -112,20 +112,20 @@ Last updated: 2026-06-05
 
 | 옵션 | 장점 | 단점/리스크 | 현재 판단 |
 | --- | --- | --- | --- |
-| StarAI 내장 `data`에서 실행 시 런타임으로 복사 | 최종 사용자 SCHNAIL 의존 제거, 재현 가능한 카탈로그 | 릴리즈 ZIP 용량 증가, import 관리 필요 | 채택 |
+| Sparring 내장 `data`에서 실행 시 런타임으로 복사 | 최종 사용자 SCHNAIL 의존 제거, 재현 가능한 카탈로그 | 릴리즈 ZIP 용량 증가, import 관리 필요 | 채택 |
 | SCHNAIL 원본 bots/maps에서 실행 시 런타임으로 복사 | 원본 보호, 최신 SCHNAIL 카탈로그 활용 | 제품 런타임이 SCHNAIL 설치에 의존 | 폐기 |
 | SCHNAIL 원본 경로를 직접 참조 | 복사 없음 | 원본 수정/잠금/업데이트 충돌 위험 | 금지 |
 | 봇/맵을 레포/릴리즈에 vendoring | 재현성, 독립 설치 가능 | 용량/라이선스/업데이트 부담 | 조건부 채택 |
 
-선택: 맵은 양쪽 런타임 `maps\StarAI`, 봇은 AI 런타임 `bwapi-data\AI\StarAI\Bots\<봇명>`에 복사한다. DLL 봇은 복사된 DLL 상대 경로를 AI `bwapi.ini`의 `ai` 값으로 쓴다.
+선택: 맵은 양쪽 런타임 `maps\Sparring`, 봇은 AI 런타임 `bwapi-data\AI\Sparring\Bots\<봇명>`에 복사한다. DLL 봇은 복사된 DLL 상대 경로를 AI `bwapi.ini`의 `ai` 값으로 쓴다.
 
-2026-06-08 업데이트: 사용자가 SCHNAIL은 개발 참고 대상일 뿐 제품 의존성이 되면 안 된다고 명확히 했다. 따라서 `scripts\import-schnail-assets.ps1`로 릴리즈 준비 시 필요한 봇/맵/핫키 자산을 StarAI `data`에 import/include하고, 앱은 런타임에 `C:\Program Files (x86)\SCHNAIL Client`를 읽지 않는다.
+2026-06-08 업데이트: 사용자가 SCHNAIL은 개발 참고 대상일 뿐 제품 의존성이 되면 안 된다고 명확히 했다. 따라서 `scripts\import-schnail-assets.ps1`로 릴리즈 준비 시 필요한 봇/맵/핫키 자산을 Sparring `data`에 import/include하고, 앱은 런타임에 `C:\Program Files (x86)\SCHNAIL Client`를 읽지 않는다.
 
 ## 봇-맵 런타임 예외
 
 상태: 결정
 
-선택: StarAI 카탈로그의 `mapGuids`는 봇별 허용 맵 whitelist로 해석한다. 실제 1.16.1/BWAPI 로컬 런타임에서 크래시나 장시간 정지가 확인된 조합은 `PracticeCatalogCompatibility`에서 known-bad 조합으로 차단한다.
+선택: Sparring 카탈로그의 `mapGuids`는 봇별 허용 맵 whitelist로 해석한다. 실제 1.16.1/BWAPI 로컬 런타임에서 크래시나 장시간 정지가 확인된 조합은 `PracticeCatalogCompatibility`에서 known-bad 조합으로 차단한다.
 
 현재 예외:
 
@@ -147,7 +147,7 @@ Last updated: 2026-06-05
 | 게임 결과 자동 판정 | 래더 점수 자동화 가능 | BWAPI/replay 파싱 추가 필요 | 후속 |
 | 세션/시간/APM 기록 | 즉시 안정적으로 가능 | 승패는 아직 없음 | 채택 |
 
-현재 선택: 설정 탭에서 사용자 맵 폴더와 리플레이 루트를 저장한다. 사용자 맵은 `.scm/.scx`만 읽고 런타임 `maps\StarAI`에 복사한다. 전적 탭은 실행 세션, 봇/맵/종족, 경과 시간, 마지막 APM/액션 수를 `%APPDATA%\StarAI.PracticeClient\history.json`에 기록한다.
+현재 선택: 설정 탭에서 사용자 맵 폴더와 리플레이 루트를 저장한다. 사용자 맵은 `.scm/.scx`만 읽고 런타임 `maps\Sparring`에 복사한다. 전적 탭은 실행 세션, 봇/맵/종족, 경과 시간, 마지막 APM/액션 수를 `%APPDATA%\Sparring\history.json`에 기록한다.
 
 ## 보류 항목
 
@@ -160,7 +160,7 @@ Status: decided and verified.
 Observed problem:
 
 - Early smoke trace captured the human client showing:
-  - `ERROR: Could not find ai under ai in "C:\starai\SC116AI\bwapi-data\bwapi.ini".`
+  - `ERROR: Could not find ai under ai in "C:\sparring\SC116AI\bwapi-data\bwapi.ini".`
   - `ERROR: Failed to load the AI Module ""`.
 - The red error text also made the screen analyzer classify the first in-game frames as `GameRoom`, delaying the timer/APM overlay.
 
@@ -217,7 +217,7 @@ Status: decided and verified.
 
 Observed evidence before editing:
 
-- AI runtime crash log `C:\starai\SC116AI_ai\Errors\2026 Jun 08.txt` contained access violations for:
+- AI runtime crash log `C:\sparring\SC116AI_ai\Errors\2026 Jun 08.txt` contained access violations for:
   - `Stone.dll` on `(4)Jade.scx`
   - `LetaBot.dll` on `(4)Fighting_Spirit 1.4.scx`
 - The launcher and smoke-start path did not verify the Remastered ladder-map catalog, player race, enemy race, or ladder/random selection path.
@@ -231,13 +231,13 @@ Decision:
   - `Stone` + Jade variants
   - Existing `ICELab` and `Feint` Fighting Spirit exclusions remain.
 - Keep the exclusions in `PracticeCatalogCompatibility` so bot lists, map lists, ladder candidates, and random pair generation share the same source of truth.
-- Mirror selected bot config sidecar files such as `Gems_config.json` into `bwapi-data\AI` in the AI runtime, because some bots look for legacy root-side config paths even when the DLL is loaded from `bwapi-data\AI\StarAI\Bots\<BotName>`.
+- Mirror selected bot config sidecar files such as `Gems_config.json` into `bwapi-data\AI` in the AI runtime, because some bots look for legacy root-side config paths even when the DLL is loaded from `bwapi-data\AI\Sparring\Bots\<BotName>`.
 - `scripts\smoke.ps1` must fail when launcher smoke fails.
 - `smoke-app-start.ps1` supports `-Mode`, `-PlayerRace`, and `-EnemyRace` so regressions like Protoss player vs Terran ladder on Remastered Fighting Spirit 1.4 can be checked directly.
 
 Verification evidence:
 
-- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 99 passed.
+- `dotnet test .\Sparring.sln -v:minimal`: 99 passed.
 - `.\scripts\smoke.ps1`: warning 0 / error 0.
 - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]'`: selected a compatible Terran bot.
 - `.\scripts\smoke-app-start.ps1 -DryRun -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4 [Remastered Ladder]' -BotName 'LetaBot'`: failed because the bot was no longer in candidates.
@@ -267,7 +267,7 @@ Decision:
 Verification evidence:
 
 - `.\scripts\smoke.ps1` first failed with `smoke: map preview box/image was not visible in the launcher.`
-- After restoring the preview panel, `.\scripts\smoke.ps1` passed and `artifacts\screenshots\starai-launcher-smoke.png` showed the selected map preview.
+- After restoring the preview panel, `.\scripts\smoke.ps1` passed and `artifacts\screenshots\sparring-launcher-smoke.png` showed the selected map preview.
 
 ## 2026-06-08 Compatibility Audit
 
@@ -317,7 +317,7 @@ Observed evidence before editing:
 Decision:
 
 - Intercept Alt+F4 only when the foreground process is the captured player StarCraft PID.
-- Do not pass that Alt+F4 directly to StarCraft while a StarAI session is active.
+- Do not pass that Alt+F4 directly to StarCraft while a Sparring session is active.
 - Convert it into the same safe game-leave sequence used elsewhere: `F10`, `Q`, `Q`.
 - After the player leaves, close the player process and then run the existing AI graceful shutdown/finalization path.
 - Block `RedRum` entirely until a validated supported-map whitelist exists. Local package inspection and external bot-page checks did not provide a trustworthy safe map list, while Jade, Fighting Spirit, and additional declared maps already have `RedRum.dll` crash evidence.
@@ -329,7 +329,7 @@ Decision:
 
 Verification evidence:
 
-- `dotnet test .\StarAI.PracticeClient.sln -v:minimal`: 133 passed.
+- `dotnet test .\Sparring.sln -v:minimal`: 133 passed.
 - `.\scripts\smoke.ps1`: warning 0 / error 0.
 - `.\scripts\audit-compatibility.ps1`: `compatibleDllPairs=1003`, `blockedDeclaredDllPairs=47`, `issues=0`, `runtimeCrashes=24`.
 - Alt+F4 interception is covered by `GlobalInputActionHookTests`; foreground Alt+F4 UI automation was stopped after user safety feedback.
@@ -341,13 +341,13 @@ Status: decided.
 Observed evidence:
 
 - The SSCAIT/BWAPI tutorial still references StarCraft 1.16.1 preparation, but old direct mirror links can return 403/404.
-- Local SCHNAIL installation contains bundled StarCraft runtime folders, Java, and VC++ redistributables, but that observation is not redistribution permission for StarAI.
+- Local SCHNAIL installation contains bundled StarCraft runtime folders, Java, and VC++ redistributables, but that observation is not redistribution permission for Sparring.
 - Local bot binaries include 32-bit runtime dependencies across `MSVCP90/MSVCR90`, `MSVCP120/MSVCR120`, `VCRUNTIME140/MSVCP140`, and `api-ms-win-crt-*`.
 - Recent local AI runtime failures are mostly access violations, not clear missing-runtime loader errors, so earlier map-bot crashes should not be reclassified as VC++ problems without fresh evidence.
 
 Decision:
 
-- Do not include StarCraft 1.16.1 game files in StarAI release artifacts unless explicit redistribution permission or a clearly licensed source is obtained.
+- Do not include StarCraft 1.16.1 game files in Sparring release artifacts unless explicit redistribution permission or a clearly licensed source is obtained.
 - The setup app continues to ask for a user-provided StarCraft 1.16.1 source folder and copies it into separate player/AI runtimes.
 - Add optional setup choices for VC++ x86 redistributables and OpenJDK. VC++ installers are downloaded from Microsoft official URLs; OpenJDK is prepared inside the app install folder and does not change system Java.
 - Do not add a .NET runtime prerequisite because the app and setup are self-contained.
@@ -358,10 +358,10 @@ Status: decided.
 
 Decision:
 
-- Stop creating `C:\starai\Start-StarAI-PracticeClient.cmd` in new installs. Desktop and Start Menu shortcuts should target `StarAI.PracticeClient.App.exe` directly.
-- Treat existing `Start-StarAI-PracticeClient.cmd` files as legacy cleanup targets during setup.
+- Stop creating `C:\sparring\Start-Sparring.cmd` in new installs. Desktop and Start Menu shortcuts should target `Sparring.Client.exe` directly.
+- Treat existing `Start-Sparring.cmd` files as legacy cleanup targets during setup.
 - Do not add a Battle.net/Remastered-to-1.16.1 downgrade option. Current Battle.net/Remastered clients use a different modern install/update model, and no official, legally clean downgrade path to a BWAPI 4.4-compatible 1.16.1 runtime was identified.
-- User-facing install docs should provide multiple public reference pages for obtaining/preparing 1.16.1, but StarAI must not host or endorse a specific third-party binary.
+- User-facing install docs should provide multiple public reference pages for obtaining/preparing 1.16.1, but Sparring must not host or endorse a specific third-party binary.
 - Add Windows Defender/antivirus false-positive guidance because BWAPI tools, old native bot DLLs/EXEs, and legacy 32-bit runtime files may be flagged on some machines.
 
 ## 2026-06-22 1.3.2 Installer UX and Install Verification
@@ -370,7 +370,7 @@ Status: decided.
 
 Decision:
 
-- Use `C:\starai` as the default app install folder. The app still uses separate mutable player/AI runtimes at `C:\starai\SC116AI` and `C:\starai\SC116AI_ai`.
+- Use `C:\sparring` as the default app install folder. The app still uses separate mutable player/AI runtimes at `C:\sparring\SC116AI` and `C:\sparring\SC116AI_ai`.
 - Keep the setup artifact as a self-contained EXE, but present the flow like a familiar Windows installer wizard with path, component, progress, and completion states.
 - Show visible progress/status during long copy/download/runtime setup steps.
 - Build a SHA-256 manifest from the embedded payload and verify the copied files after install. Also check required runtime files after StarCraft/BWAPI provisioning so antivirus quarantine or missing files surface as a clear user-facing error.
@@ -394,10 +394,10 @@ Decision:
 
 - The installer writes `install-manifest.json`, `install-state.json`, and `install-cache\payload.zip` into the install root.
 - The manifest contains SHA-256 hashes for the app payload, excluding the manifest, state file, and repair cache to avoid self-referential hash churn.
-- On launcher startup, StarAI verifies the manifest before building the main UI. Missing or changed payload files are restored from `install-cache\payload.zip` when possible.
-- The launcher does not overwrite the currently running `StarAI.PracticeClient.App.exe`; if the app executable itself is damaged, the user is told to rerun the installer.
+- On launcher startup, Sparring verifies the manifest before building the main UI. Missing or changed payload files are restored from `install-cache\payload.zip` when possible.
+- The launcher does not overwrite the currently running `Sparring.Client.exe`; if the app executable itself is damaged, the user is told to rerun the installer.
 - Required runtime files under the player/AI runtime roots are checked on startup. If runtime files are missing, the launcher attempts a noninteractive `setup-runtime.ps1` repair using the stored StarCraft 1.16.1 source path when available.
-- If Defender, SmartScreen, or another antivirus removes files again, StarAI shows user-facing guidance to check Windows Security protection history and only allow/restore trusted official release files.
+- If Defender, SmartScreen, or another antivirus removes files again, Sparring shows user-facing guidance to check Windows Security protection history and only allow/restore trusted official release files.
 - Release pages do not expose checksum lists by default; integrity data is used internally by the installer and launcher repair flow.
 
 ## 2026-06-23 Free Security/Detection Mitigations
@@ -407,5 +407,5 @@ Status: decided.
 Decision:
 
 - This hotfix only includes free packaging, internal integrity repair, and user-guidance mitigations.
-- Build output now includes `StarAI-PracticeClient-<version>-setup-folder.zip`, containing a smaller Setup EXE plus external `payload.zip`.
+- Build output now includes `Sparring-<version>-setup-folder.zip`, containing a smaller Setup EXE plus external `payload.zip`.
 - Add `scripts\new-defender-submission-package.ps1` to create a Microsoft Defender false-positive submission bundle with release artifacts and an explanation template.

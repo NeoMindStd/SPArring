@@ -1,4 +1,4 @@
-# StarAI Practice Client Roadmap
+# Sparring Roadmap
 
 ## 0. 다시 시작 기준
 
@@ -15,7 +15,7 @@
 
 ## 2. 런타임 준비
 
-- 사람 런타임 `C:\starai\SC116AI`와 AI 런타임 `C:\starai\SC116AI_ai`를 분리한다.
+- 사람 런타임 `C:\sparring\SC116AI`와 AI 런타임 `C:\sparring\SC116AI_ai`를 분리한다.
 - 핫키는 SCHNAIL CSV에서 가져와 편집하고, SFmpq 방식으로 작업용 런타임 MPQ에만 반영한다.
 - `bwapi.ini`, `wmode.ini`, replay 경로, sound 설정을 역할별로 생성한다.
 
@@ -23,7 +23,7 @@
 
 - 사람 클라이언트가 방을 만들고 AI 클라이언트가 참가하는 순서를 안정화한다.
 - AI 클라이언트는 창모드, 음소거, APMAlert OFF를 기본값으로 둔다.
-- ChaosLauncher 중복 실행과 프로세스 정리 범위를 `C:\starai` 아래 로컬 런타임으로 제한한다.
+- ChaosLauncher 중복 실행과 프로세스 정리 범위를 `C:\sparring` 아래 로컬 런타임으로 제한한다.
 - 실제 실행 smoke와 스크린샷으로 QHD 전체 창모드/AI 관찰 창을 검증한다.
 
 ## 4. 화면/마우스

@@ -4,7 +4,7 @@
 
 - 정식/배포 친화 이름: SPArring
 - 풀네임: StarCraft Practice with AI
-- 레포/기존 앱 이름: StarAI Practice Client
+- 레포/기존 앱 이름: Sparring
 
 ## 한 줄 정의
 
@@ -12,7 +12,7 @@ SPArring은 StarCraft 1.16.1 + BWAPI 환경에서 사람이 다양한 AI 봇과 
 
 ## 핵심 목표
 
-- StarAI 릴리즈에 포함된 봇/맵 카탈로그와 자산을 사용한다.
+- Sparring 릴리즈에 포함된 봇/맵 카탈로그와 자산을 사용한다.
 - 사람 클라이언트와 AI 클라이언트를 분리된 로컬 런타임으로 실행한다.
 - 사람은 전체화면처럼 보이는 borderless/fullscreen 창에서 플레이한다.
 - AI는 별도 창으로 실행되며 기본 음소거/관찰 가능 상태를 지향한다.
@@ -28,8 +28,8 @@ SPArring은 StarCraft 1.16.1 + BWAPI 환경에서 사람이 다양한 AI 봇과 
 ## 필수 사용자 시나리오
 
 1. 런처 실행
-   - 사용자는 바탕화면/시작 메뉴 바로가기 또는 `StarAI.PracticeClient.App.exe` 직접 실행으로 런처를 실행한다.
-   - 런처는 StarAI 내장 봇/맵 카탈로그와 로컬 런타임 상태를 읽는다.
+   - 사용자는 바탕화면/시작 메뉴 바로가기 또는 `Sparring.Client.exe` 직접 실행으로 런처를 실행한다.
+   - 런처는 Sparring 내장 봇/맵 카탈로그와 로컬 런타임 상태를 읽는다.
 
 2. 스파링 모드
    - 사용자는 내 종족, 상대 종족 필터, 봇, 맵을 고른다.
@@ -46,9 +46,9 @@ SPArring은 StarCraft 1.16.1 + BWAPI 환경에서 사람이 다양한 AI 봇과 
    - 래더 점수는 Elo 계산을 기반으로 하되, 승리 시 반올림 결과가 0점이어도 최소 +1점을 보장한다.
 
 4. 핫키
-   - 사용자는 StarAI 기본 CSV 또는 Battle.net/Remastered `STR_*` 핫키 파일을 가져와 작업 CSV에 반영하고 편집한다.
+   - 사용자는 Sparring 기본 CSV 또는 Battle.net/Remastered `STR_*` 핫키 파일을 가져와 작업 CSV에 반영하고 편집한다.
    - 런타임 반영은 사람 런타임 `patch_rt.mpq`에만 적용한다.
-   - StarAI 내장 `data`와 원본 Remastered/Battle.net 설치 폴더는 수정하지 않는다.
+   - Sparring 내장 `data`와 원본 Remastered/Battle.net 설치 폴더는 수정하지 않는다.
 
 5. 인게임 보조 표시
    - APMAlert는 크래시 이력 때문에 기본 OFF다.
@@ -57,7 +57,7 @@ SPArring은 StarCraft 1.16.1 + BWAPI 환경에서 사람이 다양한 AI 봇과 
 
 ## 구현된 기능
 
-- StarAI 내장 `data\bots\bots.dat` / `data\maps\maps.dat` 카탈로그 파싱.
+- Sparring 내장 `data\bots\bots.dat` / `data\maps\maps.dat` 카탈로그 파싱.
 - 봇/맵 호환성 필터.
 - 스파링 모드 UI.
 - 래더 후보 선택 UI와 현재 MMR 기준 봇 ELO/MMR 거리 가중 매칭.
@@ -72,7 +72,7 @@ SPArring은 StarCraft 1.16.1 + BWAPI 환경에서 사람이 다양한 AI 봇과 
 - cnc-ddraw 기반 사람 클라이언트 borderless/fullscreen.
 - AI 클라이언트 음소거/별도 창 실행.
 - 게임 종료 감지 후 오버레이 정리와 로컬 사람/AI 런타임 자동 종료.
-- 핫키 CSV 편집, StarAI 기본값/Battle.net 가져오기, 아이콘 기반 3x3 명령 카드 UI, 사람 런타임 MPQ 반영.
+- 핫키 CSV 편집, Sparring 기본값/Battle.net 가져오기, 아이콘 기반 3x3 명령 카드 UI, 사람 런타임 MPQ 반영.
 - 승패/모드/MMR/판정 근거를 포함한 세션 히스토리와 APM 기록.
 - 실제 실행 smoke와 스크린샷 기반 검증.
 
@@ -91,11 +91,11 @@ SPArring은 StarCraft 1.16.1 + BWAPI 환경에서 사람이 다양한 AI 봇과 
 
 ## 제품 불변조건
 
-- 사람 런타임: `C:\starai\SC116AI`
-- AI 런타임: `C:\starai\SC116AI_ai`
+- 사람 런타임: `C:\sparring\SC116AI`
+- AI 런타임: `C:\sparring\SC116AI_ai`
 - 사람 `bwapi.ini`의 `ai` 값은 비운다.
 - AI `bwapi.ini`에만 선택 봇 DLL을 설정한다.
 - CoachAI 또는 플레이어 유닛 제어 흐름을 되살리지 않는다.
-- StarAI 내장 `data`와 Remastered 원본 폴더는 런타임에서 읽기 전용이다.
+- Sparring 내장 `data`와 Remastered 원본 폴더는 런타임에서 읽기 전용이다.
 - 독점 전체화면은 금지한다.
-- 새 설치는 `C:\starai\Start-StarAI-PracticeClient.cmd`를 생성하지 않는다.
+- 새 설치는 `C:\sparring\Start-Sparring.cmd`를 생성하지 않는다.

@@ -1,9 +1,9 @@
 param(
-    [string] $PlayerRuntimeRoot = 'C:\starai\SC116AI',
-    [string] $AiRuntimeRoot = 'C:\starai\SC116AI_ai',
+    [string] $PlayerRuntimeRoot = 'C:\sparring\SC116AI',
+    [string] $AiRuntimeRoot = 'C:\sparring\SC116AI_ai',
     [string] $AppRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path,
     [string] $StarCraftSourceRoot = '',
-    [string] $DependencyCacheRoot = (Join-Path $env:LOCALAPPDATA 'StarAI.PracticeClient\deps'),
+    [string] $DependencyCacheRoot = (Join-Path $env:LOCALAPPDATA 'Sparring\deps'),
     [switch] $SkipDownloads,
     [switch] $OpenSetupLinks,
     [switch] $NonInteractive
@@ -203,7 +203,7 @@ function Install-TournamentModule {
 
 function Disable-OptionalChaosPlugin([string] $RuntimeRoot, [string] $PluginFileName) {
     $activePath = Join-Path $RuntimeRoot "Plugins\$PluginFileName"
-    $disabledPath = "$activePath.starai-disabled"
+    $disabledPath = "$activePath.sparring-disabled"
     if (-not (Test-Path -LiteralPath $activePath)) {
         return
     }
@@ -258,7 +258,7 @@ Disable-OptionalChaosPlugin $AiRuntimeRoot 'APMAlert.bwl'
 Test-Runtime
 
 Write-Host ""
-Write-Host "StarAI runtime setup completed."
+Write-Host "Sparring runtime setup completed."
 Write-Host "Player runtime: $PlayerRuntimeRoot"
 Write-Host "AI runtime: $AiRuntimeRoot"
 Write-Host "App root: $AppRoot"

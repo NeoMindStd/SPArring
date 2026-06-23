@@ -11,7 +11,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
-$appProject = Join-Path $repo 'src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj'
+$appProject = Join-Path $repo 'src\Sparring.Client\Sparring.Client.csproj'
 $starCraftBefore = @((Get-Process -Name 'StarCraft' -ErrorAction SilentlyContinue).Id)
 
 function Get-ScreenSignature {
@@ -59,7 +59,7 @@ finally {
         }
 
         Get-CimInstance Win32_Process | Where-Object {
-            $_.Name -eq 'Chaoslauncher - MultiInstance.exe' -and $_.ExecutablePath -like 'C:\starai\*'
+            $_.Name -eq 'Chaoslauncher - MultiInstance.exe' -and $_.ExecutablePath -like 'C:\sparring\*'
         } | ForEach-Object {
             Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
         }

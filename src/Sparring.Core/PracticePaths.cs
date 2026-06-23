@@ -1,0 +1,175 @@
+namespace Sparring.Core;
+
+public sealed record PracticePaths(
+    string RepositoryRoot,
+    string PlayerRuntimeRoot,
+    string AiRuntimeRoot,
+    string AssetRoot,
+    string ReferenceSchnailRoot)
+{
+    public PracticePaths(
+        string repositoryRoot,
+        string playerRuntimeRoot,
+        string aiRuntimeRoot,
+        string referenceSchnailRoot)
+        : this(
+            repositoryRoot,
+            playerRuntimeRoot,
+            aiRuntimeRoot,
+            Path.Combine(repositoryRoot, "data"),
+            referenceSchnailRoot)
+    {
+    }
+
+    public static PracticePaths Defaults()
+    {
+        return ForApplicationRoot(ResolveApplicationRoot());
+    }
+
+    public static PracticePaths ForApplicationRoot(string applicationRoot)
+    {
+        var repositoryRoot = Path.GetFullPath(applicationRoot);
+        return new PracticePaths(
+            RepositoryRoot: repositoryRoot,
+            PlayerRuntimeRoot: @"C:\sparring\SC116AI",
+            AiRuntimeRoot: @"C:\sparring\SC116AI_ai",
+            AssetRoot: Path.Combine(repositoryRoot, "data"),
+            ReferenceSchnailRoot: @"C:\Program Files (x86)\SCHNAIL Client");
+    }
+
+    public static string ResolveApplicationRoot()
+    {
+        var candidates = new List<string?>();
+        candidates.Add(Environment.GetEnvironmentVariable("SPARRING_ROOT"));
+        candidates.Add(AppContext.BaseDirectory);
+        candidates.Add(Directory.GetCurrentDirectory());
+        candidates.Add(@"C:\sparring");
+        candidates.Add(@"C:\sparring\Sparring");
+
+        foreach (var candidate in candidates.SelectMany(ExpandCandidateAndParents))
+        {
+            if (HasBundledData(candidate))
+            {
+                return Path.GetFullPath(candidate);
+            }
+        }
+
+        return @"C:\sparring";
+    }
+
+    private static IEnumerable<string> ExpandCandidateAndParents(string? candidate)
+    {
+        if (string.IsNullOrWhiteSpace(candidate))
+        {
+            yield break;
+        }
+
+        var current = new DirectoryInfo(Path.GetFullPath(candidate));
+        for (var depth = 0; current is not null && depth < 8; depth++)
+        {
+            yield return current.FullName;
+            current = current.Parent;
+        }
+    }
+
+    private static bool HasBundledData(string root)
+    {
+        return File.Exists(Path.Combine(root, InstallationVerifier.ManifestFileName)) ||
+               File.Exists(Path.Combine(root, "data", "bots", "bots.dat")) &&
+               File.Exists(Path.Combine(root, "data", "maps", "maps.dat"));
+    }
+}
+
+public sealed record PathPolicyIssue(string Code, string Message);
+
+public sealed record PathSafetyVerdict(bool Allowed, string Code, string Message);
+
+public static class RuntimeWritePolicy
+{
+    public static IReadOnlyList<PathPolicyIssue> ValidateLayout(PracticePaths paths)
+    {
+        var issues = new List<PathPolicyIssue>();
+
+        if (PathEquals(paths.PlayerRuntimeRoot, paths.AiRuntimeRoot))
+        {
+            issues.Add(new PathPolicyIssue(
+                "runtime.same-root",
+                "Player and AI runtimes must be separate directories."));
+        }
+
+        if (IsSameOrUnder(paths.PlayerRuntimeRoot, paths.AssetRoot) ||
+            IsSameOrUnder(paths.AiRuntimeRoot, paths.AssetRoot))
+        {
+            issues.Add(new PathPolicyIssue(
+                "runtime.inside-assets",
+                "Mutable StarCraft runtimes must not live inside the Sparring bundled asset folder."));
+        }
+
+        if (IsSameOrUnder(paths.PlayerRuntimeRoot, paths.ReferenceSchnailRoot) ||
+            IsSameOrUnder(paths.AiRuntimeRoot, paths.ReferenceSchnailRoot))
+        {
+            issues.Add(new PathPolicyIssue(
+                "runtime.inside-schnail",
+                "Mutable StarCraft runtimes must not live inside reference SCHNAIL folders."));
+        }
+
+        return issues;
+    }
+
+    public static PathSafetyVerdict CheckMutableRuntimeTarget(PracticePaths paths, string targetPath)
+    {
+        if (IsSameOrUnder(targetPath, paths.AssetRoot))
+        {
+            return new PathSafetyVerdict(
+                false,
+                "target.protected-assets",
+                "Sparring bundled asset files are read-only at runtime.");
+        }
+
+        if (IsSameOrUnder(targetPath, paths.ReferenceSchnailRoot))
+        {
+            return new PathSafetyVerdict(
+                false,
+                "target.protected-schnail",
+                "Reference SCHNAIL files are read-only import sources.");
+        }
+
+        if (IsSameOrUnder(targetPath, paths.PlayerRuntimeRoot) ||
+            IsSameOrUnder(targetPath, paths.AiRuntimeRoot))
+        {
+            return new PathSafetyVerdict(true, "target.runtime", "Target is inside a mutable StarCraft runtime.");
+        }
+
+        return new PathSafetyVerdict(
+            false,
+            "target.outside-runtime",
+            "Runtime writes are limited to the player and AI runtime folders.");
+    }
+
+    public static bool IsSameOrUnder(string candidatePath, string rootPath)
+    {
+        var candidate = Normalize(candidatePath);
+        var root = Normalize(rootPath);
+
+        if (PathEquals(candidate, root))
+        {
+            return true;
+        }
+
+        var rootWithSeparator = root.EndsWith(Path.DirectorySeparatorChar)
+            ? root
+            : root + Path.DirectorySeparatorChar;
+
+        return candidate.StartsWith(rootWithSeparator, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool PathEquals(string left, string right)
+    {
+        return string.Equals(Normalize(left), Normalize(right), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string Normalize(string path)
+    {
+        return Path.GetFullPath(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+    }
+}

@@ -1,4 +1,4 @@
-# StarAI Practice Client 1.3.3
+# Sparring 1.3.3
 
 설치 프로그램 화면 표시 문제를 고친 핫픽스입니다.
 
@@ -10,7 +10,7 @@
 ## 설치 방법
 
 1. StarCraft 1.16.1 원본 클라이언트를 준비합니다.
-2. `StarAI-PracticeClient-1.3.3-setup.exe`를 실행합니다.
-3. 설치 폴더를 확인합니다. 기본값은 `C:\starai`입니다.
+2. `Sparring-1.3.3-setup.exe`를 실행합니다.
+3. 설치 폴더를 확인합니다. 기본값은 `C:\sparring`입니다.
 4. StarCraft 1.16.1 원본 폴더를 지정합니다.
 5. 선택 구성 요소를 확인한 뒤 설치합니다.

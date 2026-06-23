@@ -2,8 +2,8 @@ $ErrorActionPreference = 'Stop'
 
 $repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $version = (Get-Content -LiteralPath (Join-Path $repo 'VERSION') -Raw).Trim()
-$appProject = Join-Path $repo 'src\StarAI.PracticeClient.App\StarAI.PracticeClient.App.csproj'
-$setupProject = Join-Path $repo 'src\StarAI.PracticeClient.Setup\StarAI.PracticeClient.Setup.csproj'
+$appProject = Join-Path $repo 'src\Sparring.Client\Sparring.Client.csproj'
+$setupProject = Join-Path $repo 'src\Sparring.Setup\Sparring.Setup.csproj'
 $releaseRoot = Join-Path $repo 'artifacts\release'
 $publishDir = Join-Path $releaseRoot "publish-app-$version"
 $setupPublishDir = Join-Path $releaseRoot "publish-setup-$version"
@@ -12,9 +12,9 @@ $payloadStage = Join-Path $releaseRoot "payload-stage-$version"
 $externalSetupStage = Join-Path $releaseRoot "setup-folder-stage-$version"
 $payloadZip = Join-Path $releaseRoot "payload-$version.zip"
 $distDir = Join-Path $releaseRoot "dist"
-$zipPath = Join-Path $distDir "StarAI-PracticeClient-$version-win-x64.zip"
-$setupExePath = Join-Path $distDir "StarAI-PracticeClient-$version-setup.exe"
-$setupFolderZipPath = Join-Path $distDir "StarAI-PracticeClient-$version-setup-folder.zip"
+$zipPath = Join-Path $distDir "Sparring-$version-win-x64.zip"
+$setupExePath = Join-Path $distDir "Sparring-$version-setup.exe"
+$setupFolderZipPath = Join-Path $distDir "Sparring-$version-setup-folder.zip"
 $dataRoot = Join-Path $repo 'data'
 $versionParts = $version.Split('.')
 while ($versionParts.Count -lt 4) {
@@ -31,7 +31,7 @@ $versionProperties = @(
 
 if (-not (Test-Path -LiteralPath (Join-Path $dataRoot 'bots\bots.dat')) -or
     -not (Test-Path -LiteralPath (Join-Path $dataRoot 'maps\maps.dat'))) {
-    throw "StarAI bundled assets were not found. Run .\scripts\import-schnail-assets.ps1 before building a release package."
+    throw "Sparring bundled assets were not found. Run .\scripts\import-schnail-assets.ps1 before building a release package."
 }
 
 if (-not (Test-Path -LiteralPath (Join-Path $repo 'scripts\setup-runtime.ps1'))) {
@@ -65,7 +65,7 @@ dotnet publish $appProject `
     $versionProperties `
     -o $publishDir
 
-Copy-Item -LiteralPath (Join-Path $publishDir 'StarAI.PracticeClient.App.exe') -Destination (Join-Path $payloadStage 'StarAI.PracticeClient.App.exe') -Force
+Copy-Item -LiteralPath (Join-Path $publishDir 'Sparring.Client.exe') -Destination (Join-Path $payloadStage 'Sparring.Client.exe') -Force
 Copy-Item -LiteralPath (Join-Path $repo 'VERSION') -Destination (Join-Path $payloadStage 'VERSION') -Force
 Copy-Item -LiteralPath (Join-Path $repo 'README.md') -Destination (Join-Path $payloadStage 'README.md') -Force
 New-Item -ItemType Directory -Force -Path (Join-Path $payloadStage 'scripts') | Out-Null
@@ -114,9 +114,9 @@ dotnet publish $setupProject `
     "-p:PayloadZipPath=$payloadZip" `
     -o $setupPublishDir
 
-Copy-Item -LiteralPath (Join-Path $setupPublishDir 'StarAI.PracticeClient.Setup.exe') -Destination $setupExePath -Force
+Copy-Item -LiteralPath (Join-Path $setupPublishDir 'Sparring.Setup.exe') -Destination $setupExePath -Force
 
-$setupObjRoot = Join-Path $repo 'src\StarAI.PracticeClient.Setup\obj\Release'
+$setupObjRoot = Join-Path $repo 'src\Sparring.Setup\obj\Release'
 Remove-Item -LiteralPath $setupObjRoot -Recurse -Force -ErrorAction SilentlyContinue
 dotnet publish $setupProject `
     -c Release `
@@ -130,7 +130,7 @@ dotnet publish $setupProject `
     $versionProperties `
     -o $setupExternalPublishDir
 
-Copy-Item -LiteralPath (Join-Path $setupExternalPublishDir 'StarAI.PracticeClient.Setup.exe') -Destination (Join-Path $externalSetupStage "StarAI-PracticeClient-$version-setup.exe") -Force
+Copy-Item -LiteralPath (Join-Path $setupExternalPublishDir 'Sparring.Setup.exe') -Destination (Join-Path $externalSetupStage "Sparring-$version-setup.exe") -Force
 Copy-Item -LiteralPath $payloadZip -Destination (Join-Path $externalSetupStage 'payload.zip') -Force
 Copy-Item -LiteralPath (Join-Path $payloadStage 'README-INSTALL.txt') -Destination (Join-Path $externalSetupStage 'README-INSTALL.txt') -Force
 Compress-Archive -Path (Join-Path $externalSetupStage '*') -DestinationPath $setupFolderZipPath -Force

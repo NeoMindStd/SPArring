@@ -1,4 +1,4 @@
-# StarAI Practice Client 1.1.0
+# Sparring 1.1.0
 
 실전 스파링을 더 안정적으로 진행하기 위한 마이너 릴리즈입니다.
 
@@ -14,7 +14,7 @@
 
 ## 설치 방법
 
-1. `StarAI-PracticeClient-1.1.0-win-x64.zip`을 다운로드합니다.
+1. `Sparring-1.1.0-win-x64.zip`을 다운로드합니다.
 2. ZIP 파일의 압축을 풉니다.
 3. 압축을 푼 폴더에서 `install.cmd`를 실행합니다.
-4. 설치 후 `C:\starai\Start-StarAI-PracticeClient.cmd`로 실행합니다.
+4. 설치 후 `C:\sparring\Start-Sparring.cmd`로 실행합니다.

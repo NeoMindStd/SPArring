@@ -1,4 +1,4 @@
-# StarAI Practice Client 1.4.0
+# Sparring 1.4.0
 
 런처와 설치 프로그램을 더 일반적인 PC 환경에서 쓰기 좋게 다듬은 정규 릴리즈입니다.
 
@@ -17,6 +17,6 @@
 ## 설치 방법
 
 1. StarCraft 1.16.1 원본 폴더를 준비합니다.
-2. `StarAI-PracticeClient-1.4.0-setup.exe`를 실행합니다.
+2. `Sparring-1.4.0-setup.exe`를 실행합니다.
 3. 설치 프로그램에서 StarCraft 1.16.1 원본 폴더를 지정합니다.
-4. 설치가 끝나면 `StarAI Practice Client` 바로가기로 실행합니다.
+4. 설치가 끝나면 `Sparring` 바로가기로 실행합니다.

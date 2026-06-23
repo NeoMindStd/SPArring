@@ -3,12 +3,12 @@
 ## 솔루션 구조
 
 ```text
-StarAI.PracticeClient.sln
+Sparring.sln
 src/
-  StarAI.PracticeClient.Core/
-  StarAI.PracticeClient.App/
+  Sparring.Core/
+  Sparring.Client/
 tests/
-  StarAI.PracticeClient.Tests/
+  Sparring.Tests/
 scripts/
 docs/
 docs/
@@ -16,12 +16,12 @@ docs/
 
 ## Core 프로젝트
 
-`src/StarAI.PracticeClient.Core`는 UI와 분리된 정책/모델/파일 작업을 담당한다.
+`src/Sparring.Core`는 UI와 분리된 정책/모델/파일 작업을 담당한다.
 
 주요 책임:
 
 - 경로 정책: `PracticePaths`, `RuntimeWritePolicy`
-- StarAI 내장 자산 카탈로그 로딩: `PracticeAssetCatalogReader`
+- Sparring 내장 자산 카탈로그 로딩: `PracticeAssetCatalogReader`
 - SCHNAIL 호환 JSON 파싱: `SchnailCatalogReader`
 - 봇/맵 모델: `Models`
 - 봇-맵 호환성: `PracticeCatalogCompatibility`
@@ -71,12 +71,12 @@ data/
 
 ## App 프로젝트
 
-`src/StarAI.PracticeClient.App`는 WinForms 런처, 오버레이, 실제 실행 smoke를 담당한다.
+`src/Sparring.Client`는 WinForms 런처, 오버레이, 실제 실행 smoke를 담당한다.
 
 주요 책임:
 
 - 메인 UI: `MainForm`
-- 사용자 설정 저장: `PracticeClientSettings`
+- 사용자 설정 저장: `SparringSettings`
 - 인게임 타이머/APM 오버레이: `PracticeOverlayForm`
 - 글로벌 입력 카운트: `GlobalInputActionHook`
 - StarCraft 창 조정: `StarCraftBorderlessWindow`, `StarCraftBorderlessKeeper`
@@ -89,8 +89,8 @@ data/
 SPArring은 두 개의 StarCraft 1.16.1 런타임을 사용한다.
 
 ```text
-C:\starai\SC116AI      사람 클라이언트
-C:\starai\SC116AI_ai   AI 클라이언트
+C:\sparring\SC116AI      사람 클라이언트
+C:\sparring\SC116AI_ai   AI 클라이언트
 ```
 
 역할별 핵심 차이:
@@ -103,7 +103,7 @@ C:\starai\SC116AI_ai   AI 클라이언트
 | 화면 | borderless/fullscreen 지향 | 창모드/관찰 가능 지향 |
 | 사용 목적 | 플레이어 조작 | 봇 실행 |
 
-StarAI `data` 폴더는 런타임 자산의 읽기 전용 출처이며 실행 중 쓰기 대상이 아니다. SCHNAIL 설치본은 개발/릴리즈 준비 시 import 소스로만 사용할 수 있고, 제품 실행 필수 조건이 아니다.
+Sparring `data` 폴더는 런타임 자산의 읽기 전용 출처이며 실행 중 쓰기 대상이 아니다. SCHNAIL 설치본은 개발/릴리즈 준비 시 import 소스로만 사용할 수 있고, 제품 실행 필수 조건이 아니다.
 
 ## 실행 계획 생성
 
@@ -133,9 +133,9 @@ StarAI `data` 폴더는 런타임 자산의 읽기 전용 출처이며 실행 �
 
 ## 런타임 자산 흐름
 
-1. StarAI `data` 카탈로그에서 봇/맵 원본 경로를 읽는다.
-2. 맵은 두 런타임의 `maps\StarAI`로 복사한다.
-3. 봇은 AI 런타임의 `bwapi-data\AI\StarAI\Bots\<BotName>`로 복사한다.
+1. Sparring `data` 카탈로그에서 봇/맵 원본 경로를 읽는다.
+2. 맵은 두 런타임의 `maps\Sparring`로 복사한다.
+3. 봇은 AI 런타임의 `bwapi-data\AI\Sparring\Bots\<BotName>`로 복사한다.
 4. 사람/AI 각각 `bwapi.ini`, `wmode.ini`, `ddraw.ini` 등을 생성/갱신한다.
 5. ChaosLauncher로 사람 클라이언트를 실행한다.
 6. 짧은 지연 후 ChaosLauncher로 AI 클라이언트를 실행한다.
@@ -149,33 +149,33 @@ StarAI `data` 폴더는 런타임 자산의 읽기 전용 출처이며 실행 �
 - `wmode.ini`
 - `ddraw.ini`
 - `Plugins\wmode.bwl`
-- `Plugins\APMAlert.bwl` 또는 `.starai-disabled`
+- `Plugins\APMAlert.bwl` 또는 `.sparring-disabled`
 - `patch_rt.mpq`
 
 사용자 데이터:
 
-- `%APPDATA%\StarAI.PracticeClient\settings.json`
-- `%APPDATA%\StarAI.PracticeClient\history.json`
-- `%APPDATA%\StarAI.PracticeClient\ladder-rating.json`
+- `%APPDATA%\Sparring\settings.json`
+- `%APPDATA%\Sparring\history.json`
+- `%APPDATA%\Sparring\ladder-rating.json`
 
 ## 핫키 적용 구조
 
-1. StarAI 기본 CSV 또는 작업 CSV를 읽는다.
-2. Battle.net/Remastered 가져오기는 `STR_* = key` 파일을 탐지해 StarAI command id로 매핑한 뒤 작업 CSV 엔트리의 핫키만 갱신한다.
+1. Sparring 기본 CSV 또는 작업 CSV를 읽는다.
+2. Battle.net/Remastered 가져오기는 `STR_* = key` 파일을 탐지해 Sparring command id로 매핑한 뒤 작업 CSV 엔트리의 핫키만 갱신한다.
 3. `stat_txt.txt`의 명령 문자열을 패치한다.
 4. `sctblcmp.exe`로 `stat_txt.tbl`을 컴파일한다.
-5. StarAI에 포함된 SFmpq 기반 writer로 사람 런타임 `patch_rt.mpq`에 `rez\stat_txt.tbl`을 삽입한다.
+5. Sparring에 포함된 SFmpq 기반 writer로 사람 런타임 `patch_rt.mpq`에 `rez\stat_txt.tbl`을 삽입한다.
 
 금지:
 
-- StarAI 내장 `data` 수정.
+- Sparring 내장 `data` 수정.
 - 원본 Remastered/Battle.net 설치 폴더 수정.
 - `JMpqEditor` 직접 쓰기 방식.
 - AI 런타임에 사람 핫키 패치를 우선 적용하는 흐름.
 
 UI:
 
-- 핫키 탭은 StarAI 내장 `data\res\hotkey_icons` 이미지를 읽기 전용으로 로드한다.
+- 핫키 탭은 Sparring 내장 `data\res\hotkey_icons` 이미지를 읽기 전용으로 로드한다.
 - 선택 항목 목록은 대표 아이콘을 표시하고, 선택된 항목의 명령은 StarCraft 명령 카드에 맞춘 3x3 슬롯으로 표시한다.
 - CSV/MPQ 쓰기 대상은 계속 사람 런타임뿐이다.
 
@@ -197,12 +197,12 @@ UI:
 - 봇 로그와 TournamentModule 결과가 모두 없는 래더 세션은 플레이어 이탈/프로세스 종료만으로 승패를 추정하지 않고 `미확인`으로 둔다.
 - 스파링 세션의 같은 이탈은 래더 점수를 건드리지 않고 `중단`으로 기록한다.
 - 사람 래더 점수만 ELO 공식으로 갱신한다. AI의 ELO/MMR은 카탈로그 값을 고정 상대 점수로 사용한다.
-- StarAI 커스텀 래더 룰로 승리 시 점수 변화가 0으로 반올림되면 최소 +1점을 보장한다.
+- Sparring 커스텀 래더 룰로 승리 시 점수 변화가 0으로 반올림되면 최소 +1점을 보장한다.
 - 전적 탭은 시작 시각, 모드, 결과, AI, 맵, 종족, APM, 액션, 시간, 래더 점수, 판정 근거를 표시한다.
 
 ## 봇-맵 호환성 예외
 
-- 기본 호환성은 StarAI 내장 `maps.dat` / `bots.dat` 선언과 Remastered 래더맵의 `EffectiveCompatibilityMapIds`를 따른다.
+- 기본 호환성은 Sparring 내장 `maps.dat` / `bots.dat` 선언과 Remastered 래더맵의 `EffectiveCompatibilityMapIds`를 따른다.
 - `bots.dat`의 `mapGuids`는 봇별 허용 맵 whitelist로 해석한다. 목록에 없는 맵은 지원 맵으로 간주하지 않는다.
 - 단, 실제 런타임 로그/관찰로 깨지는 조합은 `PracticeCatalogCompatibility`의 known-bad 예외로 막는다.
 - 2026-06-07 확인된 예외:

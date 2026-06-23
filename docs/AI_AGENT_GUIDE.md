@@ -43,7 +43,7 @@
 기본 테스트:
 
 ```powershell
-dotnet test .\StarAI.PracticeClient.sln -v:minimal
+dotnet test .\Sparring.sln -v:minimal
 .\scripts\smoke.ps1
 ```
 
@@ -60,8 +60,8 @@ dotnet test .\StarAI.PracticeClient.sln -v:minimal
 로컬 런타임:
 
 ```text
-C:\starai\SC116AI
-C:\starai\SC116AI_ai
+C:\sparring\SC116AI
+C:\sparring\SC116AI_ai
 ```
 
 원본 참조:
@@ -79,8 +79,8 @@ AI 봇 로드 성공 여부는 AI 런타임 기준으로 판단한다.
 
 확인할 것:
 
-- `C:\starai\SC116AI_ai\bwapi-data\bwapi.ini`
-- `ai = bwapi-data\AI\StarAI\Bots\<Bot>\<bot>.dll`
+- `C:\sparring\SC116AI_ai\bwapi-data\bwapi.ini`
+- `ai = bwapi-data\AI\Sparring\Bots\<Bot>\<bot>.dll`
 - 실제 AI 클라이언트가 인게임에 들어왔는지
 - AI 유닛/건물이 동작하는지
 
