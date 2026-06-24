@@ -163,19 +163,19 @@ public sealed class MainForm : Form
             BackColor = BackColor,
             ColumnCount = 1,
             RowCount = 4,
-            Padding = new Padding(14, 14, 14, 10)
+            Padding = new Padding(10, 10, 10, 8)
         };
         shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         shell.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         shell.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
+        shell.RowStyles.Add(new RowStyle(SizeType.Absolute, Math.Max(34, Font.Height + 16)));
 
         var title = new Label
         {
             Text = "Sparring 연습 런처",
             AutoSize = true,
-            Font = new Font(Font.FontFamily, 18, FontStyle.Bold),
+            Font = new Font(Font.FontFamily, 14, FontStyle.Bold),
             ForeColor = Color.FromArgb(166, 255, 126),
             Margin = new Padding(4, 0, 4, 2)
         };
@@ -184,9 +184,9 @@ public sealed class MainForm : Form
         {
             Text = "Sparring 내장 봇/맵으로 로컬 1.16.1 + BWAPI 스파링을 준비합니다.",
             AutoSize = true,
-            Font = new Font(Font.FontFamily, 10),
+            Font = new Font(Font.FontFamily, 9),
             ForeColor = Color.FromArgb(128, 218, 93),
-            Margin = new Padding(6, 0, 4, 12)
+            Margin = new Padding(6, 0, 4, 8)
         };
 
         _tabs = new TabControl
@@ -362,12 +362,14 @@ public sealed class MainForm : Form
 
         _difficultyLabel = new Label
         {
+            Name = "DifficultyLabel",
             AutoSize = false,
             Location = new Point(372, 124),
             Size = new Size(282, 74),
             ForeColor = Color.FromArgb(166, 255, 126),
-            Font = new Font(Font.FontFamily, 14, FontStyle.Bold),
-            BorderStyle = BorderStyle.FixedSingle
+            Font = new Font(Font.FontFamily, 10, FontStyle.Bold),
+            BorderStyle = BorderStyle.FixedSingle,
+            TextAlign = ContentAlignment.MiddleCenter
         };
 
         _mapPreviewLabel = CreateLabel("맵 미리보기", 372, 202);
@@ -503,9 +505,13 @@ public sealed class MainForm : Form
         _resetRatingButton.SetBounds(topControlX + 296, 104, 160, 34);
         runtimeText?.SetBounds(topControlX, 150, Math.Max(320, rightWidth), 52);
 
-        _difficultyLabel.SetBounds(middleX, compact ? 212 : 112, middleWidth, 74);
+        var difficultyHeight = compact ? 42 : 46;
+        var difficultyY = compact
+            ? (runtimeText?.Bottom ?? 150) + 10
+            : 112;
+        _difficultyLabel.SetBounds(middleX, difficultyY, middleWidth, difficultyHeight);
         _mapPreviewLabel.SetBounds(middleX, _difficultyLabel.Bottom + 10, middleWidth, 24);
-        var previewSize = Math.Min(compact ? 232 : 260, Math.Max(170, middleWidth));
+        var previewSize = Math.Min(compact ? 184 : 260, Math.Max(160, middleWidth));
         _mapPreviewBox.SetBounds(middleX, _mapPreviewLabel.Bottom + 4, previewSize, previewSize);
 
         var detailsX = compact ? middleX + previewSize + gap : rightX;
@@ -520,7 +526,7 @@ public sealed class MainForm : Form
             detailsWidth = rightWidth;
         }
 
-        _detailsText.SetBounds(detailsX, detailsY, Math.Max(300, detailsWidth), Math.Max(170, height - detailsY - 72));
+        _detailsText.SetBounds(detailsX, detailsY, Math.Max(300, detailsWidth), Math.Max(compact ? 150 : 170, height - detailsY - 72));
         const int launchButtonWidth = 220;
         _launchButton.SetBounds(width - pad - launchButtonWidth, height - 58, launchButtonWidth, 44);
         page.AutoScrollMinSize = new Size(Math.Max(900, _detailsText.Right + pad), Math.Max(620, _launchButton.Bottom + 8));
@@ -857,13 +863,17 @@ public sealed class MainForm : Form
         var commandX = pad + leftWidth + gap;
         var availableForDetails = width - commandX - pad;
         var compact = width < 1250;
-        var commandSize = Math.Min(360, Math.Max(300, availableForDetails - 396));
+        var commandSize = compact
+            ? Math.Min(280, Math.Max(244, availableForDetails - 356))
+            : Math.Min(360, Math.Max(300, availableForDetails - 396));
         var detailsX = commandX + commandSize + gap;
         var detailsWidth = width - detailsX - pad;
         var detailsBelow = detailsWidth < 320;
         if (detailsBelow)
         {
-            commandSize = Math.Min(330, Math.Max(286, availableForDetails));
+            commandSize = compact
+                ? Math.Min(270, Math.Max(244, availableForDetails))
+                : Math.Min(330, Math.Max(286, availableForDetails));
             detailsX = commandX;
             detailsWidth = Math.Max(360, width - detailsX - pad);
         }
@@ -922,14 +932,18 @@ public sealed class MainForm : Form
         var detailTop = detailsBelow
             ? _hotkeyCommandPanel.Bottom + gap
             : compact ? contentTop - 8 : 128;
-        _hotkeyCommandTitle.SetBounds(detailsX, detailTop, detailsWidth, 60);
-        _hotkeyCommandMeta.SetBounds(detailsX, _hotkeyCommandTitle.Bottom + 4, detailsWidth, 54);
-        _hotkeyDefaultText.SetBounds(detailsX, _hotkeyCommandMeta.Bottom + 4, detailsWidth, 56);
+        var titleHeight = compact ? 46 : 60;
+        var metaHeight = compact ? 42 : 54;
+        var defaultHeight = compact ? 42 : 56;
+        var helpHeight = compact ? 110 : 142;
+        _hotkeyCommandTitle.SetBounds(detailsX, detailTop, detailsWidth, titleHeight);
+        _hotkeyCommandMeta.SetBounds(detailsX, _hotkeyCommandTitle.Bottom + 4, detailsWidth, metaHeight);
+        _hotkeyDefaultText.SetBounds(detailsX, _hotkeyCommandMeta.Bottom + 4, detailsWidth, defaultHeight);
         FindLabel(page, "현재 키")?.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 20, 64, 24);
         _hotkeyKeyText.SetBounds(detailsX + 64, _hotkeyDefaultText.Bottom + 14, 84, 30);
         FindButton(page, "키 적용")?.SetBounds(detailsX + 162, _hotkeyDefaultText.Bottom + 10, 110, 36);
 
-        _hotkeyHelpText.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 72, detailsWidth, 142);
+        _hotkeyHelpText.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 72, detailsWidth, helpHeight);
 
         var runtimeHelpTop = Math.Max(_hotkeyObjectList.Bottom + 36, _hotkeyCommandPanel.Bottom + 36);
         runtimeHelpTop = Math.Max(runtimeHelpTop, _hotkeyHelpText.Bottom + 36);
@@ -2207,8 +2221,8 @@ public sealed class MainForm : Form
             var randomMap = mapItem?.Map;
             var candidates = FilterBotsForCurrentControls(randomMap).ToList();
             _difficultyLabel.Text = candidates.Count == 0
-                ? "랜덤\r\n후보 없음"
-                : $"랜덤\r\n후보 {candidates.Count}개";
+                ? "랜덤 후보 없음"
+                : $"랜덤 후보 {candidates.Count}개";
             _detailsText.Text = string.Join(Environment.NewLine, new[]
             {
                 "봇: Random",
@@ -2226,8 +2240,8 @@ public sealed class MainForm : Form
         var difficulty = LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo);
         var profile = BotProfileSummarizer.Summarize(bot);
         _difficultyLabel.Text = difficulty is null
-            ? "난이도\r\nSCR 환산 미확인"
-            : $"난이도\r\n{difficulty.Label}";
+            ? "난이도 미확인"
+            : $"{difficulty.Label}";
 
         _detailsText.Text = string.Join(Environment.NewLine, new[]
         {
@@ -2401,10 +2415,10 @@ public sealed class MainForm : Form
                 {
                     var difficulty = LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo);
                     return $"- {bot.Name} / {bot.Race} / {difficulty?.Label ?? $"ELO {bot.Elo?.ToString() ?? "?"}"}";
-                });
+            });
             _difficultyLabel.Text = compatibleMaps.Count == 0
-                ? "래더\r\n후보 없음"
-                : $"래더\r\nMMR 후보 {weightedCandidates.Count}개";
+                ? "래더 후보 없음"
+                : $"래더 후보 {weightedCandidates.Count}개";
             _detailsText.Text = string.Join(Environment.NewLine, new[]
             {
                 "모드: 래더",
@@ -2426,8 +2440,8 @@ public sealed class MainForm : Form
             ? Array.Empty<PracticeBot>()
             : LadderBotSelector.CandidatesForMap(_catalog, map.Id, enemyRace);
         _difficultyLabel.Text = candidates.Count == 0
-            ? "래더\r\n후보 없음"
-            : $"래더\r\n후보 {candidates.Count}개";
+            ? "래더 후보 없음"
+            : $"래더 후보 {candidates.Count}개";
 
         var difficultyRange = FormatDifficultyRange(candidates);
         var preview = candidates

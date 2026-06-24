@@ -5,7 +5,7 @@ Sparring는 StarCraft 1.16.1 + BWAPI 기반의 로컬 AI 스파링 런처입니�
 ## 쉬운 설치
 
 1. StarCraft 1.16.1 원본 클라이언트를 먼저 준비합니다. 자세한 기준은 아래 [StarCraft 1.16.1 준비](#starcraft-1161-준비)를 참고하세요.
-2. GitHub Releases에서 최신 `Sparring-1.5.2-setup.exe`를 다운로드합니다.
+2. GitHub Releases에서 최신 `Sparring-1.5.3-setup.exe`를 다운로드합니다.
 3. 설치 프로그램을 실행합니다.
 4. 선택 구성요소를 확인합니다. VC++ x86 런타임은 봇 호환성을 위해 권장하고, Java 런타임은 커스텀 단축키 반영에 필요합니다.
 5. 설치 경로를 확인하고, StarCraft 1.16.1 원본 폴더를 지정합니다.
@@ -85,7 +85,7 @@ Sparring 봇/맵 기본 카탈로그는 릴리즈 패키지에 포함됩니다. 
 ## English Install Guide
 
 1. Prepare a legally obtained StarCraft 1.16.1 source folder first. Sparring does not redistribute the game files.
-2. Download `Sparring-1.5.2-setup.exe` from GitHub Releases.
+2. Download `Sparring-1.5.3-setup.exe` from GitHub Releases.
 3. Run the installer.
 4. Review optional prerequisites. VC++ x86 is recommended for older native bots; Java is needed for custom hotkey MPQ patching.
 5. Choose the install folder and select the StarCraft 1.16.1 source folder.

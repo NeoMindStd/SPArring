@@ -7,9 +7,9 @@ Last updated: 2026-06-24
 - Repo: `C:\starai\StarAI.PracticeClient-1.3.0` / installed app root `C:\sparring`
 - User entrypoint: desktop/start-menu shortcut targeting `Sparring.Client.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.5.2`
-- Last verified implementation state: 1.5.2 hotfix WIP with high-DPI launcher/setup layout fixes from 1.5.1 plus AI-client shutdown cleanup that avoids leaving BWAPI/Windows shutdown error logs in the AI runtime.
-- Current WIP: 1.5.2 hotfix validation, package, commit, tag, and release upload may still be pending until the current turn completes. Do not reset/revert local changes unless the user explicitly asks.
+- Current version: `1.5.3`
+- Last verified implementation state: 1.5.3 hotfix WIP with additional Surface Pro 9 / 200% scaling launcher compact-layout fixes on top of the 1.5.2 AI shutdown cleanup.
+- Current WIP: 1.5.3 hotfix validation, package, commit, tag, and release upload may still be pending until the current turn completes. Do not reset/revert local changes unless the user explicitly asks.
 
 ## Hard Rules
 
@@ -567,3 +567,22 @@ Important observations:
 - Validation evidence so far:
   - Targeted `StarCraftGameExitControllerTests`: passed.
   - `smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit' -BotName 'Dragon'`: passed with `aiRuntimeErrorsClean=True`, `aiRuntimeErrorFiles=none`, `aiGracefulShutdown=True`.
+
+## 2026-06-24 1.5.3 Surface Compact UI Hotfix
+
+- Rechecked on the current problem PC:
+  - Windows 11 Home, Surface Pro 9, 1440x960 working area at 200% scaling.
+  - `Downloads\Starcraft_1161` and `Downloads\Starcraft_1161.zip` exist as StarCraft 1.16.1 source candidates.
+  - A leftover elevated `Sparring-1.5.0-setup.exe` process and its child `Sparring.Client.exe` could not be terminated from the current non-elevated tool context.
+  - Launching `Sparring-1.5.2-setup.exe` reached the Windows UAC consent screen; actual install could not continue without user approval.
+- Reproduced from launcher UI smoke screenshots:
+  - Compact game tab had an oversized difficulty/ladder summary card that clipped text under 200% scaling.
+  - Compact game and Hotkeys tabs used too much vertical space in the header/card/detail areas, making the minimum-size view feel cramped.
+  - Status text at the bottom could be clipped at compact height.
+- Implemented:
+  - Launcher header and status row now use less vertical space while keeping status text readable.
+  - Game tab summary card is single-line, smaller, and smoke-validated for text clipping.
+  - Compact game tab uses a smaller map preview and more compact detail sizing.
+  - Compact Hotkeys command card/detail blocks are reduced so more useful content is visible without overlap.
+  - Setup first-screen wording now uses `Sparring을` instead of `Sparring를`.
+  - Launcher UI smoke now fails when the important difficulty label text is clipped.

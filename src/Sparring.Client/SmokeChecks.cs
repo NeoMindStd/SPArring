@@ -846,6 +846,20 @@ internal static class SmokeChecks
                 }
             }
 
+            if (child is Label label && ShouldValidateLabelTextFit(label))
+            {
+                var proposedSize = new Size(Math.Max(1, label.ClientSize.Width), int.MaxValue);
+                var preferred = TextRenderer.MeasureText(
+                    label.Text,
+                    label.Font,
+                    proposedSize,
+                    TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
+                if (preferred.Height > label.ClientSize.Height + 4)
+                {
+                    yield return $"{DescribeControl(label)} text is clipped. text='{label.Text}', preferred={preferred}, size={label.ClientSize}.";
+                }
+            }
+
             if (child is ComboBox combo)
             {
                 if (combo.DrawMode != DrawMode.OwnerDrawFixed)
@@ -864,6 +878,13 @@ internal static class SmokeChecks
                 yield return issue;
             }
         }
+    }
+
+    private static bool ShouldValidateLabelTextFit(Label label)
+    {
+        return !label.AutoSize &&
+               label.Name is "DifficultyLabel" &&
+               !string.IsNullOrWhiteSpace(label.Text);
     }
 
     private static string DescribeControl(Control control)
