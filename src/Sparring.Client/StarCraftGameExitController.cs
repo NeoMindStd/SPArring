@@ -85,7 +85,13 @@ internal static class StarCraftGameExitController
                          TryKill(process, entireProcessTree: true, closeWait) ||
                          WaitForProcessExit(processId, TimeSpan.FromSeconds(5)) ||
                          !ProcessExists(processId);
-            RuntimeErrorBaseline.RemoveExpectedShutdownCrashes(errorDirectory, errorBaseline);
+            var runtimeErrorRetryWindow = closeWait < TimeSpan.FromSeconds(8)
+                ? TimeSpan.FromSeconds(8)
+                : closeWait;
+            RuntimeErrorBaseline.RemoveExpectedShutdownCrashes(
+                errorDirectory,
+                errorBaseline,
+                runtimeErrorRetryWindow);
             return new StarCraftAiShutdownResult(
                 ProcessWasRunning: true,
                 LeaveSequenceSent: false,
@@ -98,6 +104,14 @@ internal static class StarCraftGameExitController
     public static bool TryLeaveGame(int processId, TimeSpan leaveWait)
     {
         return TrySendLeaveGameSequence(processId, leaveWait).LeaveConfirmed;
+    }
+
+    public static void RemoveExpectedShutdownCrashes(string? errorDirectory, TimeSpan retryWindow)
+    {
+        RuntimeErrorBaseline.RemoveExpectedShutdownCrashes(
+            errorDirectory,
+            RuntimeErrorBaseline.Empty,
+            retryWindow);
     }
 
     internal static bool IsLeaveCompleteState(StarCraftScreenState state)
@@ -361,11 +375,14 @@ internal static class StarCraftGameExitController
 
     private sealed record RuntimeErrorBaseline(IReadOnlyDictionary<string, RuntimeErrorFileState> Files)
     {
+        public static RuntimeErrorBaseline Empty { get; } =
+            new(new Dictionary<string, RuntimeErrorFileState>(StringComparer.OrdinalIgnoreCase));
+
         public static RuntimeErrorBaseline Capture(string? errorDirectory)
         {
             if (string.IsNullOrWhiteSpace(errorDirectory) || !Directory.Exists(errorDirectory))
             {
-                return new RuntimeErrorBaseline(new Dictionary<string, RuntimeErrorFileState>(StringComparer.OrdinalIgnoreCase));
+                return Empty;
             }
 
             var files = Directory.EnumerateFiles(errorDirectory)
@@ -381,29 +398,75 @@ internal static class StarCraftGameExitController
             return new RuntimeErrorBaseline(files);
         }
 
-        public static void RemoveExpectedShutdownCrashes(string? errorDirectory, RuntimeErrorBaseline baseline)
+        public static void RemoveExpectedShutdownCrashes(
+            string? errorDirectory,
+            RuntimeErrorBaseline baseline,
+            TimeSpan retryWindow)
         {
             if (string.IsNullOrWhiteSpace(errorDirectory) || !Directory.Exists(errorDirectory))
             {
                 return;
             }
 
-            foreach (var path in Directory.EnumerateFiles(errorDirectory).Where(IsRuntimeErrorFile))
+            var knownExpectedCrashTimes = new List<DateTime>();
+            var deadline = DateTime.UtcNow + retryWindow;
+            do
             {
-                var info = new FileInfo(path);
-                if (baseline.Files.TryGetValue(info.FullName, out var previous) &&
-                    previous.Length == info.Length &&
-                    previous.LastWriteTimeUtc == info.LastWriteTimeUtc)
+                RemoveExpectedShutdownCrashesOnce(errorDirectory, baseline, knownExpectedCrashTimes);
+                if (retryWindow <= TimeSpan.Zero)
                 {
-                    continue;
+                    return;
                 }
 
-                if (!IsExpectedShutdownCrash(path))
-                {
-                    continue;
-                }
+                Thread.Sleep(250);
+            }
+            while (DateTime.UtcNow < deadline);
 
-                TryDelete(path);
+            RemoveExpectedShutdownCrashesOnce(errorDirectory, baseline, knownExpectedCrashTimes);
+        }
+
+        private static void RemoveExpectedShutdownCrashesOnce(
+            string errorDirectory,
+            RuntimeErrorBaseline baseline,
+            List<DateTime> knownExpectedCrashTimes)
+        {
+            var candidates = Directory.EnumerateFiles(errorDirectory)
+                .Where(IsRuntimeErrorFile)
+                .Select(path => new RuntimeErrorCandidate(path, new FileInfo(path)))
+                .Where(candidate => !baseline.Files.TryGetValue(candidate.Path, out var previous) ||
+                                    previous.Length != candidate.Length ||
+                                    previous.LastWriteTimeUtc != candidate.LastWriteTimeUtc)
+                .ToArray();
+
+            var expectedTextCrashes = candidates
+                .Where(candidate => candidate.Extension.Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                .Where(candidate => IsExpectedShutdownCrash(candidate.Path))
+                .ToArray();
+            if (expectedTextCrashes.Length == 0)
+            {
+                if (knownExpectedCrashTimes.Count == 0)
+                {
+                    return;
+                }
+            }
+
+            foreach (var crash in expectedTextCrashes)
+            {
+                if (!knownExpectedCrashTimes.Any(time => IsWithinExpectedCrashTime(time, crash.LastWriteTimeUtc)))
+                {
+                    knownExpectedCrashTimes.Add(crash.LastWriteTimeUtc);
+                }
+            }
+
+            var expectedCrashTimes = knownExpectedCrashTimes.Concat(expectedTextCrashes.Select(crash => crash.LastWriteTimeUtc)).ToArray();
+            foreach (var candidate in candidates.Where(candidate => IsExpectedShutdownCrashCompanionErr(candidate, expectedCrashTimes)))
+            {
+                TryDelete(candidate.Path);
+            }
+
+            foreach (var candidate in expectedTextCrashes)
+            {
+                TryDelete(candidate.Path);
             }
         }
 
@@ -425,6 +488,40 @@ internal static class StarCraftGameExitController
             }
         }
 
+        private static bool IsExpectedShutdownCrashCompanionErr(
+            RuntimeErrorCandidate candidate,
+            IReadOnlyList<DateTime> expectedCrashTimes)
+        {
+            if (!candidate.Extension.Equals(".ERR", StringComparison.OrdinalIgnoreCase) &&
+                !candidate.Extension.Equals(".err", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!expectedCrashTimes.Any(time => IsWithinExpectedCrashTime(time, candidate.LastWriteTimeUtc)))
+            {
+                return false;
+            }
+
+            try
+            {
+                var text = File.ReadAllText(candidate.Path);
+                return text.Contains("Exception code: E06D7363", StringComparison.OrdinalIgnoreCase) &&
+                       text.Contains("KERNELBASE.dll", StringComparison.OrdinalIgnoreCase) &&
+                       text.Contains("BWAPI.dll", StringComparison.OrdinalIgnoreCase) &&
+                       text.Contains("StarCraft.exe", StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool IsWithinExpectedCrashTime(DateTime left, DateTime right)
+        {
+            return Math.Abs((left - right).TotalSeconds) <= 5;
+        }
+
         private static void TryDelete(string path)
         {
             try
@@ -439,4 +536,16 @@ internal static class StarCraftGameExitController
     }
 
     private sealed record RuntimeErrorFileState(long Length, DateTime LastWriteTimeUtc);
+
+    private sealed record RuntimeErrorCandidate(
+        string Path,
+        long Length,
+        DateTime LastWriteTimeUtc,
+        string Extension)
+    {
+        public RuntimeErrorCandidate(string path, FileInfo info)
+            : this(info.FullName, info.Length, info.LastWriteTimeUtc, System.IO.Path.GetExtension(path))
+        {
+        }
+    }
 }

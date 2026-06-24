@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Sparring.Client;
 
 namespace Sparring.Tests;
@@ -68,4 +69,121 @@ public sealed class StarCraftGameExitControllerTests
         Assert.True(StarCraftGameExitController.IsExpectedBwapiShutdownCrashText(shutdownCrash));
         Assert.False(StarCraftGameExitController.IsExpectedBwapiShutdownCrashText(unrelatedCrash));
     }
+
+    [Fact]
+    public void DisconnectProcessWithoutBwapiLeaveRemovesLateExpectedTxtAndErrShutdownCrashPair()
+    {
+        var errorDirectory = Path.Combine(Path.GetTempPath(), "SparringTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(errorDirectory);
+        using var process = StartLongRunningProcess();
+
+        var writer = new Thread(() =>
+        {
+            Thread.Sleep(250);
+            File.WriteAllText(Path.Combine(errorDirectory, "2026 Jun 24.txt"), KnownShutdownCrashText);
+            File.WriteAllText(Path.Combine(errorDirectory, "dwj19160101.ERR"), KnownShutdownCrashErrText);
+        });
+        writer.Start();
+
+        var result = StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(
+            process.Id,
+            TimeSpan.FromMilliseconds(250),
+            errorDirectory);
+
+        writer.Join(TimeSpan.FromSeconds(5));
+
+        Assert.True(result.Exited);
+        Assert.Empty(Directory.EnumerateFiles(errorDirectory));
+    }
+
+    [Fact]
+    public void DisconnectProcessWithoutBwapiLeaveRetriesLockedExpectedShutdownCrashPair()
+    {
+        var errorDirectory = Path.Combine(Path.GetTempPath(), "SparringTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(errorDirectory);
+        using var process = StartLongRunningProcess();
+        var textPath = Path.Combine(errorDirectory, "2026 Jun 24.txt");
+        var errPath = Path.Combine(errorDirectory, "dwj19160101.ERR");
+
+        var writer = new Thread(() =>
+        {
+            Thread.Sleep(250);
+            using (var text = new FileStream(textPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            using (var err = new FileStream(errPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            {
+                WriteText(text, KnownShutdownCrashText);
+                WriteText(err, KnownShutdownCrashErrText);
+                Thread.Sleep(3500);
+            }
+        });
+        writer.Start();
+
+        var result = StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(
+            process.Id,
+            TimeSpan.FromMilliseconds(250),
+            errorDirectory);
+
+        writer.Join(TimeSpan.FromSeconds(10));
+
+        Assert.True(result.Exited);
+        Assert.Empty(Directory.EnumerateFiles(errorDirectory));
+    }
+
+    [Fact]
+    public void RemoveExpectedShutdownCrashesCanCleanExternalRuntimeStopPair()
+    {
+        var errorDirectory = Path.Combine(Path.GetTempPath(), "SparringTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(errorDirectory);
+        File.WriteAllText(Path.Combine(errorDirectory, "2026 Jun 24.txt"), KnownShutdownCrashText);
+        File.WriteAllText(Path.Combine(errorDirectory, "dwj19160101.ERR"), KnownShutdownCrashErrText);
+
+        StarCraftGameExitController.RemoveExpectedShutdownCrashes(errorDirectory, TimeSpan.Zero);
+
+        Assert.Empty(Directory.EnumerateFiles(errorDirectory));
+    }
+
+    private static void WriteText(FileStream stream, string text)
+    {
+        using var writer = new StreamWriter(stream, leaveOpen: true);
+        writer.Write(text);
+        writer.Flush();
+        stream.Flush(true);
+        stream.Position = 0;
+    }
+
+    private static Process StartLongRunningProcess()
+    {
+        return Process.Start(new ProcessStartInfo
+        {
+            FileName = "cmd.exe",
+            Arguments = "/c timeout /t 30 /nobreak > nul",
+            CreateNoWindow = true,
+            UseShellExecute = false
+        }) ?? throw new InvalidOperationException("Failed to start test process.");
+    }
+
+    private const string KnownShutdownCrashText = """
+        EXCEPTION: 0xE06D7363    UNKNOWN
+        STACK:
+          KERNELBASE.dll    0x767D59A4    RaiseException
+          VCRUNTIME140.dll  0x6EAB4977    _CxxThrowException
+          BWAPI.dll         0x1003597B      ----
+          BWAPI.dll         0x1004B0F5      ----
+          StarCraft.exe     0x004EE909    DestroyGame
+          StarCraft.exe     0x004E0801    preLoadGame
+        """;
+
+    private const string KnownShutdownCrashErrText = """
+        Exception code: E06D7363 *unknown*
+        Fault address: 767D59A4 01:001649A4 C:\WINDOWS\System32\KERNELBASE.dll
+
+        Call stack:
+        Address  Frame    Logical addr  Module
+        767D59A4 001AFAD8 0001:001649A4 C:\WINDOWS\System32\KERNELBASE.dll
+        6EAB4977 001AFB0C 0001:00003977 C:\WINDOWS\SYSTEM32\VCRUNTIME140.dll
+        1003597B 001AFCFC 0001:0003497B C:\sparring\SC116AI_ai\bwapi-data\BWAPI.dll
+        1004B0F5 001AFD0C 0001:0004A0F5 C:\sparring\SC116AI_ai\bwapi-data\BWAPI.dll
+        004EE909 001AFE20 0001:000ED909 C:\sparring\SC116AI_ai\StarCraft.exe
+        004E0801 001AFE40 0001:000DF801 C:\sparring\SC116AI_ai\StarCraft.exe
+        """;
 }

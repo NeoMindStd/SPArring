@@ -7,9 +7,9 @@ Last updated: 2026-06-24
 - Repo: `C:\starai\StarAI.PracticeClient-1.3.0` / installed app root `C:\sparring`
 - User entrypoint: desktop/start-menu shortcut targeting `Sparring.Client.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.5.3`
-- Last verified implementation state: 1.5.3 hotfix WIP with additional Surface Pro 9 / 200% scaling launcher compact-layout fixes on top of the 1.5.2 AI shutdown cleanup.
-- Current WIP: 1.5.3 hotfix validation, package, commit, tag, and release upload may still be pending until the current turn completes. Do not reset/revert local changes unless the user explicitly asks.
+- Current version: `1.5.4`
+- Last verified implementation state: 1.5.4 hotfix WIP with additional AI runtime shutdown error cleanup after fallback local-runtime process cleanup.
+- Current WIP: 1.5.4 hotfix validation, package, commit, tag, release upload, and installer/run verification may still be pending until the current turn completes. Do not reset/revert local changes unless the user explicitly asks.
 
 ## Hard Rules
 

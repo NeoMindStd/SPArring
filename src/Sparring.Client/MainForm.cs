@@ -2942,16 +2942,19 @@ public sealed class MainForm : Form
         {
             var cleaner = new LocalRuntimeProcessCleaner();
             var cleanup = PracticeSessionCleanupPolicy.ForGameFinalization(session.Plan, session.LaunchReport);
+            var errorDirectory = Path.Combine(cleanup.RuntimeRoot, "Errors");
             if (cleanup.LeaveGameBeforeTerminate && cleanup.KnownStarCraftProcessId is { } aiProcessId)
             {
                 StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(
                     aiProcessId,
                     TimeSpan.FromSeconds(3),
-                    Path.Combine(cleanup.RuntimeRoot, "Errors"));
+                    errorDirectory);
             }
 
-            return cleaner.StopKnown(cleanup.KnownStarCraftProcessId) +
-                   cleaner.Stop(cleanup.RuntimeRoot);
+            var stoppedCount = cleaner.StopKnown(cleanup.KnownStarCraftProcessId) +
+                               cleaner.Stop(cleanup.RuntimeRoot);
+            StarCraftGameExitController.RemoveExpectedShutdownCrashes(errorDirectory, TimeSpan.FromSeconds(8));
+            return stoppedCount;
         });
 
         _statusLabel.Text =
