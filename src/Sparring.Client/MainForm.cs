@@ -2953,7 +2953,9 @@ public sealed class MainForm : Form
 
             var stoppedCount = cleaner.StopKnown(cleanup.KnownStarCraftProcessId) +
                                cleaner.Stop(cleanup.RuntimeRoot);
-            StarCraftGameExitController.RemoveExpectedShutdownCrashes(errorDirectory, TimeSpan.FromSeconds(8));
+            StarCraftGameExitController.RemoveExpectedShutdownCrashes(
+                errorDirectory,
+                StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
             return stoppedCount;
         });
 

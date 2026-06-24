@@ -7,6 +7,10 @@ namespace Sparring.Client;
 
 internal static class SmokeChecks
 {
+    private static readonly TimeSpan FinalPlayerShutdownCrashCleanupRetryWindow = TimeSpan.FromSeconds(90);
+
+    private static readonly TimeSpan FinalPlayerShutdownCrashInitialQuietWindow = TimeSpan.FromSeconds(45);
+
     public static int Run()
     {
         var paths = PracticePaths.Defaults();
@@ -293,7 +297,9 @@ internal static class SmokeChecks
                     aiCleanupStopped = cleaner.StopKnown(report.Ai.StarCraftProcessId.Value);
                 }
 
-                StarCraftGameExitController.RemoveExpectedShutdownCrashes(aiErrorDirectory, TimeSpan.FromSeconds(8));
+                StarCraftGameExitController.RemoveExpectedShutdownCrashes(
+                    aiErrorDirectory,
+                    StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
                 aiProcessGoneAfterCleanup = !IsProcessRunning(report.Ai.StarCraftProcessId.Value);
                 if (report.Player.StarCraftProcessId is not null)
                 {
@@ -351,10 +357,11 @@ internal static class SmokeChecks
             StopNewStarCraftProcesses(preExistingStarCraftProcessIds);
             StarCraftGameExitController.RemoveExpectedShutdownCrashes(
                 Path.Combine(paths.PlayerRuntimeRoot, "Errors"),
-                TimeSpan.FromSeconds(8));
+                FinalPlayerShutdownCrashCleanupRetryWindow,
+                FinalPlayerShutdownCrashInitialQuietWindow);
             StarCraftGameExitController.RemoveExpectedShutdownCrashes(
                 Path.Combine(paths.AiRuntimeRoot, "Errors"),
-                TimeSpan.FromSeconds(8));
+                StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
         }
     }
 

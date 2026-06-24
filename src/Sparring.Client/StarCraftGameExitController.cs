@@ -24,6 +24,12 @@ internal sealed record StarCraftLeaveGameResult(
 
 internal static class StarCraftGameExitController
 {
+    internal static readonly TimeSpan ExpectedShutdownCrashCleanupRetryWindow = TimeSpan.FromSeconds(20);
+
+    private static readonly TimeSpan ExpectedShutdownCrashInitialQuietWindow = TimeSpan.FromSeconds(8);
+
+    private static readonly TimeSpan ExpectedShutdownCrashPostActivityQuietWindow = TimeSpan.FromSeconds(2);
+
     internal static IReadOnlyList<StarCraftExitKey> LeaveGameSequence { get; } =
         [StarCraftExitKey.F10, StarCraftExitKey.Q, StarCraftExitKey.Q];
 
@@ -85,13 +91,14 @@ internal static class StarCraftGameExitController
                          TryKill(process, entireProcessTree: true, closeWait) ||
                          WaitForProcessExit(processId, TimeSpan.FromSeconds(5)) ||
                          !ProcessExists(processId);
-            var runtimeErrorRetryWindow = closeWait < TimeSpan.FromSeconds(8)
-                ? TimeSpan.FromSeconds(8)
+            var runtimeErrorRetryWindow = closeWait < ExpectedShutdownCrashCleanupRetryWindow
+                ? ExpectedShutdownCrashCleanupRetryWindow
                 : closeWait;
             RuntimeErrorBaseline.RemoveExpectedShutdownCrashes(
                 errorDirectory,
                 errorBaseline,
-                runtimeErrorRetryWindow);
+                runtimeErrorRetryWindow,
+                ExpectedShutdownCrashInitialQuietWindow);
             return new StarCraftAiShutdownResult(
                 ProcessWasRunning: true,
                 LeaveSequenceSent: false,
@@ -108,10 +115,22 @@ internal static class StarCraftGameExitController
 
     public static void RemoveExpectedShutdownCrashes(string? errorDirectory, TimeSpan retryWindow)
     {
+        RemoveExpectedShutdownCrashes(
+            errorDirectory,
+            retryWindow,
+            ExpectedShutdownCrashInitialQuietWindow);
+    }
+
+    internal static void RemoveExpectedShutdownCrashes(
+        string? errorDirectory,
+        TimeSpan retryWindow,
+        TimeSpan initialQuietWindow)
+    {
         RuntimeErrorBaseline.RemoveExpectedShutdownCrashes(
             errorDirectory,
             RuntimeErrorBaseline.Empty,
-            retryWindow);
+            retryWindow,
+            initialQuietWindow);
     }
 
     internal static bool IsLeaveCompleteState(StarCraftScreenState state)
@@ -401,7 +420,8 @@ internal static class StarCraftGameExitController
         public static void RemoveExpectedShutdownCrashes(
             string? errorDirectory,
             RuntimeErrorBaseline baseline,
-            TimeSpan retryWindow)
+            TimeSpan retryWindow,
+            TimeSpan initialQuietWindow)
         {
             if (string.IsNullOrWhiteSpace(errorDirectory) || !Directory.Exists(errorDirectory))
             {
@@ -410,10 +430,24 @@ internal static class StarCraftGameExitController
 
             var knownExpectedCrashTimes = new List<DateTime>();
             var deadline = DateTime.UtcNow + retryWindow;
+            var lastActivity = DateTime.UtcNow;
+            var quietWindow = initialQuietWindow;
             do
             {
-                RemoveExpectedShutdownCrashesOnce(errorDirectory, baseline, knownExpectedCrashTimes);
+                var cleanupActivity = RemoveExpectedShutdownCrashesOnce(errorDirectory, baseline, knownExpectedCrashTimes);
                 if (retryWindow <= TimeSpan.Zero)
+                {
+                    return;
+                }
+
+                var now = DateTime.UtcNow;
+                if (cleanupActivity.HadCandidates || cleanupActivity.DeletedFiles > 0)
+                {
+                    lastActivity = now;
+                    quietWindow = ExpectedShutdownCrashPostActivityQuietWindow;
+                }
+
+                if (now - lastActivity >= quietWindow)
                 {
                     return;
                 }
@@ -425,7 +459,7 @@ internal static class StarCraftGameExitController
             RemoveExpectedShutdownCrashesOnce(errorDirectory, baseline, knownExpectedCrashTimes);
         }
 
-        private static void RemoveExpectedShutdownCrashesOnce(
+        private static RuntimeErrorCleanupActivity RemoveExpectedShutdownCrashesOnce(
             string errorDirectory,
             RuntimeErrorBaseline baseline,
             List<DateTime> knownExpectedCrashTimes)
@@ -446,7 +480,7 @@ internal static class StarCraftGameExitController
             {
                 if (knownExpectedCrashTimes.Count == 0)
                 {
-                    return;
+                    return new RuntimeErrorCleanupActivity(candidates.Length > 0, 0);
                 }
             }
 
@@ -459,15 +493,24 @@ internal static class StarCraftGameExitController
             }
 
             var expectedCrashTimes = knownExpectedCrashTimes.Concat(expectedTextCrashes.Select(crash => crash.LastWriteTimeUtc)).ToArray();
+            var deletedFiles = 0;
             foreach (var candidate in candidates.Where(candidate => IsExpectedShutdownCrashCompanionErr(candidate, expectedCrashTimes)))
             {
-                TryDelete(candidate.Path);
+                if (TryDelete(candidate.Path))
+                {
+                    deletedFiles++;
+                }
             }
 
             foreach (var candidate in expectedTextCrashes)
             {
-                TryDelete(candidate.Path);
+                if (TryDelete(candidate.Path))
+                {
+                    deletedFiles++;
+                }
             }
+
+            return new RuntimeErrorCleanupActivity(candidates.Length > 0, deletedFiles);
         }
 
         private static bool IsRuntimeErrorFile(string path)
@@ -522,20 +565,24 @@ internal static class StarCraftGameExitController
             return Math.Abs((left - right).TotalSeconds) <= 5;
         }
 
-        private static void TryDelete(string path)
+        private static bool TryDelete(string path)
         {
             try
             {
                 File.Delete(path);
+                return true;
             }
             catch
             {
                 // Cleanup should never block shutdown. Smoke/audit will catch files that remain.
+                return false;
             }
         }
     }
 
     private sealed record RuntimeErrorFileState(long Length, DateTime LastWriteTimeUtc);
+
+    private sealed record RuntimeErrorCleanupActivity(bool HadCandidates, int DeletedFiles);
 
     private sealed record RuntimeErrorCandidate(
         string Path,

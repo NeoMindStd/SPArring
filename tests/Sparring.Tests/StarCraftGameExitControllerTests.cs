@@ -130,6 +130,39 @@ public sealed class StarCraftGameExitControllerTests
     }
 
     [Fact]
+    public void DisconnectProcessWithoutBwapiLeaveKeepsRetryingLongLockedExpectedShutdownCrashPair()
+    {
+        var errorDirectory = Path.Combine(Path.GetTempPath(), "SparringTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(errorDirectory);
+        using var process = StartLongRunningProcess();
+        var textPath = Path.Combine(errorDirectory, "2026 Jun 24.txt");
+        var errPath = Path.Combine(errorDirectory, "dwj19160101.ERR");
+
+        var writer = new Thread(() =>
+        {
+            Thread.Sleep(250);
+            using (var text = new FileStream(textPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            using (var err = new FileStream(errPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            {
+                WriteText(text, KnownShutdownCrashText);
+                WriteText(err, KnownShutdownCrashErrText);
+                Thread.Sleep(9000);
+            }
+        });
+        writer.Start();
+
+        var result = StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(
+            process.Id,
+            TimeSpan.FromMilliseconds(250),
+            errorDirectory);
+
+        writer.Join(TimeSpan.FromSeconds(15));
+
+        Assert.True(result.Exited);
+        Assert.Empty(Directory.EnumerateFiles(errorDirectory));
+    }
+
+    [Fact]
     public void RemoveExpectedShutdownCrashesCanCleanExternalRuntimeStopPair()
     {
         var errorDirectory = Path.Combine(Path.GetTempPath(), "SparringTests", Guid.NewGuid().ToString("N"));
@@ -138,6 +171,30 @@ public sealed class StarCraftGameExitControllerTests
         File.WriteAllText(Path.Combine(errorDirectory, "dwj19160101.ERR"), KnownShutdownCrashErrText);
 
         StarCraftGameExitController.RemoveExpectedShutdownCrashes(errorDirectory, TimeSpan.Zero);
+
+        Assert.Empty(Directory.EnumerateFiles(errorDirectory));
+    }
+
+    [Fact]
+    public void RemoveExpectedShutdownCrashesWaitsForDelayedFirstExpectedShutdownCrashPair()
+    {
+        var errorDirectory = Path.Combine(Path.GetTempPath(), "SparringTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(errorDirectory);
+
+        var writer = new Thread(() =>
+        {
+            Thread.Sleep(1500);
+            File.WriteAllText(Path.Combine(errorDirectory, "2026 Jun 24.txt"), KnownShutdownCrashText);
+            File.WriteAllText(Path.Combine(errorDirectory, "dwj19160101.ERR"), KnownShutdownCrashErrText);
+        });
+        writer.Start();
+
+        StarCraftGameExitController.RemoveExpectedShutdownCrashes(
+            errorDirectory,
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(3));
+
+        writer.Join(TimeSpan.FromSeconds(5));
 
         Assert.Empty(Directory.EnumerateFiles(errorDirectory));
     }
