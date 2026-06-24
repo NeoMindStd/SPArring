@@ -2930,10 +2930,10 @@ public sealed class MainForm : Form
             var cleanup = PracticeSessionCleanupPolicy.ForGameFinalization(session.Plan, session.LaunchReport);
             if (cleanup.LeaveGameBeforeTerminate && cleanup.KnownStarCraftProcessId is { } aiProcessId)
             {
-                StarCraftGameExitController.LeaveGameThenCloseProcess(
+                StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(
                     aiProcessId,
-                    TimeSpan.FromSeconds(4),
-                    TimeSpan.FromSeconds(3));
+                    TimeSpan.FromSeconds(3),
+                    Path.Combine(cleanup.RuntimeRoot, "Errors"));
             }
 
             return cleaner.StopKnown(cleanup.KnownStarCraftProcessId) +

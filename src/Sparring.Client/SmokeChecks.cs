@@ -164,6 +164,7 @@ internal static class SmokeChecks
             var screenBounds = Screen.PrimaryScreen?.Bounds ?? new Rectangle(0, 0, 1280, 720);
             var cncDdrawHandlesPlayerDisplay = plan.Player.CncDdrawMode == CncDdrawMode.BorderlessFullscreen;
             var borderlessApplied = false;
+            var aiRuntimeErrorSnapshot = RuntimeErrorLogSnapshot.Capture(Path.Combine(aiRoot, "Errors"));
             var timing = Stopwatch.StartNew();
             var report = new PracticeSessionLauncher().Launch(
                 plan,
@@ -280,10 +281,10 @@ internal static class SmokeChecks
             var aiProcessGoneAfterCleanup = false;
             if (aiInGameDetected && report.Ai.StarCraftProcessId is not null)
             {
-                aiShutdown = StarCraftGameExitController.LeaveGameThenCloseProcess(
+                aiShutdown = StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(
                     report.Ai.StarCraftProcessId.Value,
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(3));
+                    TimeSpan.FromSeconds(8),
+                    Path.Combine(aiRoot, "Errors"));
 
                 Thread.Sleep(1500);
                 if (!aiShutdown.Exited)
@@ -302,9 +303,14 @@ internal static class SmokeChecks
                 }
             }
 
-            var aiGracefulShutdown = aiShutdown is { LeaveSequenceSent: true } &&
+            var newAiRuntimeErrors = RuntimeErrorLogSnapshot.Capture(Path.Combine(aiRoot, "Errors"))
+                .FindNewOrChanged(aiRuntimeErrorSnapshot);
+            var aiRuntimeErrorsClean = newAiRuntimeErrors.Count == 0;
+            var aiShutdownExitedFinal = aiShutdown is { Exited: true } || aiProcessGoneAfterCleanup;
+            var aiGracefulShutdown = aiShutdown is not null &&
                                      aiProcessGoneAfterCleanup &&
-                                     playerStateAfterAiShutdown != StarCraftScreenState.BlockedDialog;
+                                     playerStateAfterAiShutdown != StarCraftScreenState.BlockedDialog &&
+                                     aiRuntimeErrorsClean;
 
             var passed = report.Player.CompletedStartCount > 0 &&
                          report.Ai.CompletedStartCount > 0 &&
@@ -321,9 +327,11 @@ internal static class SmokeChecks
                 $"borderless={borderlessApplied}, playerState={playerState}, aiState={aiState}, inGame={inGameDetected}, aiInGame={aiInGameDetected}, aiMinimized={aiWindowMinimized}, " +
                 $"timerOverlay={timerOverlayVisible}, playerHudMs={playerHudDetectedMs}, overlayStartMs={overlayStartedMs}, " +
                 $"overlayShotMs={overlayScreenshotMs}, aiHudMs={aiHudDetectedMs}, " +
-                $"aiShutdownSent={aiShutdown?.LeaveSequenceSent.ToString() ?? "null"}, aiShutdownExited={aiShutdown?.Exited.ToString() ?? "null"}, " +
+                $"aiShutdownSent={aiShutdown?.LeaveSequenceSent.ToString() ?? "null"}, aiShutdownExited={aiShutdownExitedFinal}, " +
+                $"aiLeaveConfirmed={aiShutdown?.LeaveConfirmed.ToString() ?? "null"}, aiForcedKill={aiShutdown?.ForcedKillUsed.ToString() ?? "null"}, " +
                 $"aiCleanupStopped={aiCleanupStopped}, aiProcessGoneAfterCleanup={aiProcessGoneAfterCleanup}, " +
-                $"playerAfterAiShutdownState={playerStateAfterAiShutdown}, aiGracefulShutdown={aiGracefulShutdown}, " +
+                $"playerAfterAiShutdownState={playerStateAfterAiShutdown}, aiRuntimeErrorsClean={aiRuntimeErrorsClean}, " +
+                $"aiRuntimeErrorFiles={RuntimeErrorLogSnapshot.Format(newAiRuntimeErrors)}, aiGracefulShutdown={aiGracefulShutdown}, " +
                 $"traceSamples={startupTraceSummary.SampleCount}, traceFirstCaptureMs={startupTraceSummary.FirstCaptureMs?.ToString() ?? "null"}, " +
                 $"traceFirstInGameMs={startupTraceSummary.FirstInGameMs?.ToString() ?? "null"}, traceMaxRed={startupTraceSummary.MaxRedErrorPixels}, " +
                 $"traceMaxRedFrame={startupTraceSummary.MaxRedErrorFrame ?? "null"}, traceDir={startupTrace?.TraceDirectory ?? "null"}");
@@ -903,6 +911,48 @@ internal static class SmokeChecks
         bool HasMapPreviewBox,
         bool HasMapPreviewImage,
         IReadOnlyList<string> LayoutIssues);
+
+    private sealed record RuntimeErrorLogSnapshot(IReadOnlyDictionary<string, RuntimeErrorLogEntry> Entries)
+    {
+        public static RuntimeErrorLogSnapshot Capture(string errorDirectory)
+        {
+            if (!Directory.Exists(errorDirectory))
+            {
+                return new RuntimeErrorLogSnapshot(new Dictionary<string, RuntimeErrorLogEntry>(StringComparer.OrdinalIgnoreCase));
+            }
+
+            var entries = Directory.EnumerateFiles(errorDirectory)
+                .Where(path => Path.GetExtension(path) is ".txt" or ".ERR" or ".err")
+                .Select(path =>
+                {
+                    var info = new FileInfo(path);
+                    return new KeyValuePair<string, RuntimeErrorLogEntry>(
+                        info.FullName,
+                        new RuntimeErrorLogEntry(info.Length, info.LastWriteTimeUtc));
+                })
+                .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+            return new RuntimeErrorLogSnapshot(entries);
+        }
+
+        public IReadOnlyList<string> FindNewOrChanged(RuntimeErrorLogSnapshot baseline)
+        {
+            return Entries
+                .Where(pair =>
+                    !baseline.Entries.TryGetValue(pair.Key, out var previous) ||
+                    previous.Length != pair.Value.Length ||
+                    previous.LastWriteTimeUtc != pair.Value.LastWriteTimeUtc)
+                .Select(pair => Path.GetFileName(pair.Key))
+                .Order(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+
+        public static string Format(IReadOnlyList<string> files)
+        {
+            return files.Count == 0 ? "none" : string.Join("|", files);
+        }
+    }
+
+    private sealed record RuntimeErrorLogEntry(long Length, DateTime LastWriteTimeUtc);
 
     private const int ShowWindowHide = 0;
     private const int ShowWindowNoActivate = 4;

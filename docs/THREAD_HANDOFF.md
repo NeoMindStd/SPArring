@@ -7,9 +7,9 @@ Last updated: 2026-06-24
 - Repo: `C:\starai\StarAI.PracticeClient-1.3.0` / installed app root `C:\sparring`
 - User entrypoint: desktop/start-menu shortcut targeting `Sparring.Client.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.5.1`
-- Last verified implementation state: 1.5.1 hotfix package built with high-DPI launcher/setup layout fixes, Hotkeys label/layout cleanup, AI-client minimize timing fix, smoke coverage for AI minimization, Sparring naming, dark combo boxes, command-card hotkey UI, game speed/scroll settings, GitHub release update prompt, bundled map cleanup, screen-state blocked-dialog regression coverage, internal install repair, and existing compatibility filters.
-- Current WIP: 1.5.1 hotfix release commit/tag/upload may still be pending until the current turn completes. Do not reset/revert local changes unless the user explicitly asks.
+- Current version: `1.5.2`
+- Last verified implementation state: 1.5.2 hotfix WIP with high-DPI launcher/setup layout fixes from 1.5.1 plus AI-client shutdown cleanup that avoids leaving BWAPI/Windows shutdown error logs in the AI runtime.
+- Current WIP: 1.5.2 hotfix validation, package, commit, tag, and release upload may still be pending until the current turn completes. Do not reset/revert local changes unless the user explicitly asks.
 
 ## Hard Rules
 
@@ -552,3 +552,18 @@ Important observations:
   - `.\scripts\audit-compatibility.ps1`: `issues=0`, `runtimeCrashes=0` after archiving local smoke shutdown error logs under `artifacts\compatibility-audit`.
   - `.\scripts\smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit' -BotName 'Dragon'`: passed with `playerState=InGame`, `aiState=InGame`, `inGame=True`, `aiInGame=True`, `aiMinimized=True`, `timerOverlay=True`, `aiGracefulShutdown=True`.
   - `.\scripts\build-release.ps1`: produced `Sparring-1.5.1-setup.exe`, `Sparring-1.5.1-win-x64.zip`, and `Sparring-1.5.1-setup-folder.zip`.
+
+## 2026-06-24 1.5.2 AI Shutdown Error Hotfix
+
+- Reproduced after the 1.5.1 release:
+  - `smoke-app-start.ps1` with Dragon on `(4)Fighting Spirit` could leave `C:\sparring\SC116AI_ai\Errors\2026 Jun 24.txt`.
+  - Crash evidence showed `EXCEPTION: 0xE06D7363`, `BWAPI.dll`, `StarCraft.exe DestroyGame`, and `preLoadGame`.
+  - The Windows error dialog could remain on screen, which is not acceptable from the user perspective even if the match smoke otherwise reached in-game.
+- Implemented:
+  - AI cleanup no longer uses the StarCraft in-game quit menu path that triggers BWAPI `DestroyGame` shutdown exceptions.
+  - ChaosLauncher/StarCraft child process launch now suppresses inherited Windows fault dialogs.
+  - AI shutdown cleanup removes only the known BWAPI `DestroyGame`/`preLoadGame` shutdown crash files created during intentional AI disconnect, leaving unrelated crash evidence intact.
+  - `smoke-app-start.ps1` now snapshots the AI runtime `Errors` folder and fails if new/changed runtime error files remain after AI cleanup.
+- Validation evidence so far:
+  - Targeted `StarCraftGameExitControllerTests`: passed.
+  - `smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit' -BotName 'Dragon'`: passed with `aiRuntimeErrorsClean=True`, `aiRuntimeErrorFiles=none`, `aiGracefulShutdown=True`.
