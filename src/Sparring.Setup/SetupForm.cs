@@ -180,7 +180,7 @@ internal sealed class SetupForm : Form
         {
             case SetupPage.Paths:
                 _headerTitle.Text = "설치 위치 선택";
-                _headerDescription.Text = "Sparring를 설치할 폴더와 StarCraft 1.16.1 원본 폴더를 선택합니다.";
+                _headerDescription.Text = "Sparring을 설치할 폴더와 StarCraft 1.16.1 원본 폴더를 선택합니다.";
                 RenderPathPage();
                 break;
             case SetupPage.Components:
@@ -203,6 +203,9 @@ internal sealed class SetupForm : Form
     private void RenderPathPage()
     {
         var layout = CreateContentLayout();
+        layout.Dock = DockStyle.Top;
+        layout.AutoSize = true;
+        layout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -576,7 +579,7 @@ internal sealed class SetupForm : Form
     {
         using var dialog = new FolderBrowserDialog
         {
-            Description = "Sparring를 설치할 폴더를 선택하세요.",
+            Description = "Sparring을 설치할 폴더를 선택하세요.",
             SelectedPath = _installRootBox.Text
         };
         if (dialog.ShowDialog(this) == DialogResult.OK)

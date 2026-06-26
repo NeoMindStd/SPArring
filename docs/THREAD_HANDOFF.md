@@ -8,7 +8,7 @@ Last updated: 2026-06-26
 - User entrypoint: desktop/start-menu shortcut targeting `Sparring.Client.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
 - Current version: `1.6.0`
-- Last verified implementation state: 1.5.0 release candidate with Sparring naming, responsive launcher tabs, dark combo boxes, command-card hotkey UI, game speed/scroll settings, GitHub release update prompt, bundled map cleanup, screen-state blocked-dialog regression coverage, internal install repair, and existing compatibility filters.
+- Last verified implementation state: 1.6.0 release candidate with Neo practice bots marked as development preview, excluded from ladder/random, plus all 1.5.x launcher/runtime hotfixes merged.
 - Current WIP: release packaging/publish may still be pending until the current turn completes. Do not reset/revert local changes unless the user explicitly asks.
 
 ## Hard Rules
@@ -705,3 +705,68 @@ This section supersedes the deferred roadmap notes immediately above.
   - `.\scripts\smoke-app-start.ps1 -PrepareOnly -Mode Sparring -PlayerRace Terran -EnemyRace Zerg -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoZergF' -BotBuildId 'two_hatch_muta'`: passed.
   - Ladder dry-run with `NeoProtossF` failed as expected because preview Neo bots are excluded from ladder candidates.
   - `.\scripts\build-release.ps1`: produced `Sparring-1.6.0-setup.exe`, `Sparring-1.6.0-win-x64.zip`, and `Sparring-1.6.0-setup-folder.zip`.
+
+## 2026-06-24 1.5.1 High-DPI Launcher and AI Minimize Hotfix
+
+- Verified before editing on the current problem PC:
+  - Windows 11 Home 64-bit, Surface Pro 9, 2880x1920 display, 200% scaling.
+  - Installed 1.5.0 launcher opened at about 579x405 captured pixels and showed Game tab content cut off with page scrollbars and cramped list/detail/button areas.
+  - The running setup completion page was captured and did not show the same severe overlap as the launcher.
+- Implemented:
+  - Launcher initial sizing now uses most of small/high-DPI work areas while staying capped on large monitors.
+  - Game tab launch button width and scroll sizing were adjusted so the default Surface/high-DPI window no longer shows unnecessary page scrollbars.
+  - Settings and Hotkeys labels now reserve enough width for Korean text under 200% scaling.
+  - Hotkeys action/filter buttons use shorter labels (`기본값`, `배틀넷`, `폴더`, `CSV`, `반영`, `Terr`, `Prot`, `공통`, `업글`, `기본`, `고급`) and avoid unnecessary maximized scrollbars.
+  - Setup path page uses top-docked autosized content under the scroll panel so large-font mode can scroll instead of clipping the StarCraft source group.
+  - AI window minimization now starts before player borderless enforcement and still minimizes once if the AI client is already detected as in-game.
+  - `smoke-app-start.ps1` no longer reactivates the AI StarCraft window for verification and now requires `aiMinimized=True`.
+  - `StarCraftScreenAnalyzer` now treats bright minerals and cropped game-world captures with green selection rings as in-game when no room/error frame is present.
+- Regression coverage:
+  - `LauncherWindowSizingTests` covers high-DPI/small-screen initial size policy and large-screen caps.
+  - `AiWindowMinimizePolicyTests.StepOnceMinimizesWhenAiAlreadyReachedInGame` covers the in-game AI minimize path.
+  - `StarCraftScreenAnalyzerTests` covers bright-mineral HUD and cropped-world AI captures.
+- Direct UI verification:
+  - Local self-contained launcher was checked with Computer Use at default, small, wide, low-height, and maximized sizes.
+  - Final `artifacts\release\payload-stage-1.5.1\Sparring.Client.exe` was checked with Computer Use on the Surface 200% environment.
+  - Game, Settings, Hotkeys, and History tabs were checked; final Settings/Hotkeys label clipping was fixed and rechecked.
+  - Final Release `Sparring.Setup.dll` setup UI was checked directly; 1.5.1 setup EXE launch was slow/blocked during local UI inspection, while setup UI smoke passed for large and extra-large font.
+- Final verification for the 1.5.1 hotfix:
+  - `dotnet test .\Sparring.sln -v:minimal`: 188 passed.
+  - `.\scripts\smoke.ps1`: warning 0 / error 0.
+  - `.\scripts\audit-compatibility.ps1`: `issues=0`, `runtimeCrashes=0` after archiving local smoke shutdown error logs under `artifacts\compatibility-audit`.
+  - `.\scripts\smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit' -BotName 'Dragon'`: passed with `playerState=InGame`, `aiState=InGame`, `inGame=True`, `aiInGame=True`, `aiMinimized=True`, `timerOverlay=True`, `aiGracefulShutdown=True`.
+  - `.\scripts\build-release.ps1`: produced `Sparring-1.5.1-setup.exe`, `Sparring-1.5.1-win-x64.zip`, and `Sparring-1.5.1-setup-folder.zip`.
+
+## 2026-06-24 1.5.2 AI Shutdown Error Hotfix
+
+- Reproduced after the 1.5.1 release:
+  - `smoke-app-start.ps1` with Dragon on `(4)Fighting Spirit` could leave `C:\sparring\SC116AI_ai\Errors\2026 Jun 24.txt`.
+  - Crash evidence showed `EXCEPTION: 0xE06D7363`, `BWAPI.dll`, `StarCraft.exe DestroyGame`, and `preLoadGame`.
+  - The Windows error dialog could remain on screen, which is not acceptable from the user perspective even if the match smoke otherwise reached in-game.
+- Implemented:
+  - AI cleanup no longer uses the StarCraft in-game quit menu path that triggers BWAPI `DestroyGame` shutdown exceptions.
+  - ChaosLauncher/StarCraft child process launch now suppresses inherited Windows fault dialogs.
+  - AI shutdown cleanup removes only the known BWAPI `DestroyGame`/`preLoadGame` shutdown crash files created during intentional AI disconnect, leaving unrelated crash evidence intact.
+  - `smoke-app-start.ps1` now snapshots the AI runtime `Errors` folder and fails if new/changed runtime error files remain after AI cleanup.
+- Validation evidence so far:
+  - Targeted `StarCraftGameExitControllerTests`: passed.
+  - `smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit' -BotName 'Dragon'`: passed with `aiRuntimeErrorsClean=True`, `aiRuntimeErrorFiles=none`, `aiGracefulShutdown=True`.
+
+## 2026-06-24 1.5.3 Surface Compact UI Hotfix
+
+- Rechecked on the current problem PC:
+  - Windows 11 Home, Surface Pro 9, 1440x960 working area at 200% scaling.
+  - `Downloads\Starcraft_1161` and `Downloads\Starcraft_1161.zip` exist as StarCraft 1.16.1 source candidates.
+  - A leftover elevated `Sparring-1.5.0-setup.exe` process and its child `Sparring.Client.exe` could not be terminated from the current non-elevated tool context.
+  - Launching `Sparring-1.5.2-setup.exe` reached the Windows UAC consent screen; actual install could not continue without user approval.
+- Reproduced from launcher UI smoke screenshots:
+  - Compact game tab had an oversized difficulty/ladder summary card that clipped text under 200% scaling.
+  - Compact game and Hotkeys tabs used too much vertical space in the header/card/detail areas, making the minimum-size view feel cramped.
+  - Status text at the bottom could be clipped at compact height.
+- Implemented:
+  - Launcher header and status row now use less vertical space while keeping status text readable.
+  - Game tab summary card is single-line, smaller, and smoke-validated for text clipping.
+  - Compact game tab uses a smaller map preview and more compact detail sizing.
+  - Compact Hotkeys command card/detail blocks are reduced so more useful content is visible without overlap.
+  - Setup first-screen wording now uses `Sparring을` instead of `Sparring를`.
+  - Launcher UI smoke now fails when the important difficulty label text is clipped.

@@ -15,6 +15,15 @@ public sealed class HotkeyPatchApplierSmokeTests
             return;
         }
 
+        try
+        {
+            JavaRuntimeResolver.ResolveJavaExe(defaults);
+        }
+        catch (InvalidOperationException)
+        {
+            return;
+        }
+
         var root = Path.Combine(Path.GetTempPath(), "sparring-hotkey-smoke", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         File.Copy(sourcePatch, Path.Combine(root, "patch_rt.mpq"));

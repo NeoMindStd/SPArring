@@ -55,6 +55,8 @@ public sealed class MainForm : Form
     private Label _hotkeyCommandMeta = null!;
     private Label _hotkeyDefaultText = null!;
     private Label _hotkeyCountLabel = null!;
+    private TextBox _hotkeyHelpText = null!;
+    private TextBox _hotkeyRuntimeHelpText = null!;
     private TextBox _replayRootText = null!;
     private TextBox _userMapRootText = null!;
     private TextBox _ladderMapRootText = null!;
@@ -96,9 +98,9 @@ public sealed class MainForm : Form
         _settings = _settingsStore.Load();
         Text = "Sparring";
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(980, 680);
-        Size = InitialWindowSize();
         AutoScaleMode = AutoScaleMode.Dpi;
+        MinimumSize = LauncherWindowSizing.MinimumSize;
+        Size = InitialWindowSize();
         BackColor = Color.FromArgb(5, 7, 5);
         ForeColor = Color.FromArgb(128, 218, 93);
 
@@ -171,19 +173,19 @@ public sealed class MainForm : Form
             BackColor = BackColor,
             ColumnCount = 1,
             RowCount = 4,
-            Padding = new Padding(14, 14, 14, 10)
+            Padding = new Padding(10, 10, 10, 8)
         };
         shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         shell.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         shell.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
+        shell.RowStyles.Add(new RowStyle(SizeType.Absolute, Math.Max(34, Font.Height + 16)));
 
         var title = new Label
         {
             Text = "Sparring 연습 런처",
             AutoSize = true,
-            Font = new Font(Font.FontFamily, 18, FontStyle.Bold),
+            Font = new Font(Font.FontFamily, 14, FontStyle.Bold),
             ForeColor = Color.FromArgb(166, 255, 126),
             Margin = new Padding(4, 0, 4, 2)
         };
@@ -192,9 +194,9 @@ public sealed class MainForm : Form
         {
             Text = "Sparring 내장 봇/맵으로 스타 실행을 준비합니다.",
             AutoSize = true,
-            Font = new Font(Font.FontFamily, 10),
+            Font = new Font(Font.FontFamily, 9),
             ForeColor = Color.FromArgb(128, 218, 93),
-            Margin = new Padding(6, 0, 4, 12)
+            Margin = new Padding(6, 0, 4, 8)
         };
 
         _tabs = new TabControl
@@ -227,9 +229,7 @@ public sealed class MainForm : Form
     private static Size InitialWindowSize()
     {
         var workingArea = Screen.PrimaryScreen?.WorkingArea ?? new Rectangle(0, 0, 1280, 720);
-        var width = Math.Clamp(1180, 980, Math.Max(980, workingArea.Width - 48));
-        var height = Math.Clamp(820, 680, Math.Max(680, workingArea.Height - 72));
-        return new Size(width, height);
+        return LauncherWindowSizing.InitialSize(workingArea);
     }
 
     private string CurrentVersion()
@@ -369,18 +369,20 @@ public sealed class MainForm : Form
         var refreshButton = CreateButton("새로고침", 1014, 20, 88, 32);
         refreshButton.Click += (_, _) => LoadCatalog();
 
-        _launchButton = CreateButton("스파링 시작", 922, 528, 180, 42);
+        _launchButton = CreateButton("스파링 시작", 922, 528, 220, 42);
         _launchButton.Font = new Font(Font.FontFamily, 11, FontStyle.Bold);
         _launchButton.Click += async (_, _) => await LaunchCurrentPlanAsync();
 
         _difficultyLabel = new Label
         {
+            Name = "DifficultyLabel",
             AutoSize = false,
             Location = new Point(372, 124),
             Size = new Size(282, 74),
             ForeColor = Color.FromArgb(166, 255, 126),
-            Font = new Font(Font.FontFamily, 14, FontStyle.Bold),
-            BorderStyle = BorderStyle.FixedSingle
+            Font = new Font(Font.FontFamily, 10, FontStyle.Bold),
+            BorderStyle = BorderStyle.FixedSingle,
+            TextAlign = ContentAlignment.MiddleCenter
         };
 
         _mapPreviewLabel = CreateLabel("맵 미리보기", 372, 202);
@@ -496,8 +498,8 @@ public sealed class MainForm : Form
         enemyLabel?.SetBounds(pad, 68, 74, 24);
         _enemyRaceFilter.SetBounds(pad + 84, 62, Math.Min(132, leftWidth - 90), 30);
         _searchBox.SetBounds(pad + 84, 98, leftWidth - 84, 30);
-        sortLabel?.SetBounds(pad, 138, 64, 24);
-        _sortCombo.SetBounds(pad + 84, 132, Math.Min(132, leftWidth - 90), 30);
+        sortLabel?.SetBounds(pad, 148, 64, 24);
+        _sortCombo.SetBounds(pad + 84, 142, Math.Min(132, leftWidth - 90), 30);
 
         botLabel?.SetBounds(pad, 168, leftWidth, 24);
         var launchTop = Math.Max(compact ? 430 : 502, height - 58);
@@ -518,15 +520,19 @@ public sealed class MainForm : Form
         _playerRaceCombo.SetBounds(topControlX + 86, 18, Math.Min(150, topControlWidth - 92), 30);
         _buildLabel?.SetBounds(topControlX, 68, 76, 24);
         _buildCombo.SetBounds(topControlX + 86, 62, Math.Min(260, topControlWidth - 92), 30);
-        refreshButton?.SetBounds(width - pad - 92, 18, 92, 34);
+        refreshButton?.SetBounds(width - pad - 124, 18, 124, 34);
 
         _ladderRatingLabel.SetBounds(topControlX, 112, 118, 28);
         _ladderRatingText.SetBounds(topControlX + 126, 106, 70, 30);
-        _applyRatingButton.SetBounds(topControlX + 206, 104, 66, 34);
-        _resetRatingButton.SetBounds(topControlX + 282, 104, 106, 34);
+        _applyRatingButton.SetBounds(topControlX + 206, 104, 80, 34);
+        _resetRatingButton.SetBounds(topControlX + 296, 104, 160, 34);
         runtimeText?.SetBounds(topControlX, 150, Math.Max(320, rightWidth), 52);
 
-        _difficultyLabel.SetBounds(middleX, compact ? 212 : 112, middleWidth, 74);
+        var difficultyHeight = compact ? 42 : 46;
+        var difficultyY = compact
+            ? (runtimeText?.Bottom ?? 150) + 10
+            : 112;
+        _difficultyLabel.SetBounds(middleX, difficultyY, middleWidth, difficultyHeight);
         _mapPreviewLabel.SetBounds(middleX, _difficultyLabel.Bottom + 10, middleWidth, 24);
         var previewLimit = Math.Max(132, launchTop - (_mapPreviewLabel.Bottom + 4) - 12);
         var previewSize = Math.Min(compact ? 232 : 260, Math.Max(170, middleWidth));
@@ -630,7 +636,7 @@ public sealed class MainForm : Form
         }
 
         var pad = 18;
-        var labelWidth = 130;
+        var labelWidth = 180;
         var gap = 12;
         var browseWidth = 90;
         var contentWidth = Math.Max(860, page.ClientSize.Width - (pad * 2));
@@ -700,7 +706,7 @@ public sealed class MainForm : Form
             RefreshHotkeyFilterButtons();
             RefreshHotkeyObjects();
         };
-        AddHotkeyFilterButtons(page, _hotkeyRaceFilter, _hotkeyRaceButtons, 342, 16, 74, 36);
+        AddHotkeyFilterButtons(page, _hotkeyRaceFilter, _hotkeyRaceButtons, 342, 16, 80, 36);
 
         page.Controls.Add(CreateLabel("분류", 298, 216));
         _hotkeyCategoryFilter = CreateCombo(-1000, -1000, 128);
@@ -862,14 +868,22 @@ public sealed class MainForm : Form
         page.Controls.Add(_hotkeyKeyText);
         page.Controls.Add(applyKeyButton);
 
-        var hotkeyHelp = CreateReadOnlyBlock(
+        _hotkeyHelpText = CreateReadOnlyBlock(
             730,
             370,
             366,
             142,
             "왼쪽에서 유닛이나 건물을 고른 뒤, 오른쪽 명령 화면에서 바꿀 명령을 선택하세요.\r\n새 키를 입력하고 [선택한 키 적용]을 누르면 현재 편집 내용에 반영됩니다.\r\n마지막으로 [현재 단축키 저장] 또는 [스타에 단축키 적용]을 눌러 마무리합니다.");
-        page.Controls.Add(hotkeyHelp);
-        hotkeyHelp.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        _hotkeyRuntimeHelpText = CreateReadOnlyBlock(
+            18,
+            580,
+            1078,
+            38,
+            "봇/AI 런타임에는 사람 핫키를 반영하지 않습니다. 사람 런타임만 커스텀 핫키를 사용합니다.");
+        page.Controls.Add(_hotkeyHelpText);
+        page.Controls.Add(_hotkeyRuntimeHelpText);
+        _hotkeyHelpText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        _hotkeyRuntimeHelpText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         LoadHotkeys();
         page.Resize += (_, _) => LayoutHotkeyTab(page);
         LayoutHotkeyTab(page);
@@ -973,13 +987,17 @@ public sealed class MainForm : Form
         var filterTop = hotkeyTop + 40;
         var availableForDetails = contentRight - commandX;
         var compact = contentWidth < 1240;
-        var commandSize = Math.Min(360, Math.Max(300, availableForDetails - 396));
+        var commandSize = compact
+            ? Math.Min(280, Math.Max(244, availableForDetails - 356))
+            : Math.Min(360, Math.Max(300, availableForDetails - 396));
         var detailsX = commandX + commandSize + gap;
         var detailsWidth = contentRight - detailsX;
         var detailsBelow = detailsWidth < 320;
         if (detailsBelow)
         {
-            commandSize = Math.Min(330, Math.Max(286, availableForDetails));
+            commandSize = compact
+                ? Math.Min(270, Math.Max(244, availableForDetails))
+                : Math.Min(330, Math.Max(286, availableForDetails));
             detailsX = commandX;
             detailsWidth = Math.Max(360, contentRight - detailsX);
         }
@@ -1029,26 +1047,36 @@ public sealed class MainForm : Form
         var detailTop = detailsBelow
             ? _hotkeyCommandPanel.Bottom + gap
             : contentTop;
-        _hotkeyCommandTitle.SetBounds(detailsX, detailTop, detailsWidth, 48);
-        _hotkeyCommandMeta.SetBounds(detailsX, _hotkeyCommandTitle.Bottom + 4, detailsWidth, 28);
-        _hotkeyDefaultText.SetBounds(detailsX, _hotkeyCommandMeta.Bottom + 8, detailsWidth, 42);
-        FindLabel(page, "현재 키")?.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 14, 64, 24);
-        _hotkeyKeyText.SetBounds(detailsX + 64, _hotkeyDefaultText.Bottom + 8, 84, 30);
-        FindButton(page, "선택한 키 적용")?.SetBounds(detailsX + 162, _hotkeyDefaultText.Bottom + 4, 124, 36);
+        var titleHeight = compact ? 46 : 60;
+        var metaHeight = compact ? 42 : 54;
+        var defaultHeight = compact ? 42 : 56;
+        var helpHeight = compact ? 110 : 142;
+        _hotkeyCommandTitle.SetBounds(detailsX, detailTop, detailsWidth, titleHeight);
+        _hotkeyCommandMeta.SetBounds(detailsX, _hotkeyCommandTitle.Bottom + 4, detailsWidth, metaHeight);
+        _hotkeyDefaultText.SetBounds(detailsX, _hotkeyCommandMeta.Bottom + 4, detailsWidth, defaultHeight);
+        FindLabel(page, "현재 키")?.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 20, 64, 24);
+        _hotkeyKeyText.SetBounds(detailsX + 64, _hotkeyDefaultText.Bottom + 14, 84, 30);
+        FindButton(page, "선택한 키 적용")?.SetBounds(detailsX + 162, _hotkeyDefaultText.Bottom + 10, 124, 36);
 
-        TextBox? hotkeyHelpBox = null;
-        foreach (var box in page.Controls.OfType<TextBox>().Where(box => box.Multiline && box.ReadOnly))
-        {
-            if (box.Text.StartsWith("왼쪽에서", StringComparison.Ordinal))
-            {
-                box.SetBounds(detailsX, _hotkeyKeyText.Bottom + 18, detailsWidth, 118);
-                hotkeyHelpBox = box;
-            }
-        }
+        _hotkeyHelpText.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 72, detailsWidth, helpHeight);
 
-        page.AutoScrollMinSize = new Size(
-            Math.Max(width, detailsX + detailsWidth + pad),
-            Math.Max(680, page.Controls.Cast<Control>().Max(control => control.Bottom) + 20));
+        var runtimeHelpTop = Math.Max(_hotkeyObjectList.Bottom + 36, _hotkeyCommandPanel.Bottom + 36);
+        runtimeHelpTop = Math.Max(runtimeHelpTop, _hotkeyHelpText.Bottom + 36);
+        _hotkeyRuntimeHelpText.SetBounds(pad, runtimeHelpTop, width - (pad * 2), 42);
+
+        var scrollWidth = Math.Max(980, Math.Max(width, detailsX + detailsWidth + pad));
+        var scrollHeight = Math.Max(680, page.Controls.Cast<Control>().Max(control => control.Bottom) + 20);
+        page.AutoScrollMinSize = ShouldUseCompactScroll(page, 680, 430)
+            ? new Size(scrollWidth, scrollHeight)
+            : Size.Empty;
+    }
+
+    private bool ShouldUseCompactScroll(Control page, int visibleWidthThreshold, int visibleHeightThreshold)
+    {
+        var dpi = Math.Max(96, DeviceDpi);
+        var visibleWidth = page.ClientSize.Width * 96 / dpi;
+        var visibleHeight = page.ClientSize.Height * 96 / dpi;
+        return visibleWidth < visibleWidthThreshold || visibleHeight < visibleHeightThreshold;
     }
 
     private static int LayoutButtonGroup(IReadOnlyList<Button> buttons, int x, int y, int buttonWidth, int buttonHeight)
@@ -1178,7 +1206,7 @@ public sealed class MainForm : Form
         }
 
         var pad = 18;
-        FindButton(page, "새로고침")?.SetBounds(pad, 18, 96, 32);
+        FindButton(page, "새로고침")?.SetBounds(pad, 18, 124, 34);
         _historyGrid.SetBounds(
             pad,
             64,
@@ -1499,7 +1527,7 @@ public sealed class MainForm : Form
         for (var index = 0; index < source.Items.Count; index++)
         {
             var value = source.Items[index]?.ToString() ?? string.Empty;
-            var button = CreateButton(value, x + index * (buttonWidth + 6), y, buttonWidth, buttonHeight);
+            var button = CreateButton(HotkeyFilterDisplayText(value), x + index * (buttonWidth + 6), y, buttonWidth, buttonHeight);
             button.Tag = value;
             button.Click += (_, _) =>
             {
@@ -1512,6 +1540,20 @@ public sealed class MainForm : Form
         }
 
         RefreshHotkeyFilterButtons();
+    }
+
+    private static string HotkeyFilterDisplayText(string value)
+    {
+        return value switch
+        {
+            "Terran" => "Terr",
+            "Protoss" => "Prot",
+            "Common" => "공통",
+            "업그레이드" => "업글",
+            HotkeyCommandLayout.PageBasicStructures => "기본",
+            HotkeyCommandLayout.PageAdvancedStructures => "고급",
+            _ => value
+        };
     }
 
     private void RefreshHotkeyFilterButtons()
@@ -2408,8 +2450,8 @@ public sealed class MainForm : Form
             var randomMap = mapItem?.Map;
             var candidates = FilterRandomBotsForCurrentControls(randomMap).ToList();
             _difficultyLabel.Text = candidates.Count == 0
-                ? "랜덤\r\n후보 없음"
-                : $"랜덤\r\n후보 {candidates.Count}개";
+                ? "랜덤 후보 없음"
+                : $"랜덤 후보 {candidates.Count}개";
             _detailsText.Text = string.Join(Environment.NewLine, new[]
             {
                 "봇: Random",
@@ -2624,10 +2666,10 @@ public sealed class MainForm : Form
                 {
                     var difficulty = LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo);
                     return $"- {bot.Name} / {bot.Race} / {difficulty?.Label ?? $"ELO {bot.Elo?.ToString() ?? "?"}"}";
-                });
+            });
             _difficultyLabel.Text = compatibleMaps.Count == 0
-                ? "래더\r\n후보 없음"
-                : $"래더\r\nMMR 후보 {weightedCandidates.Count}개";
+                ? "래더 후보 없음"
+                : $"래더 후보 {weightedCandidates.Count}개";
             _detailsText.Text = string.Join(Environment.NewLine, new[]
             {
                 "모드: 래더",
@@ -2649,8 +2691,8 @@ public sealed class MainForm : Form
             ? Array.Empty<PracticeBot>()
             : LadderBotSelector.CandidatesForMap(_catalog, map.Id, enemyRace);
         _difficultyLabel.Text = candidates.Count == 0
-            ? "래더\r\n후보 없음"
-            : $"래더\r\n후보 {candidates.Count}개";
+            ? "래더 후보 없음"
+            : $"래더 후보 {candidates.Count}개";
 
         var difficultyRange = FormatDifficultyRange(candidates);
         var preview = candidates
@@ -2701,6 +2743,13 @@ public sealed class MainForm : Form
                 PracticeSessionLaunchOptions.Defaults()));
             var borderlessApplied = false;
 
+            if (report.Ai.StarCraftProcessId is not null)
+            {
+                _aiMinimizeKeeper = new StarCraftWindowMinimizeOnceWhenReady(
+                    report.Ai.StarCraftProcessId.Value,
+                    TimeSpan.FromSeconds(18));
+            }
+
             if (report.Player.StarCraftProcessId is not null)
             {
                 borderlessApplied = cncDdrawHandlesPlayerDisplay ||
@@ -2708,13 +2757,6 @@ public sealed class MainForm : Form
                         report.Player.StarCraftProcessId.Value,
                         screenBounds,
                         TimeSpan.FromSeconds(8)).Applied);
-            }
-
-            if (report.Ai.StarCraftProcessId is not null)
-            {
-                _aiMinimizeKeeper = new StarCraftWindowMinimizeOnceWhenReady(
-                    report.Ai.StarCraftProcessId.Value,
-                    TimeSpan.FromSeconds(18));
             }
 
             if (report.Player.StarCraftProcessId is not null && !cncDdrawHandlesPlayerDisplay)
@@ -3148,16 +3190,21 @@ public sealed class MainForm : Form
         {
             var cleaner = new LocalRuntimeProcessCleaner();
             var cleanup = PracticeSessionCleanupPolicy.ForGameFinalization(session.Plan, session.LaunchReport);
+            var errorDirectory = Path.Combine(cleanup.RuntimeRoot, "Errors");
             if (cleanup.LeaveGameBeforeTerminate && cleanup.KnownStarCraftProcessId is { } aiProcessId)
             {
-                StarCraftGameExitController.LeaveGameThenCloseProcess(
+                StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(
                     aiProcessId,
-                    TimeSpan.FromSeconds(4),
-                    TimeSpan.FromSeconds(3));
+                    TimeSpan.FromSeconds(3),
+                    errorDirectory);
             }
 
-            return cleaner.StopKnown(cleanup.KnownStarCraftProcessId) +
-                   cleaner.Stop(cleanup.RuntimeRoot);
+            var stoppedCount = cleaner.StopKnown(cleanup.KnownStarCraftProcessId) +
+                               cleaner.Stop(cleanup.RuntimeRoot);
+            StarCraftGameExitController.RemoveExpectedShutdownCrashes(
+                errorDirectory,
+                StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
+            return stoppedCount;
         });
 
         _statusLabel.Text =
@@ -3343,7 +3390,7 @@ public sealed class MainForm : Form
         {
             Text = text,
             AutoSize = false,
-            Size = new Size(76, 24),
+            Size = new Size(120, 24),
             ForeColor = Color.FromArgb(128, 218, 93),
             Location = new Point(x, y)
         };

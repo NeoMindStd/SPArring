@@ -77,8 +77,8 @@ internal static class AiWindowMinimizePolicy
     {
         return state switch
         {
-            StarCraftScreenState.PreGameWait => AiWindowMinimizeDecision.MinimizeOnce,
-            StarCraftScreenState.InGame or StarCraftScreenState.BlockedDialog => AiWindowMinimizeDecision.StopWithoutMinimizing,
+            StarCraftScreenState.PreGameWait or StarCraftScreenState.InGame => AiWindowMinimizeDecision.MinimizeOnce,
+            StarCraftScreenState.BlockedDialog => AiWindowMinimizeDecision.StopWithoutMinimizing,
             _ => AiWindowMinimizeDecision.Wait
         };
     }

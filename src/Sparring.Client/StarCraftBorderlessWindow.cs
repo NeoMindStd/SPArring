@@ -158,6 +158,29 @@ internal static class StarCraftBorderlessWindow
         return false;
     }
 
+    public static bool IsProcessWindowMinimized(int processId)
+    {
+        var minimized = false;
+        EnumWindows((handle, _) =>
+        {
+            if (!IsWindowVisible(handle) || !IsBroodWarWindow(handle))
+            {
+                return true;
+            }
+
+            GetWindowThreadProcessId(handle, out var currentProcessId);
+            if (currentProcessId != processId)
+            {
+                return true;
+            }
+
+            minimized = IsIconic(handle);
+            return false;
+        }, IntPtr.Zero);
+
+        return minimized;
+    }
+
     public static bool ActivateProcessWindowWhenReady(int processId, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
@@ -379,6 +402,9 @@ internal static class StarCraftBorderlessWindow
 
     [DllImport("user32.dll")]
     private static extern bool IsWindowVisible(IntPtr handle);
+
+    [DllImport("user32.dll")]
+    private static extern bool IsIconic(IntPtr handle);
 
     private static bool IsBroodWarWindow(IntPtr handle)
     {

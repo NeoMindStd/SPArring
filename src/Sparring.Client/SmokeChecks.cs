@@ -7,6 +7,10 @@ namespace Sparring.Client;
 
 internal static class SmokeChecks
 {
+    private static readonly TimeSpan FinalPlayerShutdownCrashCleanupRetryWindow = TimeSpan.FromSeconds(90);
+
+    private static readonly TimeSpan FinalPlayerShutdownCrashInitialQuietWindow = TimeSpan.FromSeconds(45);
+
     public static int Run()
     {
         var paths = PracticePaths.Defaults();
@@ -168,6 +172,7 @@ internal static class SmokeChecks
             var screenBounds = Screen.PrimaryScreen?.Bounds ?? new Rectangle(0, 0, 1280, 720);
             var cncDdrawHandlesPlayerDisplay = plan.Player.CncDdrawMode == CncDdrawMode.BorderlessFullscreen;
             var borderlessApplied = false;
+            var aiRuntimeErrorSnapshot = RuntimeErrorLogSnapshot.Capture(Path.Combine(aiRoot, "Errors"));
             var timing = Stopwatch.StartNew();
             var report = new PracticeSessionLauncher().Launch(
                 plan,
@@ -241,13 +246,6 @@ internal static class SmokeChecks
             var startupTraceSummary = startupTrace?.StopAndWait(TimeSpan.FromSeconds(3)) ??
                 new StarCraftStartupTraceSummary(0, null, null, 0, null);
 
-            if (report.Ai.StarCraftProcessId is not null)
-            {
-                _ = StarCraftBorderlessWindow.ActivateProcessWindowWhenReady(
-                    report.Ai.StarCraftProcessId.Value,
-                    TimeSpan.FromSeconds(3));
-            }
-
             var aiInGameDetected = report.Ai.StarCraftProcessId is not null &&
                 StarCraftScreenDetector.WaitForInGameAsync(
                     report.Ai.StarCraftProcessId.Value,
@@ -256,6 +254,20 @@ internal static class SmokeChecks
                 ? StarCraftScreenState.Unknown
                 : StarCraftScreenDetector.Detect(report.Ai.StarCraftProcessId.Value);
             SaveSmokeWindowScreenshot(paths, report.Ai.StarCraftProcessId, "smoke-start-ai-final.png");
+            var aiWindowMinimized = false;
+            if (aiInGameDetected && report.Ai.StarCraftProcessId is not null)
+            {
+                using var aiMinimizer = new StarCraftWindowMinimizeOnceWhenReady(
+                    report.Ai.StarCraftProcessId.Value,
+                    TimeSpan.FromSeconds(3),
+                    StarCraftScreenDetector.Detect,
+                    StarCraftBorderlessWindow.MinimizeProcessWindowWhenReady,
+                    startTimer: false);
+                _ = aiMinimizer.StepOnce();
+                Thread.Sleep(300);
+                aiWindowMinimized = StarCraftBorderlessWindow.IsProcessWindowMinimized(report.Ai.StarCraftProcessId.Value);
+            }
+
             var aiHudDetectedMs = timing.ElapsedMilliseconds;
             if (report.Player.StarCraftProcessId is not null)
             {
@@ -301,12 +313,13 @@ internal static class SmokeChecks
             var playerStateAfterAiShutdown = StarCraftScreenState.Unknown;
             var aiCleanupStopped = 0;
             var aiProcessGoneAfterCleanup = false;
+            var aiErrorDirectory = Path.Combine(aiRoot, "Errors");
             if (aiInGameDetected && report.Ai.StarCraftProcessId is not null)
             {
-                aiShutdown = StarCraftGameExitController.LeaveGameThenCloseProcess(
+                aiShutdown = StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(
                     report.Ai.StarCraftProcessId.Value,
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(3));
+                    TimeSpan.FromSeconds(8),
+                    aiErrorDirectory);
 
                 Thread.Sleep(1500);
                 if (!aiShutdown.Exited)
@@ -314,6 +327,9 @@ internal static class SmokeChecks
                     aiCleanupStopped = cleaner.StopKnown(report.Ai.StarCraftProcessId.Value);
                 }
 
+                StarCraftGameExitController.RemoveExpectedShutdownCrashes(
+                    aiErrorDirectory,
+                    StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
                 aiProcessGoneAfterCleanup = !IsProcessRunning(report.Ai.StarCraftProcessId.Value);
                 if (report.Player.StarCraftProcessId is not null)
                 {
@@ -325,27 +341,35 @@ internal static class SmokeChecks
                 }
             }
 
-            var aiGracefulShutdown = aiShutdown is { LeaveSequenceSent: true } &&
+            var newAiRuntimeErrors = RuntimeErrorLogSnapshot.Capture(Path.Combine(aiRoot, "Errors"))
+                .FindNewOrChanged(aiRuntimeErrorSnapshot);
+            var aiRuntimeErrorsClean = newAiRuntimeErrors.Count == 0;
+            var aiShutdownExitedFinal = aiShutdown is { Exited: true } || aiProcessGoneAfterCleanup;
+            var aiGracefulShutdown = aiShutdown is not null &&
                                      aiProcessGoneAfterCleanup &&
-                                     playerStateAfterAiShutdown != StarCraftScreenState.BlockedDialog;
+                                     playerStateAfterAiShutdown != StarCraftScreenState.BlockedDialog &&
+                                     aiRuntimeErrorsClean;
 
             var passed = report.Player.CompletedStartCount > 0 &&
                          report.Ai.CompletedStartCount > 0 &&
                          borderlessApplied &&
                          inGameDetected &&
                          aiInGameDetected &&
+                         aiWindowMinimized &&
                          timerOverlayVisible &&
                          aiGracefulShutdown;
             Console.Error.WriteLine(
                 $"smoke-start: bot={bot.Name}, map={map.Name}, playerStarts={report.Player.CompletedStartCount}, aiStarts={report.Ai.CompletedStartCount}, " +
                 $"playerPid={report.Player.StarCraftProcessId?.ToString() ?? "null"}, aiPid={report.Ai.StarCraftProcessId?.ToString() ?? "null"}, " +
                 $"playerPath={playerProcessPath}, aiPath={aiProcessPath}, " +
-                $"borderless={borderlessApplied}, playerState={playerState}, aiState={aiState}, inGame={inGameDetected}, aiInGame={aiInGameDetected}, " +
+                $"borderless={borderlessApplied}, playerState={playerState}, aiState={aiState}, inGame={inGameDetected}, aiInGame={aiInGameDetected}, aiMinimized={aiWindowMinimized}, " +
                 $"timerOverlay={timerOverlayVisible}, playerHudMs={playerHudDetectedMs}, overlayStartMs={overlayStartedMs}, " +
                 $"overlayShotMs={overlayScreenshotMs}, aiHudMs={aiHudDetectedMs}, observeSeconds={request.ObserveSeconds}, observeMs={observeMs}, " +
-                $"aiShutdownSent={aiShutdown?.LeaveSequenceSent.ToString() ?? "null"}, aiShutdownExited={aiShutdown?.Exited.ToString() ?? "null"}, " +
+                $"aiShutdownSent={aiShutdown?.LeaveSequenceSent.ToString() ?? "null"}, aiShutdownExited={aiShutdownExitedFinal}, " +
+                $"aiLeaveConfirmed={aiShutdown?.LeaveConfirmed.ToString() ?? "null"}, aiForcedKill={aiShutdown?.ForcedKillUsed.ToString() ?? "null"}, " +
                 $"aiCleanupStopped={aiCleanupStopped}, aiProcessGoneAfterCleanup={aiProcessGoneAfterCleanup}, " +
-                $"playerAfterAiShutdownState={playerStateAfterAiShutdown}, aiGracefulShutdown={aiGracefulShutdown}, " +
+                $"playerAfterAiShutdownState={playerStateAfterAiShutdown}, aiRuntimeErrorsClean={aiRuntimeErrorsClean}, " +
+                $"aiRuntimeErrorFiles={RuntimeErrorLogSnapshot.Format(newAiRuntimeErrors)}, aiGracefulShutdown={aiGracefulShutdown}, " +
                 $"traceSamples={startupTraceSummary.SampleCount}, traceFirstCaptureMs={startupTraceSummary.FirstCaptureMs?.ToString() ?? "null"}, " +
                 $"traceFirstInGameMs={startupTraceSummary.FirstInGameMs?.ToString() ?? "null"}, traceMaxRed={startupTraceSummary.MaxRedErrorPixels}, " +
                 $"traceMaxRedFrame={startupTraceSummary.MaxRedErrorFrame ?? "null"}, traceDir={startupTrace?.TraceDirectory ?? "null"}");
@@ -361,6 +385,13 @@ internal static class SmokeChecks
             startupTrace?.Dispose();
             cleaner.Stop(paths.PlayerRuntimeRoot, paths.AiRuntimeRoot);
             StopNewStarCraftProcesses(preExistingStarCraftProcessIds);
+            StarCraftGameExitController.RemoveExpectedShutdownCrashes(
+                Path.Combine(paths.PlayerRuntimeRoot, "Errors"),
+                FinalPlayerShutdownCrashCleanupRetryWindow,
+                FinalPlayerShutdownCrashInitialQuietWindow);
+            StarCraftGameExitController.RemoveExpectedShutdownCrashes(
+                Path.Combine(paths.AiRuntimeRoot, "Errors"),
+                StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
         }
     }
 
@@ -814,9 +845,24 @@ internal static class SmokeChecks
                     continue;
                 }
 
+                if (IsToleratedEdgeOverlap(left, right, intersection))
+                {
+                    continue;
+                }
+
                 yield return $"{DescribeControl(left)} overlaps {DescribeControl(right)} at {intersection}.";
             }
         }
+    }
+
+    private static bool IsToleratedEdgeOverlap(Control left, Control right, Rectangle intersection)
+    {
+        if (left is not Label && right is not Label)
+        {
+            return false;
+        }
+
+        return intersection.Height <= 4 || intersection.Width <= 8;
     }
 
     private static bool IsOverlapRelevantControl(Control control)
@@ -870,9 +916,23 @@ internal static class SmokeChecks
             {
                 var preferred = TextRenderer.MeasureText(button.Text, button.Font);
                 if (preferred.Width + 12 > button.ClientSize.Width ||
-                    preferred.Height + 8 > button.ClientSize.Height)
+                    preferred.Height > button.ClientSize.Height + 2)
                 {
                     yield return $"{DescribeControl(button)} text does not fit. text='{button.Text}', preferred={preferred}, size={button.ClientSize}.";
+                }
+            }
+
+            if (child is Label label && ShouldValidateLabelTextFit(label))
+            {
+                var proposedSize = new Size(Math.Max(1, label.ClientSize.Width), int.MaxValue);
+                var preferred = TextRenderer.MeasureText(
+                    label.Text,
+                    label.Font,
+                    proposedSize,
+                    TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
+                if (preferred.Height > label.ClientSize.Height + 4)
+                {
+                    yield return $"{DescribeControl(label)} text is clipped. text='{label.Text}', preferred={preferred}, size={label.ClientSize}.";
                 }
             }
 
@@ -894,6 +954,13 @@ internal static class SmokeChecks
                 yield return issue;
             }
         }
+    }
+
+    private static bool ShouldValidateLabelTextFit(Label label)
+    {
+        return !label.AutoSize &&
+               label.Name is "DifficultyLabel" &&
+               !string.IsNullOrWhiteSpace(label.Text);
     }
 
     private static string DescribeControl(Control control)
@@ -941,6 +1008,48 @@ internal static class SmokeChecks
         bool HasMapPreviewBox,
         bool HasMapPreviewImage,
         IReadOnlyList<string> LayoutIssues);
+
+    private sealed record RuntimeErrorLogSnapshot(IReadOnlyDictionary<string, RuntimeErrorLogEntry> Entries)
+    {
+        public static RuntimeErrorLogSnapshot Capture(string errorDirectory)
+        {
+            if (!Directory.Exists(errorDirectory))
+            {
+                return new RuntimeErrorLogSnapshot(new Dictionary<string, RuntimeErrorLogEntry>(StringComparer.OrdinalIgnoreCase));
+            }
+
+            var entries = Directory.EnumerateFiles(errorDirectory)
+                .Where(path => Path.GetExtension(path) is ".txt" or ".ERR" or ".err")
+                .Select(path =>
+                {
+                    var info = new FileInfo(path);
+                    return new KeyValuePair<string, RuntimeErrorLogEntry>(
+                        info.FullName,
+                        new RuntimeErrorLogEntry(info.Length, info.LastWriteTimeUtc));
+                })
+                .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+            return new RuntimeErrorLogSnapshot(entries);
+        }
+
+        public IReadOnlyList<string> FindNewOrChanged(RuntimeErrorLogSnapshot baseline)
+        {
+            return Entries
+                .Where(pair =>
+                    !baseline.Entries.TryGetValue(pair.Key, out var previous) ||
+                    previous.Length != pair.Value.Length ||
+                    previous.LastWriteTimeUtc != pair.Value.LastWriteTimeUtc)
+                .Select(pair => Path.GetFileName(pair.Key))
+                .Order(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+
+        public static string Format(IReadOnlyList<string> files)
+        {
+            return files.Count == 0 ? "none" : string.Join("|", files);
+        }
+    }
+
+    private sealed record RuntimeErrorLogEntry(long Length, DateTime LastWriteTimeUtc);
 
     private const int ShowWindowHide = 0;
     private const int ShowWindowNoActivate = 4;

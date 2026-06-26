@@ -154,6 +154,32 @@ public sealed class StarCraftScreenAnalyzerTests
     }
 
     [Fact]
+    public void AnalyzeTreatsHudWithBrightMineralsAsInGame()
+    {
+        using var bitmap = CreateDarkBitmap();
+
+        FillRectangle(bitmap, 0, 350, 640, 130, Color.FromArgb(48, 58, 74));
+        FillRectangle(bitmap, 35, 390, 120, 72, Color.FromArgb(8, 8, 8));
+        FillRectangle(bitmap, 170, 390, 240, 72, Color.FromArgb(8, 8, 8));
+        FillRectangle(bitmap, 510, 370, 100, 90, Color.FromArgb(8, 8, 8));
+        FillRectangle(bitmap, 430, 90, 80, 80, Color.FromArgb(228, 235, 246));
+
+        Assert.Equal(StarCraftScreenState.InGame, StarCraftScreenAnalyzer.Analyze(bitmap));
+    }
+
+    [Fact]
+    public void AnalyzeTreatsCroppedWorldWithGreenSelectionAsInGame()
+    {
+        using var bitmap = new Bitmap(666, 551);
+        FillRectangle(bitmap, 0, 0, bitmap.Width, bitmap.Height, Color.FromArgb(72, 65, 46));
+        FillRectangle(bitmap, 260, 70, 180, 150, Color.FromArgb(180, 140, 70));
+        FillRectangle(bitmap, 290, 245, 120, 72, Color.FromArgb(30, 210, 35));
+        FillRectangle(bitmap, 305, 260, 90, 44, Color.FromArgb(72, 65, 46));
+
+        Assert.Equal(StarCraftScreenState.InGame, StarCraftScreenAnalyzer.Analyze(bitmap));
+    }
+
+    [Fact]
     public void AnalyzeKeepsCreateScreenWithRedFramesAndDarkBottomAsGameRoom()
     {
         using var bitmap = CreateDarkBitmap();

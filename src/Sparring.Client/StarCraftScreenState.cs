@@ -35,6 +35,7 @@ internal static class StarCraftScreenAnalyzer
         var preGamePanelPixels = 0;
         var dialogLightPixels = 0;
         var centralDialogFramePixels = 0;
+        var gameWorldPixels = 0;
 
         for (var y = 0; y < bitmap.Height; y += step)
         {
@@ -55,6 +56,11 @@ internal static class StarCraftScreenAnalyzer
                 if (IsLobbyTextColor(color))
                 {
                     lobbyTextPixels++;
+                }
+
+                if (IsGameWorldColor(color))
+                {
+                    gameWorldPixels++;
                 }
 
                 if (IsCentralOverlayRegion(bitmap, x, y))
@@ -102,18 +108,35 @@ internal static class StarCraftScreenAnalyzer
         var roomFrameRatio = fullSamples == 0 ? 0 : roomFramePixels / (double)fullSamples;
         var menuGreenRatio = fullSamples == 0 ? 0 : menuGreenPixels / (double)fullSamples;
         var lobbyTextRatio = fullSamples == 0 ? 0 : lobbyTextPixels / (double)fullSamples;
+        var gameWorldRatio = fullSamples == 0 ? 0 : gameWorldPixels / (double)fullSamples;
         var hudRatio = bottomSamples == 0 ? 0 : hudPixels / (double)bottomSamples;
         var hudPanelRatio = bottomSamples == 0 ? 0 : hudPanelPixels / (double)bottomSamples;
         var hudDarkPanelRatio = bottomSamples == 0 ? 0 : hudDarkPanelPixels / (double)bottomSamples;
         var hudDetected = hudRatio >= 0.02 || hudPanelRatio >= 0.08;
         var strongHudDetected = hudDetected && hudDarkPanelRatio >= 0.04;
+        if (strongHudDetected && roomFrameRatio < 0.0022)
+        {
+            return StarCraftScreenState.InGame;
+        }
+
         var dialogLightRatio = centralSamples == 0 ? 0 : dialogLightPixels / (double)centralSamples;
         var centralDialogFrameRatio = centralSamples == 0 ? 0 : centralDialogFramePixels / (double)centralSamples;
         var dialogDetected = dialogLightRatio >= 0.025 ||
                              dialogLightRatio >= 0.008 && centralDialogFrameRatio >= 0.0008;
-        if (dialogDetected && !(strongHudDetected && dialogLightRatio < 0.06))
+        if (dialogDetected)
         {
+            if (strongHudDetected && dialogLightRatio < 0.06)
+            {
+                return StarCraftScreenState.InGame;
+            }
+
             return StarCraftScreenState.BlockedDialog;
+        }
+
+        if (roomFrameRatio >= 0.0022 &&
+            (menuGreenRatio >= 0.0015 || lobbyTextRatio >= 0.0015))
+        {
+            return StarCraftScreenState.GameRoom;
         }
 
         if (strongHudDetected)
@@ -141,6 +164,13 @@ internal static class StarCraftScreenAnalyzer
         if (preGamePanelRatio >= 0.12)
         {
             return StarCraftScreenState.PreGameWait;
+        }
+
+        if (menuGreenRatio >= 0.0015 &&
+            gameWorldRatio >= 0.18 &&
+            roomFrameRatio < 0.0022)
+        {
+            return StarCraftScreenState.InGame;
         }
 
         if (menuGreenRatio >= 0.0015 || lobbyTextRatio >= 0.0015)
@@ -207,6 +237,17 @@ internal static class StarCraftScreenAnalyzer
                color.B <= 70 &&
                color.R >= color.B + 35 &&
                color.G >= color.B + 45;
+    }
+
+    private static bool IsGameWorldColor(Color color)
+    {
+        return color.R is >= 28 and <= 190 &&
+               color.G is >= 25 and <= 190 &&
+               color.B is >= 18 and <= 190 &&
+               color.R + color.G + color.B >= 105 &&
+               !IsMenuGreen(color) &&
+               !IsRoomFrameRed(color) &&
+               !IsDialogLight(color);
     }
 
     private static bool IsCentralOverlayRegion(Bitmap bitmap, int x, int y)

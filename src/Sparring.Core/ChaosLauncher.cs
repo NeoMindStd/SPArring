@@ -1,5 +1,6 @@
 using Microsoft.Win32;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 #pragma warning disable CA1416
@@ -216,11 +217,12 @@ public sealed class ChaosLauncherClient
         var restorePoint = _configurator.ApplyWithRestorePoint(request);
         try
         {
+            using var errorDialogScope = ProcessErrorDialogScope.SuppressFaultDialogs();
             var process = Process.Start(new ProcessStartInfo
             {
                 FileName = launcher,
                 WorkingDirectory = request.RuntimeRoot,
-                UseShellExecute = true
+                UseShellExecute = false
             }) ?? throw new InvalidOperationException("Failed to start ChaosLauncher.");
 
             return new ChaosLauncherRun(process, restorePoint);
@@ -234,6 +236,32 @@ public sealed class ChaosLauncherClient
 }
 
 public sealed record ChaosLauncherRun(Process Process, RegistryRestorePoint RestorePoint);
+
+internal sealed class ProcessErrorDialogScope : IDisposable
+{
+    private const uint SemNoGpFaultErrorBox = 0x0002;
+    private readonly uint _previousMode;
+
+    private ProcessErrorDialogScope(uint previousMode)
+    {
+        _previousMode = previousMode;
+    }
+
+    public static ProcessErrorDialogScope SuppressFaultDialogs()
+    {
+        var previous = SetErrorMode(SemNoGpFaultErrorBox);
+        _ = SetErrorMode(previous | SemNoGpFaultErrorBox);
+        return new ProcessErrorDialogScope(previous);
+    }
+
+    public void Dispose()
+    {
+        _ = SetErrorMode(_previousMode);
+    }
+
+    [DllImport("kernel32.dll")]
+    private static extern uint SetErrorMode(uint mode);
+}
 
 public static class ChaosLauncherLog
 {

@@ -72,9 +72,10 @@ internal static class Program
                 continue;
             }
 
-            if (control.Parent is not null)
+            if (control.Parent is { } parent &&
+                parent is not ScrollableControl { AutoScroll: true })
             {
-                var parentBounds = control.Parent.ClientRectangle;
+                var parentBounds = parent.ClientRectangle;
                 if (control.Right > parentBounds.Right + 2 || control.Bottom > parentBounds.Bottom + 2)
                 {
                     yield return $"{Describe(control)} exceeds parent bounds {parentBounds}.";
