@@ -43,10 +43,13 @@ public sealed class ChaosLauncherConfiguratorTests
             EnableBwapi: true,
             EnableApmAlert: false,
             MouseScrollSpeed: 5,
-            KeyboardScrollSpeed: 2));
+            KeyboardScrollSpeed: 2,
+            MouseSensitivity: 67));
 
         Assert.Equal(5, DwordValue(writes, ChaosLauncherConfigurator.StarCraftUserSettingsKey, "mscroll"));
         Assert.Equal(2, DwordValue(writes, ChaosLauncherConfigurator.StarCraftUserSettingsKey, "kscroll"));
+        Assert.Equal(1, DwordValue(writes, ChaosLauncherConfigurator.StarCraftUserSettingsKey, "MouseUseSensitivity"));
+        Assert.Equal(67, DwordValue(writes, ChaosLauncherConfigurator.StarCraftUserSettingsKey, "MouseSensitivity"));
     }
 
     [Fact]

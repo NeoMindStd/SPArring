@@ -69,7 +69,8 @@ public static partial class SchnailCatalogReader
             SupportedMapIds: ParseGuidSet(record.MapGuids),
             Description: record.Description,
             Author: record.Author,
-            SourceDirectory: FindBotDirectory(botsRoot, record.Name, record.BotExecutable));
+            SourceDirectory: FindBotDirectory(botsRoot, record.Name, record.BotExecutable),
+            BuildOptions: ParseBuildOptions(record.BuildOptions));
     }
 
     private static PracticeMap ToPracticeMap(
@@ -233,6 +234,18 @@ public static partial class SchnailCatalogReader
             .ToHashSet();
     }
 
+    private static IReadOnlyList<PracticeBotBuildOption> ParseBuildOptions(IReadOnlyList<SchnailBotBuildOption>? values)
+    {
+        return (values ?? [])
+            .Where(value => !string.IsNullOrWhiteSpace(value.Id) && !string.IsNullOrWhiteSpace(value.Name))
+            .Select(value => new PracticeBotBuildOption(
+                value.Id!.Trim(),
+                value.Name!.Trim(),
+                value.Matchups?.Trim() ?? string.Empty,
+                value.Summary?.Trim() ?? string.Empty))
+            .ToList();
+    }
+
     private sealed record SchnailBotRecord
     {
         public string? Name { get; init; }
@@ -248,6 +261,15 @@ public static partial class SchnailCatalogReader
         public bool PracticeOnly { get; init; }
         public string? Elo { get; init; }
         public List<string>? MapGuids { get; init; }
+        public List<SchnailBotBuildOption>? BuildOptions { get; init; }
+    }
+
+    private sealed record SchnailBotBuildOption
+    {
+        public string? Id { get; init; }
+        public string? Name { get; init; }
+        public string? Matchups { get; init; }
+        public string? Summary { get; init; }
     }
 
     private sealed record SchnailMapRecord

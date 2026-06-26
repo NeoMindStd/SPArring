@@ -17,7 +17,7 @@ public static partial class RuntimeProvisioner
 
         var playerMap = ProvisionMap(plan.Map, plan.Player.RuntimeRoot);
         _ = ProvisionMap(plan.Map, plan.Ai.RuntimeRoot);
-        var botExecutable = ProvisionBot(plan.Bot, plan.Ai.RuntimeRoot);
+        var botExecutable = ProvisionBot(plan.Bot, plan.Ai.RuntimeRoot, plan.Ai.BotBuildId);
         var aiModule = plan.Bot.UsesBwapiIniAiModule ? botExecutable.RelativeExecutablePath : string.Empty;
 
         var player = plan.Player with { MapFileName = playerMap.RelativeMapPath };
@@ -83,7 +83,7 @@ public static partial class RuntimeProvisioner
         return new ProvisionedMap(relativePath, targetPath);
     }
 
-    public static ProvisionedBot ProvisionBot(PracticeBot bot, string aiRuntimeRoot)
+    public static ProvisionedBot ProvisionBot(PracticeBot bot, string aiRuntimeRoot, string? botBuildId = null)
     {
         if (string.IsNullOrWhiteSpace(bot.SourceDirectory) || !Directory.Exists(bot.SourceDirectory))
         {
@@ -102,6 +102,7 @@ public static partial class RuntimeProvisioner
         }
 
         MirrorLegacyAiSidecars(bot, aiRuntimeRoot);
+        WriteBotLaunchConfig(bot, targetDirectory, aiRuntimeRoot, botBuildId);
 
         var relativeExecutable = Path.Combine(relativeDirectory, bot.ExecutableName);
         var executablePath = Path.Combine(aiRuntimeRoot, relativeExecutable);
@@ -111,6 +112,26 @@ public static partial class RuntimeProvisioner
         }
 
         return new ProvisionedBot(relativeDirectory, relativeExecutable, executablePath);
+    }
+
+    private static void WriteBotLaunchConfig(
+        PracticeBot bot,
+        string targetDirectory,
+        string aiRuntimeRoot,
+        string? botBuildId)
+    {
+        if (!bot.HasSelectableBuilds)
+        {
+            return;
+        }
+
+        var selectedBuildId = string.IsNullOrWhiteSpace(botBuildId) ? "random" : botBuildId.Trim();
+        var text = $"build={selectedBuildId}{Environment.NewLine}";
+        File.WriteAllText(Path.Combine(targetDirectory, "sparring-bot.ini"), text);
+
+        var legacyAiRoot = Path.Combine(aiRuntimeRoot, "bwapi-data", "AI");
+        Directory.CreateDirectory(legacyAiRoot);
+        File.WriteAllText(Path.Combine(legacyAiRoot, "sparring-bot.ini"), text);
     }
 
     private static void MirrorLegacyAiSidecars(PracticeBot bot, string aiRuntimeRoot)

@@ -79,6 +79,62 @@ public sealed class PracticeLaunchPlanBuilderTests
     }
 
     [Fact]
+    public void BuildPassesSelectedBotBuildToAiClient()
+    {
+        var botId = Guid.NewGuid();
+        var mapId = Guid.NewGuid();
+        var catalog = Catalog(
+            botId,
+            mapId,
+            mapId,
+            [
+                new PracticeBotBuildOption("fast_power_dragoon", "빠른 파워드라군", "All", "초반 드라군 압박")
+            ]);
+        var selection = new PracticeSelection(
+            botId,
+            mapId,
+            StarCraftRace.Terran,
+            "Sparring Practice",
+            PlayerBorderless: true,
+            ClipCursor: false,
+            AllowApmAlert: false,
+            BotBuildId: "fast_power_dragoon");
+
+        var plan = PracticeLaunchPlanBuilder.Build(catalog, SafePaths(), selection);
+
+        Assert.Equal("fast_power_dragoon", plan.Ai.BotBuildId);
+        Assert.Null(plan.Player.BotBuildId);
+    }
+
+    [Fact]
+    public void BuildRejectsUnknownBotBuild()
+    {
+        var botId = Guid.NewGuid();
+        var mapId = Guid.NewGuid();
+        var catalog = Catalog(
+            botId,
+            mapId,
+            mapId,
+            [
+                new PracticeBotBuildOption("1012", "1012", "All", "질럿 러시")
+            ]);
+        var selection = new PracticeSelection(
+            botId,
+            mapId,
+            StarCraftRace.Terran,
+            "Sparring Practice",
+            PlayerBorderless: true,
+            ClipCursor: false,
+            AllowApmAlert: false,
+            BotBuildId: "not_a_build");
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => PracticeLaunchPlanBuilder.Build(catalog, SafePaths(), selection));
+
+        Assert.Contains("does not support build", exception.Message);
+    }
+
+    [Fact]
     public void BuildRejectsUnsupportedBotMapCombination()
     {
         var botId = Guid.NewGuid();
@@ -99,7 +155,11 @@ public sealed class PracticeLaunchPlanBuilderTests
         Assert.Contains("does not support map", exception.Message);
     }
 
-    private static PracticeCatalog Catalog(Guid botId, Guid supportedMapId, Guid actualMapId)
+    private static PracticeCatalog Catalog(
+        Guid botId,
+        Guid supportedMapId,
+        Guid actualMapId,
+        IReadOnlyList<PracticeBotBuildOption>? buildOptions = null)
     {
         return new PracticeCatalog(
             [
@@ -114,7 +174,8 @@ public sealed class PracticeLaunchPlanBuilderTests
                     false,
                     new HashSet<Guid> { supportedMapId },
                     null,
-                    null)
+                    null,
+                    BuildOptions: buildOptions)
             ],
             [
                 new PracticeMap(actualMapId, "Fighting Spirit", "Fighting.scx", null, true)

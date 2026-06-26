@@ -27,7 +27,13 @@ public sealed class MainForm : Form
     private ComboBox _modeCombo = null!;
     private ComboBox _enemyRaceFilter = null!;
     private ComboBox _sortCombo = null!;
+    private Label _modeLabel = null!;
+    private Label _enemyRaceLabel = null!;
+    private Label _sortLabel = null!;
+    private Label _mapListLabel = null!;
+    private Label _playerRaceLabel = null!;
     private ComboBox _playerRaceCombo = null!;
+    private Label _buildLabel = null!;
     private ComboBox _buildCombo = null!;
     private TabControl _tabs = null!;
     private Label _statusLabel = null!;
@@ -55,8 +61,12 @@ public sealed class MainForm : Form
     private TextBox _ladderRatingText = null!;
     private CheckBox _hideAiNameCheck = null!;
     private ComboBox _gameSpeedCombo = null!;
-    private NumericUpDown _mouseScrollSpeedInput = null!;
-    private NumericUpDown _keyboardScrollSpeedInput = null!;
+    private TrackBar _mouseSensitivitySlider = null!;
+    private TrackBar _mouseScrollSpeedSlider = null!;
+    private TrackBar _keyboardScrollSpeedSlider = null!;
+    private Label _mouseSensitivityValueLabel = null!;
+    private Label _mouseScrollSpeedValueLabel = null!;
+    private Label _keyboardScrollSpeedValueLabel = null!;
     private Label _ladderRatingLabel = null!;
     private Button _applyRatingButton = null!;
     private Button _resetRatingButton = null!;
@@ -180,7 +190,7 @@ public sealed class MainForm : Form
 
         var subtitle = new Label
         {
-            Text = "Sparring 내장 봇/맵으로 로컬 1.16.1 + BWAPI 스파링을 준비합니다.",
+            Text = "Sparring 내장 봇/맵으로 스타 실행을 준비합니다.",
             AutoSize = true,
             Font = new Font(Font.FontFamily, 10),
             ForeColor = Color.FromArgb(128, 218, 93),
@@ -339,8 +349,11 @@ public sealed class MainForm : Form
         };
 
         _buildCombo = CreateCombo(780, 66, 240);
-        _buildCombo.DataSource = new[] { "봇 기본 빌드 (자동)", "랜덤 빌드 (지원 봇만)" };
-        _buildCombo.Enabled = false;
+        _buildCombo.SelectedIndexChanged += (_, _) =>
+        {
+            UpdateDetails();
+            SaveLastGameSelections();
+        };
 
         var rating = _ratingStore.Load();
         _ladderRatingLabel = CreateLabel($"현재 MMR: {rating.PlayerRating}", 724, 114);
@@ -396,23 +409,27 @@ public sealed class MainForm : Form
             "Sparring 내장 자산 사용"
         });
 
-        page.Controls.Add(CreateLabel("모드", 16, 26));
+        _modeLabel = CreateLabel("모드", 16, 26);
+        page.Controls.Add(_modeLabel);
         page.Controls.Add(_modeCombo);
-        page.Controls.Add(CreateLabel("상대 종족", 16, 70));
+        _enemyRaceLabel = CreateLabel("상대 종족", 16, 70);
+        page.Controls.Add(_enemyRaceLabel);
         page.Controls.Add(_enemyRaceFilter);
-        page.Controls.Add(CreateLabel("정렬", 16, 114));
+        _sortLabel = CreateLabel("정렬", 16, 114);
+        page.Controls.Add(_sortLabel);
         page.Controls.Add(_sortCombo);
         page.Controls.Add(_searchBox);
         _botListLabel = CreateLabel("상대 선택", 16, 132);
         page.Controls.Add(_botListLabel);
         page.Controls.Add(_botList);
-        page.Controls.Add(CreateLabel("맵 선택", 16, 400));
+        _mapListLabel = CreateLabel("맵 선택", 16, 400);
+        page.Controls.Add(_mapListLabel);
         page.Controls.Add(_mapList);
-        var playerRaceLabel = CreateLabel("내 종족", 724, 26);
-        page.Controls.Add(playerRaceLabel);
+        _playerRaceLabel = CreateLabel("내 종족", 724, 26);
+        page.Controls.Add(_playerRaceLabel);
         page.Controls.Add(_playerRaceCombo);
-        var buildLabel = CreateLabel("빌드", 724, 70);
-        page.Controls.Add(buildLabel);
+        _buildLabel = CreateLabel("빌드", 724, 70);
+        page.Controls.Add(_buildLabel);
         page.Controls.Add(_buildCombo);
         page.Controls.Add(_ladderRatingLabel);
         page.Controls.Add(_ladderRatingText);
@@ -425,15 +442,15 @@ public sealed class MainForm : Form
         page.Controls.Add(_mapPreviewBox);
         page.Controls.Add(_detailsText);
         page.Controls.Add(_launchButton);
-        refreshButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        playerRaceLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        buildLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        _playerRaceCombo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        _buildCombo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        _ladderRatingLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        _ladderRatingText.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        _applyRatingButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        _resetRatingButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        refreshButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        _playerRaceLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        _buildLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        _playerRaceCombo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        _buildCombo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        _ladderRatingLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        _ladderRatingText.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        _applyRatingButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        _resetRatingButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
         runtimeText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         _detailsText.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         _launchButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -454,8 +471,8 @@ public sealed class MainForm : Form
         var pad = 16;
         var gap = 16;
         var width = Math.Max(900, page.ClientSize.Width - pad);
-        var height = Math.Max(560, page.ClientSize.Height);
         var compact = width < 1100;
+        var height = Math.Max(compact ? 500 : 560, page.ClientSize.Height);
 
         var leftWidth = compact ? 318 : 340;
         var middleWidth = compact ? Math.Min(248, Math.Max(206, (width - leftWidth - (pad * 2) - (gap * 2)) / 2)) : 260;
@@ -465,13 +482,12 @@ public sealed class MainForm : Form
         var rightWidth = Math.Max(320, width - rightX - pad);
         var middleX = compact ? rightX : pad + leftWidth + gap;
 
-        var modeLabel = FindLabel(page, "모드");
-        var enemyLabel = FindLabel(page, "상대 종족");
-        var sortLabel = FindLabel(page, "정렬");
+        var modeLabel = _modeLabel;
+        var enemyLabel = _enemyRaceLabel;
+        var sortLabel = _sortLabel;
         var botLabel = _botListLabel;
-        var mapLabel = FindLabel(page, "맵 선택");
-        var raceLabel = FindLabel(page, "내 종족");
-        var buildLabel = FindLabel(page, "빌드");
+        var mapLabel = _mapListLabel;
+        var raceLabel = _playerRaceLabel;
         var refreshButton = FindButton(page, "새로고침");
         var runtimeText = FindRuntimeTextBox(page);
 
@@ -484,16 +500,23 @@ public sealed class MainForm : Form
         _sortCombo.SetBounds(pad + 84, 132, Math.Min(132, leftWidth - 90), 30);
 
         botLabel?.SetBounds(pad, 168, leftWidth, 24);
-        var botHeight = compact ? Math.Max(160, Math.Min(260, height / 3)) : Math.Max(210, Math.Min(300, height - 500));
+        var launchTop = Math.Max(compact ? 430 : 502, height - 58);
+        var botHeight = compact
+            ? Math.Max(130, Math.Min(190, (launchTop - 220) / 2))
+            : Math.Max(210, Math.Min(300, height - 500));
         _botList.SetBounds(pad, 194, leftWidth, botHeight);
         mapLabel?.SetBounds(pad, _botList.Bottom + 22, leftWidth, 24);
-        _mapList.SetBounds(pad, _botList.Bottom + 48, leftWidth, Math.Max(142, height - _botList.Bottom - 96));
+        var mapTop = _botList.Bottom + 48;
+        var mapHeight = compact
+            ? Math.Max(88, launchTop - mapTop - 14)
+            : Math.Max(142, height - _botList.Bottom - 96);
+        _mapList.SetBounds(pad, mapTop, leftWidth, mapHeight);
 
         var topControlX = rightX;
         var topControlWidth = Math.Max(280, rightWidth - 104);
         raceLabel?.SetBounds(topControlX, 24, 76, 24);
         _playerRaceCombo.SetBounds(topControlX + 86, 18, Math.Min(150, topControlWidth - 92), 30);
-        buildLabel?.SetBounds(topControlX, 68, 76, 24);
+        _buildLabel?.SetBounds(topControlX, 68, 76, 24);
         _buildCombo.SetBounds(topControlX + 86, 62, Math.Min(260, topControlWidth - 92), 30);
         refreshButton?.SetBounds(width - pad - 92, 18, 92, 34);
 
@@ -505,7 +528,12 @@ public sealed class MainForm : Form
 
         _difficultyLabel.SetBounds(middleX, compact ? 212 : 112, middleWidth, 74);
         _mapPreviewLabel.SetBounds(middleX, _difficultyLabel.Bottom + 10, middleWidth, 24);
+        var previewLimit = Math.Max(132, launchTop - (_mapPreviewLabel.Bottom + 4) - 12);
         var previewSize = Math.Min(compact ? 232 : 260, Math.Max(170, middleWidth));
+        if (compact)
+        {
+            previewSize = Math.Min(previewSize, previewLimit);
+        }
         _mapPreviewBox.SetBounds(middleX, _mapPreviewLabel.Bottom + 4, previewSize, previewSize);
 
         var detailsX = compact ? middleX + previewSize + gap : rightX;
@@ -520,9 +548,14 @@ public sealed class MainForm : Form
             detailsWidth = rightWidth;
         }
 
-        _detailsText.SetBounds(detailsX, detailsY, Math.Max(300, detailsWidth), Math.Max(170, height - detailsY - 72));
-        _launchButton.SetBounds(width - pad - 184, height - 58, 184, 44);
-        page.AutoScrollMinSize = new Size(Math.Max(900, _detailsText.Right + pad), Math.Max(620, _launchButton.Bottom + 20));
+        var detailsHeight = compact
+            ? Math.Max(118, launchTop - detailsY - 12)
+            : Math.Max(170, height - detailsY - 72);
+        _detailsText.SetBounds(detailsX, detailsY, Math.Max(300, detailsWidth), detailsHeight);
+        _launchButton.SetBounds(width - pad - 184, launchTop, 184, 44);
+        page.AutoScrollMinSize = compact
+            ? Size.Empty
+            : new Size(Math.Max(900, _detailsText.Right + pad), Math.Max(620, _launchButton.Bottom + 20));
     }
 
     private TabPage BuildSettingsTab()
@@ -559,18 +592,7 @@ public sealed class MainForm : Form
             ForeColor = Color.FromArgb(166, 255, 126)
         };
 
-        page.Controls.Add(CreateLabel("게임 속도", 18, 218));
-        _gameSpeedCombo = CreateCombo(160, 212, 220);
-        _gameSpeedCombo.DataSource = GameSpeedOptions;
-        _gameSpeedCombo.DisplayMember = nameof(GameSpeedOption.Label);
-        SelectGameSpeedOption(_settings.GameSpeedOverrideMs);
-
-        page.Controls.Add(CreateLabel("마우스 스크롤", 18, 266));
-        _mouseScrollSpeedInput = CreateNumericInput(160, 260, 82, _settings.MouseScrollSpeed);
-        page.Controls.Add(CreateLabel("키보드 스크롤", 276, 266));
-        _keyboardScrollSpeedInput = CreateNumericInput(382, 260, 82, _settings.KeyboardScrollSpeed);
-
-        var saveButton = CreateButton("설정 저장", 160, 314, 120, 34);
+        var saveButton = CreateButton("설정 저장", 160, 218, 120, 34);
         saveButton.Click += (_, _) => SaveSettingsFromUi();
 
         page.Controls.Add(_replayRootText);
@@ -580,23 +602,17 @@ public sealed class MainForm : Form
         page.Controls.Add(_ladderMapRootText);
         page.Controls.Add(browseLadderMapButton);
         page.Controls.Add(_hideAiNameCheck);
-        page.Controls.Add(_gameSpeedCombo);
-        page.Controls.Add(_mouseScrollSpeedInput);
-        page.Controls.Add(_keyboardScrollSpeedInput);
         page.Controls.Add(saveButton);
         var note = CreateReadOnlyBlock(
             18,
-            376,
+            284,
             1040,
-            158,
-            "사람 StarCraft는 W-MODE 기반 테두리 없는 전체 창모드로 실행합니다.\r\nAI 클라이언트는 창모드, 음소거, 커서 클립 OFF로 별도 실행합니다.\r\n게임 속도는 BWAPI speed_override로 적용합니다. 기본값은 StarCraft 원래 속도를 사용합니다.\r\n마우스/키보드 스크롤 속도는 StarCraft 실행 중 임시 적용한 뒤 기존 설정으로 되돌립니다.\r\n사용자 맵과 Remastered 래더맵은 .scm/.scx 파일을 읽어 Sparring 런타임 maps\\Sparring 폴더로 복사합니다.");
+            130,
+            "사람 StarCraft는 W-MODE 기반 테두리 없는 전체 창모드로 실행합니다.\r\nAI 클라이언트는 창모드, 음소거, 커서 클립 OFF로 별도 실행합니다.\r\n사용자 맵과 Remastered 래더맵은 .scm/.scx 파일을 읽어 Sparring 런타임 maps\\Sparring 폴더로 복사합니다.\r\n게임 속도와 마우스/키보드 스크롤은 컨트롤 탭에서 설정합니다.");
         page.Controls.Add(note);
         _replayRootText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         _userMapRootText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         _ladderMapRootText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-        _gameSpeedCombo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-        _mouseScrollSpeedInput.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-        _keyboardScrollSpeedInput.Anchor = AnchorStyles.Top | AnchorStyles.Left;
         browseReplayButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         browseMapButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         browseLadderMapButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
@@ -608,7 +624,7 @@ public sealed class MainForm : Form
 
     private void LayoutSettingsTab(TabPage page)
     {
-        if (_replayRootText is null || _gameSpeedCombo is null || page.ClientSize.Width <= 0)
+        if (_replayRootText is null || page.ClientSize.Width <= 0)
         {
             return;
         }
@@ -647,38 +663,35 @@ public sealed class MainForm : Form
         }
 
         _hideAiNameCheck.SetBounds(inputX, 170, 220, 28);
-        FindLabel(page, "게임 속도")?.SetBounds(pad, 218, labelWidth, 24);
-        _gameSpeedCombo.SetBounds(inputX, 212, Math.Min(340, inputWidth), 30);
-
-        FindLabel(page, "마우스 스크롤")?.SetBounds(pad, 266, labelWidth, 24);
-        _mouseScrollSpeedInput.SetBounds(inputX, 260, 82, 28);
-        FindLabel(page, "키보드 스크롤")?.SetBounds(inputX + 124, 266, 110, 24);
-        _keyboardScrollSpeedInput.SetBounds(inputX + 232, 260, 82, 28);
-        FindButton(page, "설정 저장")?.SetBounds(inputX, 314, 120, 34);
+        FindButton(page, "설정 저장")?.SetBounds(inputX, 218, 120, 34);
 
         foreach (var box in page.Controls.OfType<TextBox>().Where(box => box.Multiline && box.ReadOnly))
         {
             if (box.Text.StartsWith("사람 StarCraft", StringComparison.Ordinal))
             {
-                box.SetBounds(pad, 376, contentWidth, 166);
+                box.SetBounds(pad, 284, contentWidth, 130);
             }
         }
 
-        page.AutoScrollMinSize = new Size(contentWidth + (pad * 2), 590);
+        page.AutoScrollMinSize = new Size(contentWidth + (pad * 2), 460);
     }
 
     private TabPage BuildHotkeyTab()
     {
-        var page = CreateTabPage("Hotkeys");
+        var page = CreateTabPage("컨트롤");
         page.AutoScroll = true;
 
-        page.Controls.Add(CreateLabel("검색", 18, 26));
+        page.Controls.Add(CreateSectionLabel("설정 불러오기", 18, 16, 180));
+        page.Controls.Add(CreateSectionLabel("게임 조작 설정", 560, 16, 180));
+        page.Controls.Add(CreateSectionLabel("핫키 커스터마이징", 18, 132, 220));
+
+        page.Controls.Add(CreateLabel("검색", 18, 174));
         _hotkeySearch = CreateTextBox(62, 22, 220, 28);
         _hotkeySearch.PlaceholderText = "예: probe, storm, 뮤탈";
         _hotkeySearch.TextChanged += (_, _) => RefreshHotkeyObjects();
         page.Controls.Add(_hotkeySearch);
 
-        page.Controls.Add(CreateLabel("종족", 298, 26));
+        page.Controls.Add(CreateLabel("종족", 298, 174));
         _hotkeyRaceFilter = CreateCombo(-1000, -1000, 110);
         _hotkeyRaceFilter.Items.AddRange(["Terran", "Zerg", "Protoss", "Common", "전체"]);
         _hotkeyRaceFilter.SelectedIndex = 0;
@@ -689,7 +702,7 @@ public sealed class MainForm : Form
         };
         AddHotkeyFilterButtons(page, _hotkeyRaceFilter, _hotkeyRaceButtons, 342, 16, 74, 36);
 
-        page.Controls.Add(CreateLabel("분류", 298, 68));
+        page.Controls.Add(CreateLabel("분류", 298, 216));
         _hotkeyCategoryFilter = CreateCombo(-1000, -1000, 128);
         _hotkeyCategoryFilter.Items.AddRange(["유닛", "건물", "일반", "연구", "업그레이드", "기술", "변태", "전체"]);
         _hotkeyCategoryFilter.SelectedIndex = 0;
@@ -700,38 +713,68 @@ public sealed class MainForm : Form
         };
         AddHotkeyFilterButtons(page, _hotkeyCategoryFilter, _hotkeyCategoryButtons, 342, 58, 82, 30);
 
-        var importButton = CreateButton("Sparring 기본값", 752, 18, 110, 32);
+        var importButton = CreateButton("기본 단축키 불러오기", 18, 48, 156, 32);
         importButton.Click += (_, _) => ImportHotkeys();
-        var importBattleNetButton = CreateButton("Battle.net", 872, 18, 110, 32);
+        var importBattleNetButton = CreateButton("Battle.net 설정 불러오기", 184, 48, 176, 32);
         importBattleNetButton.Click += (_, _) => ImportRemasteredHotkeysFromDetectedLocation();
-        var importFolderButton = CreateButton("폴더 지정", 992, 18, 112, 32);
+        var importFolderButton = CreateButton("설정 폴더 선택", 370, 48, 150, 32);
         importFolderButton.Click += (_, _) => ImportRemasteredHotkeysFromFolder();
-        var saveButton = CreateButton("CSV 저장", 872, 96, 110, 32);
+        var saveButton = CreateButton("현재 단축키 저장", 760, 174, 128, 32);
         saveButton.Click += (_, _) => SaveHotkeys(applyMpq: false);
-        var applyButton = CreateButton("런타임 반영", 992, 96, 112, 32);
+        var applyButton = CreateButton("스타에 단축키 적용", 882, 174, 154, 32);
         applyButton.Click += (_, _) => SaveHotkeys(applyMpq: true);
+        _hotkeyToolTip.SetToolTip(importButton, "Sparring에 포함된 기본 단축키로 되돌립니다.");
+        _hotkeyToolTip.SetToolTip(importBattleNetButton, "Battle.net StarCraft 설정 파일을 자동으로 찾아 단축키와 조작 설정을 가져옵니다.");
+        _hotkeyToolTip.SetToolTip(importFolderButton, "StarCraft 설치 폴더나 내 문서의 StarCraft 폴더를 직접 골라 설정을 가져옵니다.");
+        _hotkeyToolTip.SetToolTip(saveButton, "현재 편집한 단축키를 저장합니다.");
+        _hotkeyToolTip.SetToolTip(applyButton, "저장한 단축키를 사람용 StarCraft에 적용합니다.");
+
+        page.Controls.Add(CreateLabel("게임 속도", 560, 54));
+        _gameSpeedCombo = CreateCombo(642, 48, 150);
+        _gameSpeedCombo.DataSource = GameSpeedOptions;
+        _gameSpeedCombo.DisplayMember = nameof(GameSpeedOption.Label);
+        SelectGameSpeedOption(_settings.GameSpeedOverrideMs);
+        page.Controls.Add(CreateLabel("마우스 감도", 560, 92));
+        _mouseSensitivitySlider = CreateSlider(642, 84, 180, _settings.MouseSensitivity, 0, 100, 10);
+        _mouseSensitivityValueLabel = CreateValueLabel(834, 88, 110);
+        page.Controls.Add(CreateLabel("휠 화면 이동", 560, 132));
+        _mouseScrollSpeedSlider = CreateSlider(642, 124, 150, _settings.MouseScrollSpeed, 0, 6, 1);
+        _mouseScrollSpeedValueLabel = CreateValueLabel(804, 128, 120);
+        page.Controls.Add(CreateLabel("키보드 이동", 560, 172));
+        _keyboardScrollSpeedSlider = CreateSlider(642, 164, 150, _settings.KeyboardScrollSpeed, 0, 6, 1);
+        _keyboardScrollSpeedValueLabel = CreateValueLabel(804, 168, 120);
+        _mouseSensitivitySlider.ValueChanged += (_, _) => RefreshControlSliderLabels();
+        _mouseScrollSpeedSlider.ValueChanged += (_, _) => RefreshControlSliderLabels();
+        _keyboardScrollSpeedSlider.ValueChanged += (_, _) => RefreshControlSliderLabels();
+        var controlSaveButton = CreateButton("조작 설정 저장", 934, 84, 124, 32);
+        controlSaveButton.Click += (_, _) => SaveSettingsFromUi();
+        _hotkeyToolTip.SetToolTip(controlSaveButton, "게임 속도와 마우스/스크롤 설정을 저장합니다.");
         page.Controls.Add(importButton);
         page.Controls.Add(importBattleNetButton);
         page.Controls.Add(importFolderButton);
         page.Controls.Add(saveButton);
         page.Controls.Add(applyButton);
-        importButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        importBattleNetButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        importFolderButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        saveButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        applyButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        page.Controls.Add(_gameSpeedCombo);
+        page.Controls.Add(_mouseSensitivitySlider);
+        page.Controls.Add(_mouseSensitivityValueLabel);
+        page.Controls.Add(_mouseScrollSpeedSlider);
+        page.Controls.Add(_mouseScrollSpeedValueLabel);
+        page.Controls.Add(_keyboardScrollSpeedSlider);
+        page.Controls.Add(_keyboardScrollSpeedValueLabel);
+        page.Controls.Add(controlSaveButton);
+        RefreshControlSliderLabels();
 
         _hotkeyCountLabel = new Label
         {
             AutoSize = false,
-            Location = new Point(18, 96),
+            Location = new Point(18, 244),
             Size = new Size(680, 20),
             ForeColor = Color.FromArgb(128, 218, 93),
-            Text = "명령 0개"
+            Text = "단축키 0개"
         };
         page.Controls.Add(_hotkeyCountLabel);
 
-        page.Controls.Add(CreateLabel("카드", 282, 98));
+        page.Controls.Add(CreateLabel("명령 화면", 282, 246));
         _hotkeyPageFilter = CreateCombo(-1000, -1000, 128);
         _hotkeyPageFilter.Items.AddRange([
             HotkeyCommandLayout.PageGeneral,
@@ -747,7 +790,7 @@ public sealed class MainForm : Form
         };
         AddHotkeyFilterButtons(page, _hotkeyPageFilter, _hotkeyPageButtons, 328, 92, 100, 30);
 
-        page.Controls.Add(CreateLabel("선택 항목", 18, 120));
+        page.Controls.Add(CreateLabel("유닛/건물", 18, 268));
         _hotkeyObjectList = CreateListBox(18, 142, 246, 428);
         _hotkeyObjectList.Font = new Font("Segoe UI", 10);
         _hotkeyObjectList.DrawMode = DrawMode.OwnerDrawFixed;
@@ -756,7 +799,7 @@ public sealed class MainForm : Form
         _hotkeyObjectList.SelectedIndexChanged += (_, _) => RefreshHotkeyTiles();
         page.Controls.Add(_hotkeyObjectList);
 
-        page.Controls.Add(CreateLabel("명령", 282, 120));
+        page.Controls.Add(CreateLabel("단축키 명령", 282, 268));
         _hotkeyCommandPanel = new TableLayoutPanel
         {
             Location = new Point(282, 142),
@@ -814,7 +857,7 @@ public sealed class MainForm : Form
                 e.SuppressKeyPress = true;
             }
         };
-        var applyKeyButton = CreateButton("키 적용", 892, 308, 90, 36);
+        var applyKeyButton = CreateButton("선택한 키 적용", 892, 308, 124, 36);
         applyKeyButton.Click += (_, _) => ApplySelectedHotkey(showStatus: true);
         page.Controls.Add(_hotkeyKeyText);
         page.Controls.Add(applyKeyButton);
@@ -824,17 +867,9 @@ public sealed class MainForm : Form
             370,
             366,
             142,
-            "선택한 항목은 3x3 게임 명령 카드로 표시합니다.\r\nSparring 기본값은 내장 CSV를 사람 런타임으로 복사합니다.\r\nBattle.net/폴더 지정은 Remastered STR_* 핫키를 현재 작업 CSV에 반영합니다.\r\nCSV 저장은 작업 파일만 갱신합니다.\r\n런타임 반영은 사람 런타임 patch_rt.mpq에만 적용합니다.");
-        var runtimeHelp = CreateReadOnlyBlock(
-            18,
-            580,
-            1078,
-            38,
-            "봇/AI 런타임에는 사람 핫키를 반영하지 않습니다. 사람 런타임만 커스텀 핫키를 사용합니다.");
+            "왼쪽에서 유닛이나 건물을 고른 뒤, 오른쪽 명령 화면에서 바꿀 명령을 선택하세요.\r\n새 키를 입력하고 [선택한 키 적용]을 누르면 현재 편집 내용에 반영됩니다.\r\n마지막으로 [현재 단축키 저장] 또는 [스타에 단축키 적용]을 눌러 마무리합니다.");
         page.Controls.Add(hotkeyHelp);
-        page.Controls.Add(runtimeHelp);
         hotkeyHelp.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-        runtimeHelp.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
         LoadHotkeys();
         page.Resize += (_, _) => LayoutHotkeyTab(page);
         LayoutHotkeyTab(page);
@@ -850,110 +885,169 @@ public sealed class MainForm : Form
 
         var pad = 18;
         var gap = 16;
-        var width = Math.Max(980, page.ClientSize.Width - pad);
+        var width = Math.Max(760, page.ClientSize.Width);
         var height = Math.Max(640, page.ClientSize.Height);
-        var leftWidth = width < 1160 ? 274 : 304;
+        var contentRight = width - pad;
+        var contentWidth = contentRight - pad;
+        var stackTopSections = contentWidth < 1040;
+
+        var importX = pad;
+        var importY = 16;
+        var importWidth = stackTopSections ? contentWidth : Math.Min(520, (contentWidth - gap) / 2);
+        var controlX = stackTopSections ? pad : importX + importWidth + gap;
+        var controlY = stackTopSections ? 104 : 16;
+        var controlWidth = stackTopSections ? contentWidth : contentRight - controlX;
+
+        FindLabel(page, "설정 불러오기")?.SetBounds(importX, importY, importWidth, 28);
+        var importBottom = LayoutButtonWrap(
+            [
+                (FindButton(page, "기본 단축키 불러오기"), 156),
+                (FindButton(page, "Battle.net 설정 불러오기"), 176),
+                (FindButton(page, "설정 폴더 선택"), 150)
+            ],
+            importX,
+            importY + 34,
+            importX + importWidth,
+            32,
+            8);
+
+        FindLabel(page, "게임 조작 설정")?.SetBounds(controlX, controlY, controlWidth, 28);
+        var controlLabelWidth = 84;
+        var controlValueWidth = 122;
+        var controlInputX = controlX + controlLabelWidth;
+        var sliderWidth = Math.Max(126, Math.Min(220, controlWidth - controlLabelWidth - controlValueWidth - 18));
+        var valueX = controlInputX + sliderWidth + 10;
+        var controlRowY = controlY + 36;
+        FindLabel(page, "게임 속도")?.SetBounds(controlX, controlRowY + 6, controlLabelWidth, 24);
+        _gameSpeedCombo.SetBounds(controlInputX, controlRowY, Math.Min(166, Math.Max(132, controlWidth - controlLabelWidth - 136)), 30);
+
+        var saveButton = FindButton(page, "조작 설정 저장");
+        var saveX = controlX + controlWidth - 124;
+        if (saveX >= _gameSpeedCombo.Right + 12)
+        {
+            saveButton?.SetBounds(saveX, controlRowY, 124, 32);
+        }
+        else
+        {
+            saveButton?.SetBounds(controlInputX, controlRowY + 156, 124, 32);
+        }
+
+        var mouseY = controlRowY + 46;
+        FindLabel(page, "마우스 감도")?.SetBounds(controlX, mouseY + 6, controlLabelWidth, 24);
+        _mouseSensitivitySlider.SetBounds(controlInputX, mouseY - 2, sliderWidth, 36);
+        _mouseSensitivityValueLabel.SetBounds(valueX, mouseY + 6, controlValueWidth, 24);
+
+        var scrollRowY = mouseY + 48;
+        if (!stackTopSections && controlWidth >= 540)
+        {
+            var secondControlX = controlX + Math.Min(292, controlWidth / 2 + 12);
+            var compactSliderWidth = Math.Max(98, Math.Min(126, secondControlX - controlInputX - 96));
+            var compactValueWidth = Math.Max(78, Math.Min(98, secondControlX - (controlInputX + compactSliderWidth + 8) - 8));
+            FindLabel(page, "휠 화면 이동")?.SetBounds(controlX, scrollRowY + 6, controlLabelWidth, 24);
+            _mouseScrollSpeedSlider.SetBounds(controlInputX, scrollRowY - 2, compactSliderWidth, 36);
+            _mouseScrollSpeedValueLabel.SetBounds(controlInputX + compactSliderWidth + 8, scrollRowY + 6, compactValueWidth, 24);
+
+            FindLabel(page, "키보드 이동")?.SetBounds(secondControlX, scrollRowY + 6, controlLabelWidth, 24);
+            _keyboardScrollSpeedSlider.SetBounds(secondControlX + controlLabelWidth, scrollRowY - 2, compactSliderWidth, 36);
+            _keyboardScrollSpeedValueLabel.SetBounds(secondControlX + controlLabelWidth + compactSliderWidth + 8, scrollRowY + 6, compactValueWidth, 24);
+        }
+        else
+        {
+            FindLabel(page, "휠 화면 이동")?.SetBounds(controlX, scrollRowY + 6, controlLabelWidth, 24);
+            _mouseScrollSpeedSlider.SetBounds(controlInputX, scrollRowY - 2, sliderWidth, 36);
+            _mouseScrollSpeedValueLabel.SetBounds(valueX, scrollRowY + 6, controlValueWidth, 24);
+
+            var keyboardY = scrollRowY + 48;
+            FindLabel(page, "키보드 이동")?.SetBounds(controlX, keyboardY + 6, controlLabelWidth, 24);
+            _keyboardScrollSpeedSlider.SetBounds(controlInputX, keyboardY - 2, sliderWidth, 36);
+            _keyboardScrollSpeedValueLabel.SetBounds(valueX, keyboardY + 6, controlValueWidth, 24);
+            scrollRowY = keyboardY;
+        }
+
+        var controlBottom = Math.Max(scrollRowY + 36, saveButton?.Bottom ?? 0);
+        var hotkeyTop = Math.Max(importBottom, controlBottom) + 26;
+        FindLabel(page, "핫키 커스터마이징")?.SetBounds(pad, hotkeyTop, 260, 30);
+
+        var leftWidth = contentWidth < 1160 ? 286 : 316;
         var commandX = pad + leftWidth + gap;
-        var availableForDetails = width - commandX - pad;
-        var compact = width < 1250;
+        var filterTop = hotkeyTop + 40;
+        var availableForDetails = contentRight - commandX;
+        var compact = contentWidth < 1240;
         var commandSize = Math.Min(360, Math.Max(300, availableForDetails - 396));
         var detailsX = commandX + commandSize + gap;
-        var detailsWidth = width - detailsX - pad;
+        var detailsWidth = contentRight - detailsX;
         var detailsBelow = detailsWidth < 320;
         if (detailsBelow)
         {
             commandSize = Math.Min(330, Math.Max(286, availableForDetails));
             detailsX = commandX;
-            detailsWidth = Math.Max(360, width - detailsX - pad);
+            detailsWidth = Math.Max(360, contentRight - detailsX);
         }
 
-        FindLabel(page, "검색")?.SetBounds(pad, 26, 44, 24);
-        _hotkeySearch.SetBounds(pad + 44, 20, Math.Max(160, leftWidth - 52), 30);
-        FindLabel(page, "종족")?.SetBounds(commandX, 24, 44, 24);
-        LayoutButtonGroup(_hotkeyRaceButtons, commandX + 48, 16, 74, 36);
-        FindLabel(page, "분류")?.SetBounds(commandX, 66, 44, 24);
+        FindLabel(page, "검색")?.SetBounds(pad, filterTop + 6, 44, 24);
+        _hotkeySearch.SetBounds(pad + 44, filterTop, Math.Max(160, leftWidth - 52), 30);
+        FindLabel(page, "종족")?.SetBounds(commandX, filterTop + 6, 44, 24);
+        LayoutButtonWrap(_hotkeyRaceButtons, commandX + 48, filterTop, contentRight, 74, 36, 6);
+        var categoryTop = filterTop + 42;
+        FindLabel(page, "분류")?.SetBounds(commandX, categoryTop + 6, 44, 24);
         var categoryBottom = compact
-            ? LayoutButtonWrap(_hotkeyCategoryButtons, commandX + 48, 58, width - pad, 82, 30, 6)
-            : LayoutButtonGroup(_hotkeyCategoryButtons, commandX + 48, 58, 82, 30);
+            ? LayoutButtonWrap(_hotkeyCategoryButtons, commandX + 48, categoryTop, contentRight, 82, 30, 6)
+            : LayoutButtonGroup(_hotkeyCategoryButtons, commandX + 48, categoryTop, 82, 30);
 
-        var cardY = compact ? categoryBottom + 8 : 92;
-        FindLabel(page, "카드")?.SetBounds(commandX, cardY + 6, 44, 24);
+        var cardY = categoryBottom + 8;
+        FindLabel(page, "명령 화면")?.SetBounds(commandX, cardY + 6, 70, 24);
         var pageBottom = compact
-            ? LayoutButtonWrap(_hotkeyPageButtons, commandX + 48, cardY, width - pad, 100, 30, 6)
-            : LayoutButtonGroup(_hotkeyPageButtons, commandX + 48, 92, 100, 30);
+            ? LayoutButtonWrap(_hotkeyPageButtons, commandX + 76, cardY, contentRight, 100, 30, 6)
+            : LayoutButtonGroup(_hotkeyPageButtons, commandX + 76, cardY, 100, 30);
 
-        var actionBottom = 128;
-        if (compact)
+        var hotkeyActionButtons = new (Button? Button, int Width)[]
         {
-            actionBottom = LayoutButtonWrap(
-                [
-                    (FindButton(page, "Sparring 기본값"), 110),
-                    (FindButton(page, "Battle.net"), 108),
-                    (FindButton(page, "폴더 지정"), 112),
-                    (FindButton(page, "CSV 저장"), 108),
-                    (FindButton(page, "런타임 반영"), 112)
-                ],
-                commandX,
-                pageBottom + 8,
-                width - pad,
-                32,
-                8);
-        }
-        else
+            (FindButton(page, "현재 단축키 저장"), 128),
+            (FindButton(page, "스타에 단축키 적용"), 154)
+        };
+        var actionOnTitleLine = contentWidth >= 1000;
+        var actionBottom = actionOnTitleLine
+            ? LayoutButtonWrap(hotkeyActionButtons, contentRight - 290, hotkeyTop, contentRight, 32, 8)
+            : LayoutButtonWrap(hotkeyActionButtons, commandX, pageBottom + 10, contentRight, 32, 8);
+
+        _hotkeyCountLabel.SetBounds(pad, filterTop + 44, leftWidth, 22);
+
+        var contentTop = (actionOnTitleLine ? pageBottom : actionBottom) + 36;
+        var visibleCommandSize = Math.Max(200, height - contentTop - 70);
+        commandSize = Math.Min(commandSize, visibleCommandSize);
+        if (!detailsBelow)
         {
-            FindButton(page, "Sparring 기본값")?.SetBounds(width - 352, 18, 110, 32);
-            FindButton(page, "Battle.net")?.SetBounds(width - 234, 18, 108, 32);
-            FindButton(page, "폴더 지정")?.SetBounds(width - 118, 18, 112, 32);
-            FindButton(page, "CSV 저장")?.SetBounds(width - 234, 96, 108, 32);
-            FindButton(page, "런타임 반영")?.SetBounds(width - 118, 96, 112, 32);
+            detailsX = commandX + commandSize + gap;
+            detailsWidth = contentRight - detailsX;
         }
 
-        _hotkeyCountLabel.SetBounds(pad, 98, leftWidth, 22);
-
-        var contentTop = compact ? Math.Max(180, actionBottom + 36) : 154;
-        FindLabel(page, "선택 항목")?.SetBounds(pad, contentTop - 26, leftWidth, 24);
+        FindLabel(page, "유닛/건물")?.SetBounds(pad, contentTop - 26, leftWidth, 24);
         _hotkeyObjectList.SetBounds(pad, contentTop, leftWidth, Math.Max(320, height - contentTop - 56));
-        FindLabel(page, "명령")?.SetBounds(commandX, contentTop - 26, commandSize, 24);
+        FindLabel(page, "단축키 명령")?.SetBounds(commandX, contentTop - 26, commandSize, 24);
         _hotkeyCommandPanel.SetBounds(commandX, contentTop, commandSize, commandSize);
 
         var detailTop = detailsBelow
             ? _hotkeyCommandPanel.Bottom + gap
-            : compact ? contentTop - 8 : 128;
-        _hotkeyCommandTitle.SetBounds(detailsX, detailTop, detailsWidth, 60);
-        _hotkeyCommandMeta.SetBounds(detailsX, _hotkeyCommandTitle.Bottom + 4, detailsWidth, 54);
-        _hotkeyDefaultText.SetBounds(detailsX, _hotkeyCommandMeta.Bottom + 4, detailsWidth, 56);
-        FindLabel(page, "현재 키")?.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 20, 64, 24);
-        _hotkeyKeyText.SetBounds(detailsX + 64, _hotkeyDefaultText.Bottom + 14, 84, 30);
-        FindButton(page, "키 적용")?.SetBounds(detailsX + 162, _hotkeyDefaultText.Bottom + 10, 90, 36);
+            : contentTop;
+        _hotkeyCommandTitle.SetBounds(detailsX, detailTop, detailsWidth, 48);
+        _hotkeyCommandMeta.SetBounds(detailsX, _hotkeyCommandTitle.Bottom + 4, detailsWidth, 28);
+        _hotkeyDefaultText.SetBounds(detailsX, _hotkeyCommandMeta.Bottom + 8, detailsWidth, 42);
+        FindLabel(page, "현재 키")?.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 14, 64, 24);
+        _hotkeyKeyText.SetBounds(detailsX + 64, _hotkeyDefaultText.Bottom + 8, 84, 30);
+        FindButton(page, "선택한 키 적용")?.SetBounds(detailsX + 162, _hotkeyDefaultText.Bottom + 4, 124, 36);
 
         TextBox? hotkeyHelpBox = null;
-        TextBox? runtimeHelpBox = null;
         foreach (var box in page.Controls.OfType<TextBox>().Where(box => box.Multiline && box.ReadOnly))
         {
-            if (box.Text.StartsWith("선택한 항목", StringComparison.Ordinal))
+            if (box.Text.StartsWith("왼쪽에서", StringComparison.Ordinal))
             {
-                box.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 72, detailsWidth, 142);
+                box.SetBounds(detailsX, _hotkeyKeyText.Bottom + 18, detailsWidth, 118);
                 hotkeyHelpBox = box;
             }
-            else if (box.Text.StartsWith("봇/AI 런타임", StringComparison.Ordinal))
-            {
-                runtimeHelpBox = box;
-            }
-        }
-
-        if (runtimeHelpBox is not null)
-        {
-            var runtimeHelpTop = Math.Max(_hotkeyObjectList.Bottom + 10, _hotkeyCommandPanel.Bottom + 20);
-            if (hotkeyHelpBox is not null)
-            {
-                runtimeHelpTop = Math.Max(runtimeHelpTop, hotkeyHelpBox.Bottom + 14);
-            }
-
-            runtimeHelpBox.SetBounds(pad, runtimeHelpTop, width - (pad * 2), 42);
         }
 
         page.AutoScrollMinSize = new Size(
-            Math.Max(980, Math.Max(width, detailsX + detailsWidth + pad)),
+            Math.Max(width, detailsX + detailsWidth + pad),
             Math.Max(680, page.Controls.Cast<Control>().Max(control => control.Bottom) + 20));
     }
 
@@ -1204,12 +1298,13 @@ public sealed class MainForm : Form
             HideAiName = _hideAiNameCheck.Checked,
             UseBotNameAsAiCharacter = null,
             GameSpeedOverrideMs = selectedSpeed.SpeedOverrideMs,
-            MouseScrollSpeed = (int)_mouseScrollSpeedInput.Value,
-            KeyboardScrollSpeed = (int)_keyboardScrollSpeedInput.Value
+            MouseScrollSpeed = _mouseScrollSpeedSlider.Value,
+            KeyboardScrollSpeed = _keyboardScrollSpeedSlider.Value,
+            MouseSensitivity = _mouseSensitivitySlider.Value
         };
         _settingsStore.Save(_settings);
         LoadCatalog();
-        MessageBox.Show(this, "설정을 저장했습니다.", "설정");
+        MessageBox.Show(this, "조작 설정을 저장했습니다.", "컨트롤");
     }
 
     private void ApplyRatingFromUi()
@@ -1252,7 +1347,8 @@ public sealed class MainForm : Form
             _settings.ReplayRoot,
             _settings.GameSpeedOverrideMs,
             _settings.MouseScrollSpeed,
-            _settings.KeyboardScrollSpeed);
+            _settings.KeyboardScrollSpeed,
+            _settings.MouseSensitivity);
     }
 
     private void RefreshHistory()
@@ -1331,7 +1427,7 @@ public sealed class MainForm : Form
         if (_hotkeyCountLabel is not null)
         {
             var objectCount = _hotkeyObjectList?.Items.Count ?? 0;
-            _hotkeyCountLabel.Text = $"항목 {objectCount}개 / 명령 {entries.Count}개";
+            _hotkeyCountLabel.Text = $"유닛/건물 {objectCount}개 / 단축키 {entries.Count}개";
         }
 
         var selected = entries.FirstOrDefault(entry => entry.CommandId == previousCommandId) ?? entries.FirstOrDefault();
@@ -1430,9 +1526,9 @@ public sealed class MainForm : Form
         foreach (var button in buttons)
         {
             var selected = string.Equals(button.Tag?.ToString(), selectedValue, StringComparison.OrdinalIgnoreCase);
-            button.BackColor = selected ? Color.FromArgb(24, 42, 18) : Color.Black;
+            button.BackColor = selected ? Color.FromArgb(20, 58, 18) : Color.Black;
             button.ForeColor = selected ? Color.FromArgb(190, 255, 144) : Color.FromArgb(128, 218, 93);
-            button.FlatAppearance.BorderColor = selected ? Color.FromArgb(220, 48, 48) : Color.FromArgb(96, 190, 82);
+            button.FlatAppearance.BorderColor = selected ? Color.FromArgb(185, 255, 92) : Color.FromArgb(96, 190, 82);
             button.FlatAppearance.BorderSize = selected ? 2 : 1;
         }
     }
@@ -1491,9 +1587,20 @@ public sealed class MainForm : Form
             LastSort = SelectedComboText(_sortCombo, "ELO 높은순"),
             LastPlayerRace = _playerRaceCombo.SelectedItem is StarCraftRace race ? race : StarCraftRace.Protoss,
             LastBotName = (_botList.SelectedItem as BotItem)?.Bot?.Name,
-            LastMapName = (_mapList.SelectedItem as MapItem)?.Map?.Name
+            LastMapName = (_mapList.SelectedItem as MapItem)?.Map?.Name,
+            LastBotBuildId = SelectedBotBuildId()
         };
         _settingsStore.Save(_settings);
+    }
+
+    private string? SelectedBotBuildId()
+    {
+        if (IsLadderMode || _buildCombo is null || !_buildCombo.Visible)
+        {
+            return null;
+        }
+
+        return (_buildCombo.SelectedItem as BuildItem)?.Build?.Id;
     }
 
     private void SelectBotItem(List<BotItem> items, string? preferredName)
@@ -1605,8 +1712,20 @@ public sealed class MainForm : Form
     {
         graphics.Clear(Color.FromArgb(4, 10, 5));
         var accent = HotkeyTileAccentColor(entry);
-        var iconRect = new Rectangle(bounds.Left + 18, bounds.Top + 10, 44, 44);
-        var keyRect = new Rectangle(bounds.Right - 34, bounds.Top + 8, 24, 22);
+        var compact = bounds.Width < 80 || bounds.Height < 80;
+        var iconSize = compact
+            ? Math.Clamp(Math.Min(bounds.Width - 20, bounds.Height - 18), 32, 44)
+            : 44;
+        var iconRect = compact
+            ? new Rectangle(
+                bounds.Left + Math.Max(6, (bounds.Width - iconSize) / 2),
+                bounds.Top + Math.Max(8, (bounds.Height - iconSize) / 2),
+                iconSize,
+                iconSize)
+            : new Rectangle(bounds.Left + 18, bounds.Top + 10, 44, 44);
+        var keyRect = compact
+            ? new Rectangle(bounds.Right - 29, bounds.Top + 5, 22, 20)
+            : new Rectangle(bounds.Right - 34, bounds.Top + 8, 24, 22);
         var titleRect = new Rectangle(bounds.Left + 6, bounds.Bottom - 26, bounds.Width - 12, 20);
 
         if (icon is not null)
@@ -1635,14 +1754,17 @@ public sealed class MainForm : Form
             Color.FromArgb(230, 255, 195),
             TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
 
-        using var titleFont = new Font("Segoe UI", 7.5F, FontStyle.Regular);
-        TextRenderer.DrawText(
-            graphics,
-            entry.Description,
-            titleFont,
-            titleRect,
-            Color.FromArgb(207, 239, 198),
-            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+        if (!compact)
+        {
+            using var titleFont = new Font("Segoe UI", 7.5F, FontStyle.Regular);
+            TextRenderer.DrawText(
+                graphics,
+                entry.Description,
+                titleFont,
+                titleRect,
+                Color.FromArgb(207, 239, 198),
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+        }
     }
 
     private void DrawHotkeyObjectItem(object? sender, DrawItemEventArgs e)
@@ -1927,9 +2049,8 @@ public sealed class MainForm : Form
 
         _hotkeyKeyText.Enabled = true;
         _hotkeyCommandTitle.Text = entry.Description;
-        _hotkeyCommandMeta.Text =
-            $"{HotkeyRaceName(entry)} / {HotkeyCategoryName(entry)}\r\nID: {entry.CommandId}\r\nTBL: {entry.StringId}";
-        _hotkeyDefaultText.Text = $"원본: {StripStarCraftMarkup(entry.DefaultText)}";
+        _hotkeyCommandMeta.Text = $"분류: {HotkeyRaceName(entry)} / {HotkeyCategoryName(entry)}";
+        _hotkeyDefaultText.Text = "새 키를 입력한 뒤 [선택한 키 적용]을 누르세요.";
         _hotkeyKeyText.Text = entry.Hotkey;
     }
 
@@ -1939,11 +2060,11 @@ public sealed class MainForm : Form
         {
             _hotkeyStore.ImportFromDefaultAssets(_paths, _paths.PlayerRuntimeRoot);
             LoadHotkeys();
-            MessageBox.Show(this, "Sparring 기본 핫키 CSV를 작업 런타임으로 가져왔습니다.", "핫키");
+            MessageBox.Show(this, "Sparring 기본 단축키를 불러왔습니다.", "단축키");
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "핫키 가져오기 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "단축키 불러오기 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -1956,8 +2077,8 @@ public sealed class MainForm : Form
             {
                 MessageBox.Show(
                     this,
-                    "Battle.net/Remastered 핫키 파일을 자동으로 찾지 못했습니다. '폴더 지정'으로 StarCraft 설치 또는 Documents\\StarCraft 폴더를 선택해 주세요.",
-                    "핫키");
+                    "Battle.net StarCraft 설정을 자동으로 찾지 못했습니다.\r\n[설정 폴더 선택]을 눌러 StarCraft 설치 폴더 또는 내 문서의 StarCraft 설정 폴더를 선택해 주세요.\r\n예: 내 문서\\StarCraft 또는 StarCraft가 설치된 폴더",
+                    "컨트롤");
                 return;
             }
 
@@ -1965,7 +2086,7 @@ public sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Battle.net 핫키 가져오기 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "Battle.net 설정 불러오기 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -1973,7 +2094,7 @@ public sealed class MainForm : Form
     {
         using var dialog = new FolderBrowserDialog
         {
-            Description = "Battle.net/Remastered 핫키 파일이 있는 StarCraft 폴더를 선택하세요.",
+            Description = "StarCraft 설치 폴더 또는 내 문서의 StarCraft 설정 폴더를 선택하세요.",
             UseDescriptionForTitle = true
         };
 
@@ -1987,7 +2108,7 @@ public sealed class MainForm : Form
             var source = RemasteredHotkeyImporter.FindFirstCandidateFile([dialog.SelectedPath]);
             if (source is null)
             {
-                MessageBox.Show(this, "선택한 폴더에서 STR_* 형식의 Remastered 핫키 파일을 찾지 못했습니다.", "핫키");
+                MessageBox.Show(this, "선택한 폴더에서 Battle.net StarCraft 설정 파일을 찾지 못했습니다. StarCraft 설치 폴더나 내 문서\\StarCraft 폴더를 선택해 주세요.", "컨트롤");
                 return;
             }
 
@@ -1995,7 +2116,7 @@ public sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "폴더 핫키 가져오기 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, "폴더 설정 불러오기 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -2003,12 +2124,44 @@ public sealed class MainForm : Form
     {
         ApplySelectedHotkey(showStatus: false);
         var result = RemasteredHotkeyImporter.ApplyFromFile(source, _hotkeyEntries);
+        var controlImported = ApplyImportedControlSettings(new StarCraftControlSettingsImporter().Read(source));
         RefreshHotkeyObjects();
-        _statusLabel.Text = $"Remastered 핫키 가져오기: {result.UpdatedCount}개 반영 | {source}";
+        _statusLabel.Text = $"Battle.net 설정 불러오기: 단축키 {result.UpdatedCount}개 반영{(controlImported ? " | 조작 설정 반영" : string.Empty)} | {source}";
         MessageBox.Show(
             this,
-            $"Remastered 핫키 {result.UpdatedCount}개를 현재 작업 CSV에 반영했습니다.\r\nCSV 저장 또는 런타임 반영을 눌러 적용하세요.\r\n\r\n원본: {source}",
-            "핫키");
+            $"Battle.net StarCraft 단축키 {result.UpdatedCount}개를 불러왔습니다.\r\n{(controlImported ? "게임 속도, 마우스 감도, 스크롤 속도도 함께 가져왔습니다.\r\n" : string.Empty)}[현재 단축키 저장] 또는 [스타에 단축키 적용]을 눌러 마무리하세요.\r\n\r\n가져온 위치: {source}",
+            "컨트롤");
+    }
+
+    private bool ApplyImportedControlSettings(StarCraftControlSettings controlSettings)
+    {
+        var imported = false;
+        if (controlSettings.GameSpeedOverrideMs is { } gameSpeed && _gameSpeedCombo is not null)
+        {
+            SelectGameSpeedOption(gameSpeed);
+            imported = true;
+        }
+
+        if (controlSettings.MouseSensitivity is { } mouseSensitivity && _mouseSensitivitySlider is not null)
+        {
+            _mouseSensitivitySlider.Value = Math.Clamp(mouseSensitivity, _mouseSensitivitySlider.Minimum, _mouseSensitivitySlider.Maximum);
+            imported = true;
+        }
+
+        if (controlSettings.MouseScrollSpeed is { } mouseSpeed && _mouseScrollSpeedSlider is not null)
+        {
+            _mouseScrollSpeedSlider.Value = Math.Clamp(mouseSpeed, _mouseScrollSpeedSlider.Minimum, _mouseScrollSpeedSlider.Maximum);
+            imported = true;
+        }
+
+        if (controlSettings.KeyboardScrollSpeed is { } keyboardSpeed && _keyboardScrollSpeedSlider is not null)
+        {
+            _keyboardScrollSpeedSlider.Value = Math.Clamp(keyboardSpeed, _keyboardScrollSpeedSlider.Minimum, _keyboardScrollSpeedSlider.Maximum);
+            imported = true;
+        }
+
+        RefreshControlSliderLabels();
+        return imported;
     }
 
     private void SaveHotkeys(bool applyMpq)
@@ -2095,12 +2248,14 @@ public sealed class MainForm : Form
     {
         if (IsLadderMode)
         {
+            UpdateBuildOptionsForSelectedBot();
             UpdateDetails();
             return;
         }
 
         if (_catalog is null || _botList.SelectedItem is not BotItem botItem || _updatingSelections)
         {
+            UpdateBuildOptionsForSelectedBot();
             return;
         }
 
@@ -2112,7 +2267,7 @@ public sealed class MainForm : Form
             var maps = botItem.Bot is null
                 ? _catalog.Maps
                     .Where(map => map.Enabled)
-                    .Where(map => FilterBotsForCurrentControls(map).Any())
+                    .Where(map => FilterRandomBotsForCurrentControls(map).Any())
                     .OrderBy(map => map.Name, StringComparer.OrdinalIgnoreCase)
                     .ToList()
                 : PracticeCatalogCompatibility.MapsForBot(_catalog, botItem.Bot.Id);
@@ -2128,6 +2283,8 @@ public sealed class MainForm : Form
             {
                 _mapList.SelectedItem = restore;
             }
+
+            UpdateBuildOptionsForSelectedBot();
         }
         finally
         {
@@ -2135,6 +2292,46 @@ public sealed class MainForm : Form
         }
 
         UpdateDetails();
+    }
+
+    private void UpdateBuildOptionsForSelectedBot()
+    {
+        if (_buildCombo is null || _buildLabel is null)
+        {
+            return;
+        }
+
+        var previousUpdatingSelections = _updatingSelections;
+        _updatingSelections = true;
+        try
+        {
+            var bot = !IsLadderMode && _botList?.SelectedItem is BotItem { Bot: { } selectedBot }
+                ? selectedBot
+                : null;
+            var hasBuilds = bot?.HasSelectableBuilds == true;
+            _buildLabel.Visible = hasBuilds;
+            _buildCombo.Visible = hasBuilds;
+            _buildCombo.Enabled = hasBuilds;
+            if (!hasBuilds)
+            {
+                _buildCombo.DataSource = null;
+                return;
+            }
+
+            var previousBuildId = (_buildCombo.SelectedItem as BuildItem)?.Build?.Id ?? _settings.LastBotBuildId;
+            var items = new List<BuildItem> { BuildItem.Random };
+            items.AddRange(bot!.AvailableBuildOptions.Select(option => new BuildItem(option)));
+            _buildCombo.DataSource = items;
+
+            var selected = !string.IsNullOrWhiteSpace(previousBuildId)
+                ? items.FirstOrDefault(item => string.Equals(item.Build?.Id, previousBuildId, StringComparison.OrdinalIgnoreCase))
+                : null;
+            _buildCombo.SelectedItem = selected ?? items[0];
+        }
+        finally
+        {
+            _updatingSelections = previousUpdatingSelections;
+        }
     }
 
     private IEnumerable<PracticeBot> FilterBotsForCurrentControls(PracticeMap? mapConstraint)
@@ -2147,6 +2344,11 @@ public sealed class MainForm : Form
         var query = _searchBox.Text.Trim();
         var raceFilter = SelectedEnemyRace();
         var bots = _catalog.Bots.Where(bot => bot.UsesBwapiIniAiModule);
+
+        if (IsLadderMode)
+        {
+            bots = bots.Where(PracticeBotCandidatePolicy.IsLadderEligible);
+        }
 
         if (!IsLadderMode && !string.IsNullOrWhiteSpace(query))
         {
@@ -2174,6 +2376,12 @@ public sealed class MainForm : Form
         return bots;
     }
 
+    private IEnumerable<PracticeBot> FilterRandomBotsForCurrentControls(PracticeMap? mapConstraint)
+    {
+        return FilterBotsForCurrentControls(mapConstraint)
+            .Where(PracticeBotCandidatePolicy.IsSparringRandomEligible);
+    }
+
     private void UpdateDetails()
     {
         if (_catalog is null)
@@ -2198,7 +2406,7 @@ public sealed class MainForm : Form
         if (botItem.Bot is null)
         {
             var randomMap = mapItem?.Map;
-            var candidates = FilterBotsForCurrentControls(randomMap).ToList();
+            var candidates = FilterRandomBotsForCurrentControls(randomMap).ToList();
             _difficultyLabel.Text = candidates.Count == 0
                 ? "랜덤\r\n후보 없음"
                 : $"랜덤\r\n후보 {candidates.Count}개";
@@ -2218,23 +2426,45 @@ public sealed class MainForm : Form
         var compatibleMapCount = PracticeCatalogCompatibility.MapsForBot(_catalog, bot.Id).Count;
         var difficulty = LadderDifficultyEstimator.EstimateFromSchnailElo(bot.Elo);
         var profile = BotProfileSummarizer.Summarize(bot);
-        _difficultyLabel.Text = difficulty is null
+        _difficultyLabel.Text = bot.PracticeOnly
+            ? "개발 중\r\nELO -"
+            : difficulty is null
             ? "난이도\r\nSCR 환산 미확인"
             : $"난이도\r\n{difficulty.Label}";
+        var difficultyText = bot.PracticeOnly
+            ? "개발 중 (ELO -)"
+            : difficulty?.Label ?? $"ELO {bot.Elo?.ToString() ?? "-"}";
 
-        _detailsText.Text = string.Join(Environment.NewLine, new[]
+        var detailLines = new List<string>
         {
             $"AI: {bot.Name}",
             $"종족: {bot.Race}",
-            $"난이도: {difficulty?.Label ?? $"ELO {bot.Elo?.ToString() ?? "미확인"}"}",
+            $"난이도: {difficultyText}",
             $"성향: {profile.StyleLabel}",
             $"빌드: {profile.BuildLabel}",
             $"호환 맵: {compatibleMapCount}개",
-            $"선택 맵: {(map is null ? "Random" : $"{map.Name} ({map.FileName})")}",
-            "",
-            "설명",
-            profile.PlayerSummary
-        });
+            $"선택 맵: {(map is null ? "Random" : $"{map.Name} ({map.FileName})")}"
+        };
+
+        if (bot.HasSelectableBuilds)
+        {
+            var selectedBuild = (_buildCombo.SelectedItem as BuildItem)?.Build;
+            detailLines.Add($"선택 빌드: {selectedBuild?.Name ?? "랜덤"}");
+        }
+
+        detailLines.Add(string.Empty);
+        detailLines.Add("설명");
+        detailLines.Add(profile.PlayerSummary);
+
+        if (bot.HasSelectableBuilds)
+        {
+            detailLines.Add(string.Empty);
+            detailLines.Add("사용 가능 빌드");
+            detailLines.AddRange(bot.AvailableBuildOptions.Select(option =>
+                $"- {option.Matchups}: {option.Name} - {option.Summary}"));
+        }
+
+        _detailsText.Text = string.Join(Environment.NewLine, detailLines);
     }
 
     private void UpdateMapPreview(PracticeMap? map)
@@ -2569,7 +2799,8 @@ public sealed class MainForm : Form
             PlayerBorderless: true,
             ClipCursor: false,
             AllowApmAlert: false,
-            HideAiName: _settings.EffectiveHideAiName);
+            HideAiName: _settings.EffectiveHideAiName,
+            BotBuildId: SelectedBotBuildId());
         var plan = PracticeLaunchPlanBuilder.Build(_catalog, paths, selection);
         return RuntimeProvisioner.PrepareRuntimeAssets(plan);
     }
@@ -2652,7 +2883,7 @@ public sealed class MainForm : Form
 
         if (mapItem.Map is { } map)
         {
-            var bots = FilterBotsForCurrentControls(map).ToList();
+            var bots = FilterRandomBotsForCurrentControls(map).ToList();
             if (bots.Count == 0)
             {
                 throw new InvalidOperationException($"'{map.Name}' 맵과 호환되는 봇이 없습니다.");
@@ -2661,7 +2892,7 @@ public sealed class MainForm : Form
             return (bots[_random.Next(bots.Count)], map);
         }
 
-        var pairs = FilterBotsForCurrentControls(null)
+        var pairs = FilterRandomBotsForCurrentControls(null)
             .SelectMany(bot => PracticeCatalogCompatibility.MapsForBot(_catalog, bot.Id), (bot, map) => (bot, map))
             .ToList();
         if (pairs.Count == 0)
@@ -2717,11 +2948,7 @@ public sealed class MainForm : Form
         _ladderRatingText.Visible = ladder;
         _applyRatingButton.Visible = ladder;
         _resetRatingButton.Visible = ladder;
-        _buildCombo.Enabled = false;
-        if (_buildCombo.Items.Count > 0)
-        {
-            _buildCombo.SelectedIndex = 0;
-        }
+        UpdateBuildOptionsForSelectedBot();
 
         UpdateDetails();
     }
@@ -3115,9 +3342,34 @@ public sealed class MainForm : Form
         return new Label
         {
             Text = text,
-            AutoSize = true,
+            AutoSize = false,
+            Size = new Size(76, 24),
             ForeColor = Color.FromArgb(128, 218, 93),
             Location = new Point(x, y)
+        };
+    }
+
+    private static Label CreateSectionLabel(string text, int x, int y, int width)
+    {
+        return new Label
+        {
+            Text = text,
+            AutoSize = false,
+            Location = new Point(x, y),
+            Size = new Size(width, 28),
+            ForeColor = Color.FromArgb(166, 255, 126),
+            Font = new Font("Segoe UI", 11, FontStyle.Bold)
+        };
+    }
+
+    private static Label CreateValueLabel(int x, int y, int width)
+    {
+        return new Label
+        {
+            AutoSize = false,
+            Location = new Point(x, y),
+            Size = new Size(width, 24),
+            ForeColor = Color.FromArgb(166, 255, 126)
         };
     }
 
@@ -3184,18 +3436,34 @@ public sealed class MainForm : Form
         };
     }
 
-    private static NumericUpDown CreateNumericInput(int x, int y, int width, int value)
+    private static NumericUpDown CreateNumericInput(int x, int y, int width, int value, int minimum = 0, int maximum = 6)
     {
         return new NumericUpDown
         {
             Location = new Point(x, y),
             Size = new Size(width, 28),
-            Minimum = 0,
-            Maximum = 6,
-            Value = Math.Clamp(value, 0, 6),
+            Minimum = minimum,
+            Maximum = maximum,
+            Value = Math.Clamp(value, minimum, maximum),
             BackColor = Color.Black,
             ForeColor = Color.FromArgb(166, 255, 126),
             BorderStyle = BorderStyle.FixedSingle
+        };
+    }
+
+    private static TrackBar CreateSlider(int x, int y, int width, int value, int minimum, int maximum, int tickFrequency)
+    {
+        return new TrackBar
+        {
+            Location = new Point(x, y),
+            Size = new Size(width, 36),
+            Minimum = minimum,
+            Maximum = maximum,
+            Value = Math.Clamp(value, minimum, maximum),
+            TickFrequency = tickFrequency,
+            SmallChange = 1,
+            LargeChange = Math.Max(1, tickFrequency),
+            BackColor = Color.Black
         };
     }
 
@@ -3221,9 +3489,42 @@ public sealed class MainForm : Form
         return textBox;
     }
 
+    private void RefreshControlSliderLabels()
+    {
+        if (_mouseSensitivityValueLabel is not null && _mouseSensitivitySlider is not null)
+        {
+            _mouseSensitivityValueLabel.Text = $"{_mouseSensitivitySlider.Value}%";
+        }
+
+        if (_mouseScrollSpeedValueLabel is not null && _mouseScrollSpeedSlider is not null)
+        {
+            _mouseScrollSpeedValueLabel.Text = $"{ScrollSpeedLabel(_mouseScrollSpeedSlider.Value)} ({_mouseScrollSpeedSlider.Value}/6)";
+        }
+
+        if (_keyboardScrollSpeedValueLabel is not null && _keyboardScrollSpeedSlider is not null)
+        {
+            _keyboardScrollSpeedValueLabel.Text = $"{ScrollSpeedLabel(_keyboardScrollSpeedSlider.Value)} ({_keyboardScrollSpeedSlider.Value}/6)";
+        }
+    }
+
+    private static string ScrollSpeedLabel(int value)
+    {
+        return value switch
+        {
+            <= 0 => "꺼짐",
+            1 => "매우 느림",
+            2 => "느림",
+            3 => "보통",
+            4 => "빠름",
+            5 => "매우 빠름",
+            _ => "최고"
+        };
+    }
+
     private void SelectGameSpeedOption(int speedOverrideMs)
     {
-        var option = GameSpeedOptions.FirstOrDefault(item => item.SpeedOverrideMs == speedOverrideMs) ?? GameSpeedOptions[0];
+        var normalizedSpeed = speedOverrideMs < 0 ? 42 : speedOverrideMs;
+        var option = GameSpeedOptions.FirstOrDefault(item => item.SpeedOverrideMs == normalizedSpeed) ?? GameSpeedOptions[0];
         _gameSpeedCombo.SelectedItem = option;
     }
 
@@ -3234,14 +3535,14 @@ public sealed class MainForm : Form
 
     private static readonly IReadOnlyList<GameSpeedOption> GameSpeedOptions =
     [
-        new("기본값", -1),
         new("Fastest", 42),
         new("Faster", 48),
         new("Fast", 56),
         new("Normal", 67),
         new("Slow", 83),
         new("Slower", 111),
-        new("Slowest", 167)
+        new("Slowest", 167),
+        new("런타임 기본값", -1)
     ];
 
     private static bool HotkeyMatchesQuery(HotkeyEntry entry, string query)
@@ -3350,7 +3651,7 @@ public sealed class MainForm : Form
                 return "Random";
             }
 
-            var elo = Bot.Elo is null ? "ELO ?" : $"ELO {Bot.Elo}";
+            var elo = Bot.Elo is null ? "ELO -" : $"ELO {Bot.Elo}";
             return $"{Bot.Name} / {Bot.Race} / {elo}";
         }
     }
@@ -3360,6 +3661,13 @@ public sealed class MainForm : Form
         public static MapItem Random { get; } = new((PracticeMap?)null);
 
         public override string ToString() => Map?.Name ?? "Random";
+    }
+
+    private sealed record BuildItem(PracticeBotBuildOption? Build)
+    {
+        public static BuildItem Random { get; } = new((PracticeBotBuildOption?)null);
+
+        public override string ToString() => Build?.Name ?? "랜덤";
     }
 
     private sealed record HotkeyObjectItem(HotkeyCommandObjectInfo Info, int Count, HotkeyEntry PreviewEntry)

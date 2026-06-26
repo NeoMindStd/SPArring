@@ -10,7 +10,7 @@ public static class LadderBotSelector
         StarCraftRace? enemyRace)
     {
         return PracticeCatalogCompatibility.BotsForMap(catalog, mapId)
-            .Where(bot => bot.UsesBwapiIniAiModule)
+            .Where(PracticeBotCandidatePolicy.IsLadderEligible)
             .Where(bot => RaceMatches(bot.Race, enemyRace))
             .OrderByDescending(bot => bot.Elo ?? int.MinValue)
             .ThenBy(bot => bot.Name, StringComparer.OrdinalIgnoreCase)
@@ -22,7 +22,7 @@ public static class LadderBotSelector
         StarCraftRace? enemyRace)
     {
         return catalog.Bots
-            .Where(bot => bot.UsesBwapiIniAiModule)
+            .Where(PracticeBotCandidatePolicy.IsLadderEligible)
             .Where(bot => RaceMatches(bot.Race, enemyRace))
             .Where(bot => PracticeCatalogCompatibility.MapsForBot(catalog, bot.Id).Count > 0)
             .OrderByDescending(bot => bot.Elo ?? int.MinValue)

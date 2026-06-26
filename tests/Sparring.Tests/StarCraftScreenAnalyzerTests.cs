@@ -96,6 +96,23 @@ public sealed class StarCraftScreenAnalyzerTests
     }
 
     [Fact]
+    public void AnalyzeTreatsZergHudAsInGame()
+    {
+        using var bitmap = new Bitmap(640, 480);
+        FillRectangle(bitmap, 0, 0, bitmap.Width, bitmap.Height, Color.FromArgb(70, 44, 74));
+
+        FillRectangle(bitmap, 0, 346, 640, 134, Color.FromArgb(82, 48, 34));
+        FillRectangle(bitmap, 6, 372, 134, 102, Color.FromArgb(4, 3, 4));
+        FillRectangle(bitmap, 154, 394, 260, 78, Color.FromArgb(5, 4, 5));
+        FillRectangle(bitmap, 430, 354, 206, 118, Color.FromArgb(96, 55, 38));
+        FillRectangle(bitmap, 490, 432, 124, 38, Color.FromArgb(6, 4, 5));
+        FillRectangle(bitmap, 450, 18, 36, 18, Color.FromArgb(38, 170, 45));
+        FillRectangle(bitmap, 520, 18, 28, 18, Color.FromArgb(176, 142, 50));
+
+        Assert.Equal(StarCraftScreenState.InGame, StarCraftScreenAnalyzer.Analyze(bitmap));
+    }
+
+    [Fact]
     public void AnalyzeTreatsInGameHudWithRedStartupChatAsInGame()
     {
         using var bitmap = new Bitmap(2560, 1440);
@@ -111,6 +128,27 @@ public sealed class StarCraftScreenAnalyzerTests
 
         FillRectangle(bitmap, left + 20, 590, 1040, 18, Color.FromArgb(220, 20, 20));
         FillRectangle(bitmap, left + 20, 640, 660, 18, Color.FromArgb(220, 20, 20));
+
+        Assert.Equal(StarCraftScreenState.InGame, StarCraftScreenAnalyzer.Analyze(bitmap));
+    }
+
+    [Fact]
+    public void AnalyzeTreatsInGameHudWithCentralBrightTerrainAsInGame()
+    {
+        using var bitmap = new Bitmap(640, 480);
+        FillRectangle(bitmap, 0, 0, bitmap.Width, bitmap.Height, Color.FromArgb(54, 74, 38));
+
+        FillRectangle(bitmap, 0, 346, 640, 134, Color.FromArgb(38, 58, 82));
+        FillRectangle(bitmap, 6, 372, 134, 102, Color.FromArgb(3, 3, 5));
+        FillRectangle(bitmap, 154, 394, 260, 78, Color.FromArgb(5, 5, 7));
+        FillRectangle(bitmap, 430, 354, 206, 118, Color.FromArgb(30, 52, 78));
+        FillRectangle(bitmap, 420, 330, 42, 20, Color.FromArgb(176, 142, 50));
+
+        FillRectangle(bitmap, 226, 72, 20, 20, Color.FromArgb(225, 225, 225));
+        FillRectangle(bitmap, 272, 86, 26, 18, Color.FromArgb(224, 224, 224));
+        FillRectangle(bitmap, 296, 138, 36, 28, Color.FromArgb(220, 216, 176));
+        FillRectangle(bitmap, 270, 144, 60, 16, Color.FromArgb(155, 18, 18));
+        FillRectangle(bitmap, 282, 164, 28, 24, Color.FromArgb(35, 190, 35));
 
         Assert.Equal(StarCraftScreenState.InGame, StarCraftScreenAnalyzer.Analyze(bitmap));
     }

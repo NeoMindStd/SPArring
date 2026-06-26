@@ -22,9 +22,11 @@ public sealed class SparringSettingsTests
             LastPlayerRace: StarCraftRace.Protoss,
             LastBotName: "Dragon",
             LastMapName: "(4)Fighting Spirit",
+            LastBotBuildId: "23_nexus",
             GameSpeedOverrideMs: 42,
             MouseScrollSpeed: 5,
-            KeyboardScrollSpeed: 2);
+            KeyboardScrollSpeed: 2,
+            MouseSensitivity: 67);
 
         store.Save(settings);
         var loaded = store.Load();
@@ -35,9 +37,11 @@ public sealed class SparringSettingsTests
         Assert.Equal(StarCraftRace.Protoss, loaded.LastPlayerRace);
         Assert.Equal("Dragon", loaded.LastBotName);
         Assert.Equal("(4)Fighting Spirit", loaded.LastMapName);
+        Assert.Equal("23_nexus", loaded.LastBotBuildId);
         Assert.Equal(42, loaded.GameSpeedOverrideMs);
         Assert.Equal(5, loaded.MouseScrollSpeed);
         Assert.Equal(2, loaded.KeyboardScrollSpeed);
+        Assert.Equal(67, loaded.MouseSensitivity);
     }
 
     private sealed class TempWorkspace : IDisposable

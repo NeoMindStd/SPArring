@@ -30,7 +30,8 @@ public sealed record ChaosLauncherRequest(
     bool EnableBwapi,
     bool EnableApmAlert,
     int? MouseScrollSpeed = null,
-    int? KeyboardScrollSpeed = null);
+    int? KeyboardScrollSpeed = null,
+    int? MouseSensitivity = null);
 
 public sealed class RegistryRestorePoint
 {
@@ -154,6 +155,20 @@ public sealed class ChaosLauncherConfigurator
                 StarCraftUserSettingsKey,
                 "kscroll",
                 Math.Clamp(keyboardScrollSpeed, 0, 6)));
+        }
+
+        if (request.MouseSensitivity is { } mouseSensitivity)
+        {
+            writes.Add(Dword(
+                RegistryHiveKind.CurrentUser,
+                StarCraftUserSettingsKey,
+                "MouseUseSensitivity",
+                1));
+            writes.Add(Dword(
+                RegistryHiveKind.CurrentUser,
+                StarCraftUserSettingsKey,
+                "MouseSensitivity",
+                Math.Clamp(mouseSensitivity, 0, 100)));
         }
 
         return writes;

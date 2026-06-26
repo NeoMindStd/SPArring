@@ -81,6 +81,117 @@ public sealed class HotkeyCsvStoreTests
         Assert.Equal(path, found);
     }
 
+    [Fact]
+    public void RemasteredImporterFindsAndAppliesCSettingsJson()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "sparring-hotkeys", Guid.NewGuid().ToString("N"));
+        var nested = Path.Combine(root, "StarCraft");
+        Directory.CreateDirectory(nested);
+        var path = Path.Combine(nested, "CSettings.json");
+        File.WriteAllText(path, """
+            {
+              "Hotkeys": "STR_MAKE_T_SCV=x\nSTR_PSISTORM=q\nSTR_BLD_GATEWAY=w\n"
+            }
+            """);
+        var entries = new List<HotkeyEntry>
+        {
+            Entry("terran_train_scv", "s"),
+            Entry("protoss_cmd_psistorm", "t"),
+            Entry("protoss_build_gateway", "g")
+        };
+
+        var found = RemasteredHotkeyImporter.FindFirstCandidateFile([root]);
+        var result = RemasteredHotkeyImporter.ApplyFromFile(path, entries);
+
+        Assert.Equal(path, found);
+        Assert.Equal(3, result.UpdatedCount);
+        Assert.Equal("x", entries.Single(entry => entry.CommandId == "terran_train_scv").Hotkey);
+        Assert.Equal("q", entries.Single(entry => entry.CommandId == "protoss_cmd_psistorm").Hotkey);
+        Assert.Equal("w", entries.Single(entry => entry.CommandId == "protoss_build_gateway").Hotkey);
+    }
+
+    [Fact]
+    public void RemasteredImporterDefaultRootsIncludeRegistryInstallPath()
+    {
+        var registry = new FakeRegistryAccess();
+        registry.WriteValue(
+            RegistryHiveKind.LocalMachine,
+            ChaosLauncherConfigurator.StarCraftInstallKey,
+            "InstallPath",
+            @"D:\Games\StarCraft",
+            Microsoft.Win32.RegistryValueKind.String);
+        registry.WriteValue(
+            RegistryHiveKind.LocalMachine,
+            ChaosLauncherConfigurator.StarCraftInstallKey,
+            "Program",
+            @"D:\Games\StarCraft\StarCraft.exe",
+            Microsoft.Win32.RegistryValueKind.String);
+
+        var roots = RemasteredHotkeyImporter.DefaultCandidateRoots(registry);
+
+        Assert.Contains(@"D:\Games\StarCraft", roots);
+    }
+
+    [Fact]
+    public void StarCraftControlSettingsImporterReadsScrollSpeeds()
+    {
+        var registry = new FakeRegistryAccess();
+        registry.WriteValue(
+            RegistryHiveKind.CurrentUser,
+            ChaosLauncherConfigurator.StarCraftUserSettingsKey,
+            "mscroll",
+            5,
+            Microsoft.Win32.RegistryValueKind.DWord);
+        registry.WriteValue(
+            RegistryHiveKind.CurrentUser,
+            ChaosLauncherConfigurator.StarCraftUserSettingsKey,
+            "kscroll",
+            2,
+            Microsoft.Win32.RegistryValueKind.DWord);
+        registry.WriteValue(
+            RegistryHiveKind.CurrentUser,
+            ChaosLauncherConfigurator.StarCraftUserSettingsKey,
+            "speed",
+            6,
+            Microsoft.Win32.RegistryValueKind.DWord);
+        registry.WriteValue(
+            RegistryHiveKind.CurrentUser,
+            ChaosLauncherConfigurator.StarCraftUserSettingsKey,
+            "MouseSensitivity",
+            44,
+            Microsoft.Win32.RegistryValueKind.DWord);
+
+        var settings = new StarCraftControlSettingsImporter(registry).Read();
+
+        Assert.Equal(42, settings.GameSpeedOverrideMs);
+        Assert.Equal(44, settings.MouseSensitivity);
+        Assert.Equal(5, settings.MouseScrollSpeed);
+        Assert.Equal(2, settings.KeyboardScrollSpeed);
+    }
+
+    [Fact]
+    public void StarCraftControlSettingsImporterReadsCSettingsJson()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "sparring-hotkeys", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var path = Path.Combine(root, "CSettings.json");
+        File.WriteAllText(path, """
+            {
+              "speed": 5,
+              "MouseSensitivity": 67,
+              "m_mscroll": 4,
+              "m_kscroll": 1
+            }
+            """);
+
+        var settings = new StarCraftControlSettingsImporter(new FakeRegistryAccess()).Read(path);
+
+        Assert.Equal(48, settings.GameSpeedOverrideMs);
+        Assert.Equal(67, settings.MouseSensitivity);
+        Assert.Equal(4, settings.MouseScrollSpeed);
+        Assert.Equal(1, settings.KeyboardScrollSpeed);
+    }
+
     private static HotkeyEntry Entry(string commandId, string hotkey)
     {
         return new HotkeyEntry

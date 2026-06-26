@@ -9,3 +9,10 @@ TestResults/
 *.tmp
 *.bak
 app-check*.png
+src/Sparring.Bots/**/Release/
+*.pdb
+*.lib
+*.exp
+*.iobj
+*.ipdb
+*.recipe

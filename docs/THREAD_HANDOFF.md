@@ -1,13 +1,13 @@
 # Sparring Thread Handoff
 
-Last updated: 2026-06-23
+Last updated: 2026-06-26
 
 ## Repository
 
 - Repo: `C:\starai\StarAI.PracticeClient-1.3.0` / installed app root `C:\sparring`
 - User entrypoint: desktop/start-menu shortcut targeting `Sparring.Client.exe`
 - Reset baseline: 기존 tracked/untracked 파일을 제거하고 `.git`만 보존한 뒤 새 .NET 8 골격으로 재시작함
-- Current version: `1.5.0`
+- Current version: `1.6.0`
 - Last verified implementation state: 1.5.0 release candidate with Sparring naming, responsive launcher tabs, dark combo boxes, command-card hotkey UI, game speed/scroll settings, GitHub release update prompt, bundled map cleanup, screen-state blocked-dialog regression coverage, internal install repair, and existing compatibility filters.
 - Current WIP: release packaging/publish may still be pending until the current turn completes. Do not reset/revert local changes unless the user explicitly asks.
 
@@ -521,3 +521,187 @@ Important observations:
   - `.\scripts\smoke.ps1`: warning 0 / error 0.
   - `.\scripts\audit-compatibility.ps1`: issues 0 / runtimeCrashes 0.
   - `.\scripts\smoke-app-start.ps1 -Mode Ladder -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4' -BotName 'Dragon'`: passed with `playerState=InGame`, `aiState=InGame`, `inGame=True`, `aiInGame=True`, `timerOverlay=True`, `aiGracefulShutdown=True`.
+
+## 2026-06-25 NeoProtossF WIP
+
+- Added first Sparring-owned BWAPI DLL bot:
+  - Source: `src\Sparring.Bots\NeoProtossF`
+  - Packaged DLL: `data\bots\NeoProtossF\NeoProtossF.dll`
+  - Catalog name: `NeoProtossF`
+  - Race/MMR baseline: Protoss / ELO 950
+  - Registered maps: Fighting Spirit variants, Polypoid 1.65/1.75, Python, Circuit Breaker, Match Point.
+- Opening behavior:
+  - Randomly chooses among 1012, fast power dragoon, 23 Nexus, 29 Arbiter, Forge double, gate double Corsair/Dark Templar, naked double, fast Dark Templar, and forward-gate Dark Templar families by matchup.
+  - Early visible threats near the main/natural trigger probe pull, Zealot training, and Cannon placement when Forge tech exists.
+  - Active scouting is intentionally deferred after early BWAPI runtime instability during actual smoke; the bot uses visible enemy buildings and fallback start locations for attack targeting.
+- Build support:
+  - `scripts\build-neo-bots.ps1` builds the Win32 BWAPI module and copies the DLL into `data\bots\NeoProtossF`.
+  - `scripts\build-release.ps1` calls the Neo bot build script before packaging.
+- Verification completed:
+  - `.\scripts\build-neo-bots.ps1 -SkipDownloads`: passed.
+  - `dotnet test .\Sparring.sln -v:minimal`: 181 passed.
+  - `.\scripts\smoke.ps1`: warning 0 / error 0.
+  - `.\scripts\audit-compatibility.ps1`: `bots=87`, `dllBots=62`, `declaredDllPairs=1065`, `compatibleDllPairs=1008`, `blockedDeclaredDllPairs=57`, `issues=0`, `runtimeCrashes=0`.
+  - `.\scripts\smoke-app-start.ps1 -PrepareOnly -Mode Sparring -PlayerRace Terran -EnemyRace Protoss -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoProtossF'`: passed with `playerAi=''`, `aiModuleExists=True`.
+- Actual launch smoke was attempted but is not currently trustworthy:
+  - NeoProtossF, Fresh Meat, and the previously known-good Dragon all failed with the same `Brood War Instance 2` Windows application error at `0x1001CB6E` / read `0x00000148`.
+  - The failure persisted after reseeding `C:\sparring\SC116AI_ai` from `scripts\setup-runtime.ps1`.
+  - Because Dragon now fails the same way, this is currently classified as a local actual-smoke/runtime environment issue, not as proof that NeoProtossF is uniquely broken.
+
+## 2026-06-25 Control Import / Neo Bot First-Cut Wrap
+
+- Implemented before pausing:
+  - Battle.net/Remastered control import now detects `CSettings.json` under StarCraft document/config folders.
+  - `CSettings.json` hotkeys are parsed from the embedded `Hotkeys` string and applied to the working hotkey CSV entries.
+  - Control import now also reads game speed, mouse sensitivity, mouse scroll speed, and keyboard scroll speed when present.
+  - The Control tab now exposes a separate mouse sensitivity input, plus wheel scroll and keyboard scroll speed inputs.
+  - Launch-time StarCraft registry writes now temporarily apply mouse sensitivity alongside scroll speed, then restore through the existing restore-point path.
+  - NeoProtossF selectable build plumbing is in place: catalog `buildOptions`, launcher build combo in sparring mode, prepare-only smoke writes `build=<id>` into the AI bot config.
+- Verification completed:
+  - `dotnet test .\Sparring.sln -v:minimal`: 190 passed.
+  - `.\scripts\build-neo-bots.ps1 -SkipDownloads`: passed.
+  - `.\scripts\smoke.ps1`: build warning 0 / error 0.
+  - `.\scripts\audit-compatibility.ps1`: `issues=0`, `runtimeCrashes=0`.
+  - `.\scripts\smoke-app-start.ps1 -PrepareOnly -Mode Sparring -PlayerRace Terran -EnemyRace Protoss -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoProtossF' -BotBuildId '23_nexus'`: passed; human `ai` stayed empty and AI config had `build=23_nexus`.
+  - `.\scripts\smoke-app-start.ps1 -Mode Sparring -PlayerRace Terran -EnemyRace Protoss -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoProtossF' -BotBuildId '23_nexus'`: passed with both clients in game, timer overlay visible, and graceful AI shutdown.
+  - Local installed root `C:\sparring` was refreshed from the current WIP payload for manual follow-up, and `C:\sparring\Sparring.Client.exe` was launched.
+- Deferred roadmap:
+  - Do not continue NeoTerranF feature development until the user asks; it exists in WIP but was intentionally not expanded in this wrap.
+  - NeoProtossF quality work remains: stronger opening execution, less brittle scouting/defense, better probe-pull limits, earlier return-to-mining, smarter GG timing, and investigation of whether any public BWAPI policy/model can be reused.
+  - Control tab needs a later visual pass on the problematic Surface Book/high-DPI environment; automated smoke passed, but user asked to stop broad UI verification for now.
+  - Battle.net import should be manually checked in the live launcher by pressing `컨트롤 > Battle.net` after the user is ready for focus-stealing UI checks.
+  - If a new release is requested later, rebuild/package, run the required tests again, then release/tag/push/release-page update explicitly.
+
+## 2026-06-26 Control UX / Neo Bot WIP Wrap
+
+- Latest user instruction before this wrap:
+  - Quickly finish the work already in progress, reflect the launcher changes, and leave unfinished items as a roadmap.
+  - Do not start a new release/tag/push unless explicitly requested.
+- Control tab UX changes completed:
+  - The tab is still named `컨트롤`, but it now has explicit sections for `설정 불러오기`, `게임 조작 설정`, and `핫키 커스터마이징`.
+  - Ambiguous buttons such as `Battle.net`, `CSV 저장`, and `런타임 반영` were replaced with player-facing labels:
+    - `Battle.net 설정 불러오기`
+    - `설정 폴더 선택`
+    - `현재 단축키 저장`
+    - `스타에 단축키 적용`
+    - `조작 설정 저장`
+  - Mouse sensitivity, wheel scroll speed, and keyboard scroll speed now use sliders with readable value labels instead of bare numeric boxes.
+  - Hotkey detail text no longer exposes internal IDs/TBL/source strings to normal users.
+  - Selected filter buttons now use a green selected style instead of a red warning-like border.
+  - Hotkey layout was tightened to avoid filter/action/detail overlaps in the launcher smoke capture.
+- Neo bot changes completed in this wrap:
+  - `NeoProtossF` and `NeoTerranF` no longer build emergency supply before the scripted first supply building, fixing an early build-order regression.
+  - Defense workers now return to mining if they chase too far from the main base.
+  - When a Neo bot sends GG, it now calls `leaveGame()` shortly after instead of waiting until full elimination.
+  - `NeoTerranF` selectable build packaging and prepare-only launch config were verified.
+- Regression coverage added:
+  - `RuntimeProvisionerTests.PrepareRuntimeAssetsRefreshesLegacyBuildConfigWhenSwitchingSelectableBots` guards against stale `sparring-bot.ini` build values after switching between selectable bots.
+- Verification completed in this wrap:
+  - `dotnet test .\Sparring.sln --filter RuntimeProvisionerTests -v:minimal`: 5 passed.
+  - `dotnet test .\Sparring.sln -v:minimal`: 191 passed.
+  - `dotnet run --project .\src\Sparring.Client\Sparring.Client.csproj -c Release -- --smoke`: passed.
+  - `.\scripts\smoke.ps1`: Release build warning 0 / error 0.
+  - `.\scripts\build-neo-bots.ps1 -SkipDownloads`: passed; copied updated `NeoProtossF.dll` and `NeoTerranF.dll` into `data\bots`.
+  - `.\scripts\smoke-app-start.ps1 -PrepareOnly -Mode Sparring -PlayerRace Terran -EnemyRace Protoss -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoProtossF' -BotBuildId '23_nexus'`: passed; AI config `build=23_nexus`.
+  - `.\scripts\smoke-app-start.ps1 -PrepareOnly -Mode Sparring -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoTerranF' -BotBuildId 'factory_expand'`: passed; AI config `build=factory_expand`.
+- Important verification note:
+  - Do not run two `smoke-app-start.ps1` commands in parallel against the same `C:\sparring\SC116AI_ai` runtime. They share the AI runtime config file and can interfere with each other. Run actual StarCraft launch smokes serially.
+- Deferred roadmap:
+  - Launch the updated UI manually when the user is ready for foreground/focus changes and visually inspect the Control tab on the problematic Surface Book/high-DPI setup.
+  - Run actual in-game smoke for `NeoProtossF` and `NeoTerranF` serially, then inspect early build execution, worker defense behavior, and GG/leave behavior from screenshots/logs.
+  - Improve `NeoProtossF` beyond this first-cut: tighter build-order execution, matchup-aware transition rules, less brittle scout/attack targeting, and better anti-worker-harass handling.
+  - Continue `NeoTerranF` quality work later; the current WIP has selectable openings and basic worker-defense/GG behavior, but it has not had the same gameplay review depth as the launcher changes.
+  - Consider a user-facing build-selection help text pass in the Game tab after actual bot quality stabilizes.
+
+## 2026-06-26 Completion Pass After Deferred Notes
+
+This section supersedes the deferred roadmap notes immediately above.
+
+- Control tab UX completion:
+  - The control page is split into load-settings, game-control, and hotkey-customization sections.
+  - Short ambiguous labels were replaced with labels that explain what each action does.
+  - Mouse sensitivity, wheel scroll speed, and keyboard scroll speed use slider-style controls with readable values.
+  - Hotkey detail text is player-facing and no longer exposes internal IDs/TBL/source strings by default.
+  - Launcher smoke validates compact/default/FHD/QHD/UHD tab layouts and fails on important visible-control overlap.
+- Neo bot completion:
+  - `NeoProtossF` has selectable opening builds. Smoke verified `23_nexus` is written to the AI runtime config.
+  - `NeoTerranF` has selectable opening builds. Smoke verified `factory_expand` is written to the AI runtime config.
+  - `NeoProtossF` and `NeoTerranF` no longer place emergency supply before their scripted first supply building.
+  - Defense workers return to mining after chasing too far from the main base.
+  - GG flow calls `leaveGame()` shortly after resigning.
+  - `NeoProtossF` 23 Nexus production was adjusted so the bot does not spend Nexus timing minerals on excessive early Dragoons.
+- Screen-state fix:
+  - `StarCraftScreenAnalyzer` now gives a strong in-game HUD priority over weak central bright/dialog-like pixels.
+  - Genuine scenario-error/create-screen dialog cases remain classified as `BlockedDialog`/`GameRoom`.
+  - Added regression coverage for in-game HUD plus central bright terrain/player-color pixels.
+- Verification completed:
+  - `dotnet test .\Sparring.sln --filter StarCraftScreenAnalyzerTests -v:minimal`: 11 passed.
+  - `dotnet test .\Sparring.sln -v:minimal`: 192 passed.
+  - `.\scripts\audit-compatibility.ps1`: `bots=88`, `dllBots=63`, `maps=34`, `declaredDllPairs=1073`, `compatibleDllPairs=1016`, `blockedDeclaredDllPairs=57`, `issues=0`, `runtimeCrashes=0`.
+  - `.\scripts\smoke.ps1`: Release build warning 0 / error 0.
+  - `.\scripts\smoke-app-start.ps1 -Mode Sparring -PlayerRace Terran -EnemyRace Protoss -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoProtossF' -BotBuildId '23_nexus' -ObserveSeconds 240`: passed with `playerState=InGame`, `aiState=InGame`, `timerOverlay=True`, `aiGracefulShutdown=True`.
+  - The NeoProtossF observe screenshot showed active 23 Nexus progress: 26/33 supply, second Nexus, Gateway/Cybernetics Core tech, and workers mining.
+  - `.\scripts\smoke-app-start.ps1 -Mode Sparring -PlayerRace Protoss -EnemyRace Terran -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoTerranF' -BotBuildId 'factory_expand' -ObserveSeconds 180`: passed with `playerState=InGame`, `aiState=InGame`, `timerOverlay=True`, `aiGracefulShutdown=True`.
+  - The NeoTerranF observe screenshot showed active Terran progress: 19/26 supply, Barracks/Factory production path, SCVs mining, and Marines/Vultures moving.
+  - `.\scripts\build-release.ps1`: produced fresh 1.5.0 setup/zip payloads and rebuilt both Neo bot DLLs.
+  - Installed root `C:\sparring` was refreshed from `artifacts\release\payload-stage-1.5.0`.
+  - `C:\sparring\Sparring.Client.exe --smoke`: passed.
+- Operational note:
+  - Run actual `smoke-app-start.ps1` checks serially because player and AI runtimes share `C:\sparring\SC116AI_ai` config during launch preparation.
+  - No release/tag/push was done in this completion pass.
+
+## 2026-06-26 NeoZergF Addition
+
+- Added third Sparring-owned BWAPI DLL bot:
+  - Source: `src\Sparring.Bots\NeoZergF`
+  - Packaged DLL: `data\bots\NeoZergF\NeoZergF.dll`
+  - Catalog name: `NeoZergF`
+  - Race/MMR baseline: Zerg / ELO 950
+  - Registered maps: Fighting Spirit variants, Polypoid 1.65/1.75, Python, Circuit Breaker, Match Point.
+- Selectable opening builds:
+  - All/ZvZ: `overpool_speed`, `nine_pool_speed`
+  - ZvT: `two_hatch_muta`, `five_thirty_muta`, `lurker_contain`
+  - ZvP: `three_hatch_hydra`, `five_hatch_hydra`, `nine_pool_speed`
+- Implementation notes:
+  - `NeoZergF` is BWAPI rule-based, not ML/model-based.
+  - The launcher writes the selected build into `sparring-bot.ini`, and the bot reads both the bot-folder and legacy AI-root config paths.
+  - Actual smoke uncovered two Zerg-specific issues before completion:
+    - Zerg HUD colors were misclassified as `MenuLike`; `StarCraftScreenAnalyzer` now recognizes Zerg HUD panels and has a regression test.
+    - Early Zerg production was stuck by egg/building counts and supply reservation. `NeoZergF` now counts morphing eggs/buildings for build decisions, avoids repeated Overlord production, reserves minerals for second Hatchery/Extractor, and falls back to a main macro Hatchery if third expansion placement fails.
+- Verification completed:
+  - `.\scripts\build-neo-bots.ps1 -SkipDownloads`: passed; copied `NeoZergF.dll` into `data\bots\NeoZergF`.
+  - `dotnet test .\Sparring.sln --filter NeoZergBotCatalogTests -v:minimal`: 2 passed.
+  - `dotnet test .\Sparring.sln --filter StarCraftScreenAnalyzerTests -v:minimal`: 12 passed.
+  - `.\scripts\smoke-app-start.ps1 -PrepareOnly -Mode Sparring -PlayerRace Terran -EnemyRace Zerg -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoZergF' -BotBuildId 'two_hatch_muta'`: passed; human `ai` stayed empty and AI config had `build=two_hatch_muta`.
+  - `.\scripts\smoke-app-start.ps1 -Mode Sparring -PlayerRace Terran -EnemyRace Zerg -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoZergF' -BotBuildId 'two_hatch_muta' -ObserveSeconds 240`: passed with `playerState=InGame`, `aiState=InGame`, `timerOverlay=True`, `aiGracefulShutdown=True`. Observe screenshot showed 2 Hatch Muta tech progress with gas and Lair/Spire path underway.
+  - `.\scripts\smoke-app-start.ps1 -Mode Sparring -PlayerRace Protoss -EnemyRace Zerg -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoZergF' -BotBuildId 'three_hatch_hydra' -ObserveSeconds 240`: passed with `playerState=InGame`, `aiState=InGame`, `timerOverlay=True`, `aiGracefulShutdown=True`. Observe screenshot showed multi-Hatchery tech progress.
+  - `dotnet test .\Sparring.sln -v:minimal`: 195 passed.
+  - `.\scripts\smoke.ps1`: Release build warning 0 / error 0.
+  - `.\scripts\audit-compatibility.ps1`: `bots=89`, `dllBots=64`, `maps=34`, `declaredDllPairs=1081`, `compatibleDllPairs=1024`, `blockedDeclaredDllPairs=57`, `issues=0`, `runtimeCrashes=0`.
+- No release/tag/push was done.
+
+## 2026-06-26 Neo Bot Preview Release Follow-up
+
+- Neo bot catalog policy:
+  - `NeoProtossF`, `NeoTerranF`, and `NeoZergF` are development-preview practice bots.
+  - Their catalog ELO is now unset, and the launcher displays them as `ELO -`.
+  - They remain manually selectable in sparring mode.
+  - They are excluded from ladder candidates and from sparring `Random` selection.
+  - Their launcher descriptions warn that midgame judgment and detailed control may still feel awkward.
+- Code policy:
+  - `PracticeBotCandidatePolicy.IsLadderEligible` excludes practice-only or unrated bots.
+  - `PracticeBotCandidatePolicy.IsSparringRandomEligible` excludes practice-only bots from random sparring selection.
+- Neo bot quality roadmap:
+  - Improve midgame transition after the scripted opening finishes.
+  - Add scouting-based reactions for enemy tech, expansions, and army composition.
+  - Make worker-defense behavior less brittle against small harassment.
+  - Improve GG/leave timing based on actual fighting and production state.
+  - Re-evaluate public ELO only after replay review across common maps and matchups.
+- 1.6.0 verification:
+  - `dotnet test .\Sparring.sln --filter "LadderBotSelectorTests|NeoProtossBotCatalogTests|NeoTerranBotCatalogTests|NeoZergBotCatalogTests" -v:minimal`: 14 passed.
+  - `dotnet test .\Sparring.sln -v:minimal`: 196 passed.
+  - `.\scripts\smoke.ps1`: Release build warning 0 / error 0.
+  - `.\scripts\audit-compatibility.ps1`: `issues=0`, `runtimeCrashes=0`.
+  - `.\scripts\smoke-app-start.ps1 -PrepareOnly -Mode Sparring -PlayerRace Terran -EnemyRace Zerg -MapName '(4)Fighting Spirit 1.4' -BotName 'NeoZergF' -BotBuildId 'two_hatch_muta'`: passed.
+  - Ladder dry-run with `NeoProtossF` failed as expected because preview Neo bots are excluded from ladder candidates.
+  - `.\scripts\build-release.ps1`: produced `Sparring-1.6.0-setup.exe`, `Sparring-1.6.0-win-x64.zip`, and `Sparring-1.6.0-setup-folder.zip`.

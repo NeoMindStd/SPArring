@@ -41,7 +41,7 @@ public sealed class HotkeyPatchApplierSmokeTests
 
         Assert.True(result.AppliedMpq);
         Assert.True(File.Exists(result.PatchedTblPath));
-        Assert.Contains("반영", result.Message);
+        Assert.Contains("적용", result.Message);
         Assert.NotEqual(
             File.ReadAllBytes(sourcePatch),
             File.ReadAllBytes(Path.Combine(root, "patch_rt.mpq")));

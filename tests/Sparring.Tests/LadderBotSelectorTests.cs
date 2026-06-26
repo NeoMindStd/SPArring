@@ -69,6 +69,27 @@ public sealed class LadderBotSelectorTests
     }
 
     [Fact]
+    public void CandidatesForMapExcludesPracticeOnlyAndUnratedBots()
+    {
+        var mapId = Guid.NewGuid();
+        var eligibleId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(eligibleId, "Eligible", StarCraftRace.Terran, 900, BotExecutableKind.Dll, practiceOnly: false, mapId),
+                Bot(Guid.NewGuid(), "PracticeOnly", StarCraftRace.Terran, 950, BotExecutableKind.Dll, practiceOnly: true, mapId),
+                Bot(Guid.NewGuid(), "Unrated", StarCraftRace.Terran, null, BotExecutableKind.Dll, practiceOnly: false, mapId)
+            ],
+            [
+                new PracticeMap(mapId, "Fighting Spirit", "Fighting.scx", null, true)
+            ]);
+
+        var candidates = LadderBotSelector.CandidatesForMap(catalog, mapId, StarCraftRace.Terran);
+
+        var bot = Assert.Single(candidates);
+        Assert.Equal(eligibleId, bot.Id);
+    }
+
+    [Fact]
     public void PickRandomThrowsWhenOnlyNonDllCandidatesExist()
     {
         var mapId = Guid.NewGuid();
@@ -198,10 +219,22 @@ public sealed class LadderBotSelectorTests
 
     private static PracticeBot Bot(Guid id, string name, StarCraftRace race, int elo, params Guid[] supportedMaps)
     {
-        return Bot(id, name, race, elo, BotExecutableKind.Dll, supportedMaps);
+        return Bot(id, name, race, elo, BotExecutableKind.Dll, false, supportedMaps);
     }
 
     private static PracticeBot Bot(Guid id, string name, StarCraftRace race, int elo, BotExecutableKind executableKind, params Guid[] supportedMaps)
+    {
+        return Bot(id, name, race, elo, executableKind, false, supportedMaps);
+    }
+
+    private static PracticeBot Bot(
+        Guid id,
+        string name,
+        StarCraftRace race,
+        int? elo,
+        BotExecutableKind executableKind,
+        bool practiceOnly = false,
+        params Guid[] supportedMaps)
     {
         return new PracticeBot(
             id,
@@ -211,7 +244,7 @@ public sealed class LadderBotSelectorTests
             executableKind,
             "4.4.0",
             elo,
-            false,
+            practiceOnly,
             supportedMaps.ToHashSet(),
             null,
             null);

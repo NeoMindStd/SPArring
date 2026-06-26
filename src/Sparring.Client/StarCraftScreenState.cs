@@ -99,30 +99,32 @@ internal static class StarCraftScreenAnalyzer
             }
         }
 
-        var dialogLightRatio = centralSamples == 0 ? 0 : dialogLightPixels / (double)centralSamples;
-        var centralDialogFrameRatio = centralSamples == 0 ? 0 : centralDialogFramePixels / (double)centralSamples;
-        if (dialogLightRatio >= 0.025 ||
-            dialogLightRatio >= 0.008 && centralDialogFrameRatio >= 0.0008)
-        {
-            return StarCraftScreenState.BlockedDialog;
-        }
-
         var roomFrameRatio = fullSamples == 0 ? 0 : roomFramePixels / (double)fullSamples;
         var menuGreenRatio = fullSamples == 0 ? 0 : menuGreenPixels / (double)fullSamples;
         var lobbyTextRatio = fullSamples == 0 ? 0 : lobbyTextPixels / (double)fullSamples;
-        if (roomFrameRatio >= 0.0022 &&
-            (menuGreenRatio >= 0.0015 || lobbyTextRatio >= 0.0015))
-        {
-            return StarCraftScreenState.GameRoom;
-        }
-
         var hudRatio = bottomSamples == 0 ? 0 : hudPixels / (double)bottomSamples;
         var hudPanelRatio = bottomSamples == 0 ? 0 : hudPanelPixels / (double)bottomSamples;
         var hudDarkPanelRatio = bottomSamples == 0 ? 0 : hudDarkPanelPixels / (double)bottomSamples;
         var hudDetected = hudRatio >= 0.02 || hudPanelRatio >= 0.08;
-        if (hudDetected && hudDarkPanelRatio >= 0.04)
+        var strongHudDetected = hudDetected && hudDarkPanelRatio >= 0.04;
+        var dialogLightRatio = centralSamples == 0 ? 0 : dialogLightPixels / (double)centralSamples;
+        var centralDialogFrameRatio = centralSamples == 0 ? 0 : centralDialogFramePixels / (double)centralSamples;
+        var dialogDetected = dialogLightRatio >= 0.025 ||
+                             dialogLightRatio >= 0.008 && centralDialogFrameRatio >= 0.0008;
+        if (dialogDetected && !(strongHudDetected && dialogLightRatio < 0.06))
+        {
+            return StarCraftScreenState.BlockedDialog;
+        }
+
+        if (strongHudDetected)
         {
             return StarCraftScreenState.InGame;
+        }
+
+        if (roomFrameRatio >= 0.0022 &&
+            (menuGreenRatio >= 0.0015 || lobbyTextRatio >= 0.0015))
+        {
+            return StarCraftScreenState.GameRoom;
         }
 
         if (roomFrameRatio >= 0.0022)
@@ -158,11 +160,25 @@ internal static class StarCraftScreenAnalyzer
 
     private static bool IsGameHudPanelColor(Color color)
     {
+        return IsTerranProtossHudPanelColor(color) || IsZergHudPanelColor(color);
+    }
+
+    private static bool IsTerranProtossHudPanelColor(Color color)
+    {
         return color.R is >= 28 and <= 105 &&
-               color.G is >= 34 and <= 120 &&
-               color.B is >= 42 and <= 145 &&
-               color.B >= color.R + 3 &&
-               color.B >= color.G - 18;
+            color.G is >= 34 and <= 120 &&
+            color.B is >= 42 and <= 145 &&
+            color.B >= color.R + 3 &&
+            color.B >= color.G - 18;
+    }
+
+    private static bool IsZergHudPanelColor(Color color)
+    {
+        return color.R is >= 45 and <= 150 &&
+            color.G is >= 25 and <= 105 &&
+            color.B is >= 15 and <= 95 &&
+            color.R >= color.B + 10 &&
+            color.G >= color.B - 12;
     }
 
     private static bool IsHudDarkPanelColor(Color color)

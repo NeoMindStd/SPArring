@@ -38,6 +38,11 @@ if (-not (Test-Path -LiteralPath (Join-Path $repo 'scripts\setup-runtime.ps1')))
     throw "Runtime setup script is missing: scripts\setup-runtime.ps1"
 }
 
+$neoBotBuildScript = Join-Path $repo 'scripts\build-neo-bots.ps1'
+if (Test-Path -LiteralPath $neoBotBuildScript) {
+    & $neoBotBuildScript
+}
+
 function Convert-ToRelativePath([string] $Root, [string] $Path) {
     $rootFullPath = [IO.Path]::GetFullPath($Root)
     if (-not $rootFullPath.EndsWith([IO.Path]::DirectorySeparatorChar)) {

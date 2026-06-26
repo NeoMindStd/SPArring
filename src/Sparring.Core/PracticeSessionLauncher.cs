@@ -90,7 +90,8 @@ public sealed class PracticeSessionLauncher
             EnableBwapi: true,
             EnableApmAlert: settings.ApmAlertEnabled,
             MouseScrollSpeed: runtimeOptions.MouseScrollSpeed,
-            KeyboardScrollSpeed: runtimeOptions.KeyboardScrollSpeed));
+            KeyboardScrollSpeed: runtimeOptions.KeyboardScrollSpeed,
+            MouseSensitivity: runtimeOptions.MouseSensitivity));
 
         try
         {

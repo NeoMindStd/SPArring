@@ -137,7 +137,7 @@ internal static class SmokeChecks
                 Console.WriteLine(
                     $"smoke-start dry-run: mode={request.ModeLabel}, playerRace={playerRace}, " +
                     $"enemyRace={(enemyRace?.ToString() ?? "Any")}, bot={bot.Name}, map={map.Name}, " +
-                    $"executable={bot.ExecutableName}, kind={bot.ExecutableKind}");
+                    $"executable={bot.ExecutableName}, kind={bot.ExecutableKind}, botBuild={request.BotBuildId ?? "random"}");
                 return 0;
             }
 
@@ -149,7 +149,8 @@ internal static class SmokeChecks
                 "Sparring Smoke",
                 PlayerBorderless: true,
                 ClipCursor: false,
-                AllowApmAlert: false);
+                AllowApmAlert: false,
+                BotBuildId: request.BotBuildId);
             var plan = PracticeLaunchPlanBuilder.Build(catalog, paths with { AiRuntimeRoot = aiRoot }, selection);
             if (request.PrepareOnly)
             {
@@ -157,8 +158,11 @@ internal static class SmokeChecks
                 PracticeRuntimeConfigurator.Apply(prepared, PracticeRuntimeOptions.Defaults());
                 var aiModuleExists = !string.IsNullOrWhiteSpace(prepared.Ai.AiModule) &&
                     File.Exists(Path.Combine(prepared.Ai.RuntimeRoot, prepared.Ai.AiModule));
-                Console.WriteLine($"smoke-start prepare-only: bot={bot.Name}, map={map.Name}, playerAi='{prepared.Player.AiModule}', aiModule='{prepared.Ai.AiModule}', aiModuleExists={aiModuleExists}");
-                return string.IsNullOrEmpty(prepared.Player.AiModule) && aiModuleExists ? 0 : 1;
+                var botConfig = ReadSmokeBotConfig(prepared.Ai.RuntimeRoot);
+                var botBuildOk = string.IsNullOrWhiteSpace(request.BotBuildId) ||
+                    string.Equals(botConfig, $"build={request.BotBuildId.Trim()}", StringComparison.OrdinalIgnoreCase);
+                Console.WriteLine($"smoke-start prepare-only: bot={bot.Name}, map={map.Name}, playerAi='{prepared.Player.AiModule}', aiModule='{prepared.Ai.AiModule}', aiModuleExists={aiModuleExists}, botBuild='{request.BotBuildId ?? string.Empty}', botConfig='{botConfig}'");
+                return string.IsNullOrEmpty(prepared.Player.AiModule) && aiModuleExists && botBuildOk ? 0 : 1;
             }
 
             var screenBounds = Screen.PrimaryScreen?.Bounds ?? new Rectangle(0, 0, 1280, 720);
@@ -260,6 +264,32 @@ internal static class SmokeChecks
                     TimeSpan.FromSeconds(3));
             }
 
+            var observeMs = 0L;
+            if (request.ObserveSeconds > 0 && inGameDetected && aiInGameDetected)
+            {
+                var observeDuration = TimeSpan.FromSeconds(request.ObserveSeconds);
+                PumpWinFormsFor(observeDuration);
+                observeMs = timing.ElapsedMilliseconds;
+                if (report.Ai.StarCraftProcessId is not null)
+                {
+                    _ = StarCraftBorderlessWindow.ActivateProcessWindowWhenReady(
+                        report.Ai.StarCraftProcessId.Value,
+                        TimeSpan.FromSeconds(3));
+                    PumpWinFormsFor(TimeSpan.FromMilliseconds(500));
+                }
+
+                SaveSmokeWindowScreenshot(paths, report.Ai.StarCraftProcessId, "smoke-start-ai-observe.png");
+                if (report.Player.StarCraftProcessId is not null)
+                {
+                    _ = StarCraftBorderlessWindow.ActivateProcessWindowWhenReady(
+                        report.Player.StarCraftProcessId.Value,
+                        TimeSpan.FromSeconds(3));
+                    PumpWinFormsFor(TimeSpan.FromMilliseconds(500));
+                }
+
+                SaveSmokeWindowScreenshot(paths, report.Player.StarCraftProcessId, "smoke-start-player-observe.png");
+            }
+
             var playerState = report.Player.StarCraftProcessId is null
                 ? StarCraftScreenState.Unknown
                 : playerStateAtOverlay != StarCraftScreenState.Unknown
@@ -312,7 +342,7 @@ internal static class SmokeChecks
                 $"playerPath={playerProcessPath}, aiPath={aiProcessPath}, " +
                 $"borderless={borderlessApplied}, playerState={playerState}, aiState={aiState}, inGame={inGameDetected}, aiInGame={aiInGameDetected}, " +
                 $"timerOverlay={timerOverlayVisible}, playerHudMs={playerHudDetectedMs}, overlayStartMs={overlayStartedMs}, " +
-                $"overlayShotMs={overlayScreenshotMs}, aiHudMs={aiHudDetectedMs}, " +
+                $"overlayShotMs={overlayScreenshotMs}, aiHudMs={aiHudDetectedMs}, observeSeconds={request.ObserveSeconds}, observeMs={observeMs}, " +
                 $"aiShutdownSent={aiShutdown?.LeaveSequenceSent.ToString() ?? "null"}, aiShutdownExited={aiShutdown?.Exited.ToString() ?? "null"}, " +
                 $"aiCleanupStopped={aiCleanupStopped}, aiProcessGoneAfterCleanup={aiProcessGoneAfterCleanup}, " +
                 $"playerAfterAiShutdownState={playerStateAfterAiShutdown}, aiGracefulShutdown={aiGracefulShutdown}, " +
@@ -418,9 +448,16 @@ internal static class SmokeChecks
         }
     }
 
+    private static string ReadSmokeBotConfig(string aiRuntimeRoot)
+    {
+        var path = Path.Combine(aiRuntimeRoot, "bwapi-data", "AI", "sparring-bot.ini");
+        return File.Exists(path) ? File.ReadAllText(path).Trim() : string.Empty;
+    }
+
     private static PracticeBot SelectBot(IReadOnlyList<PracticeBot> candidates, string? requestedName)
     {
-        if (string.IsNullOrWhiteSpace(requestedName))
+        if (string.IsNullOrWhiteSpace(requestedName) ||
+            string.Equals(requestedName, "Random", StringComparison.OrdinalIgnoreCase))
         {
             return candidates
                 .OrderByDescending(candidate => candidate.Elo ?? int.MinValue)
@@ -451,12 +488,19 @@ internal static class SmokeChecks
         SmokeStartRequest request,
         StarCraftRace? enemyRace)
     {
+        var explicitBotRequested = !string.IsNullOrWhiteSpace(request.BotName) &&
+            !string.Equals(request.BotName, "Random", StringComparison.OrdinalIgnoreCase);
         var candidateBots = catalog.Bots
             .Where(candidate => candidate.ExecutableKind == BotExecutableKind.Dll)
             .Where(candidate => enemyRace is null || candidate.Race == enemyRace.Value)
-            .Where(candidate => PracticeCatalogCompatibility.MapsForBot(catalog, candidate.Id).Any())
-            .ToList();
-        var bot = SelectBot(candidateBots, request.BotName);
+            .Where(candidate => PracticeCatalogCompatibility.MapsForBot(catalog, candidate.Id).Any());
+        if (!explicitBotRequested)
+        {
+            candidateBots = candidateBots.Where(PracticeBotCandidatePolicy.IsSparringRandomEligible);
+        }
+
+        var candidates = candidateBots.ToList();
+        var bot = SelectBot(candidates, request.BotName);
         var map = SelectMap(PracticeCatalogCompatibility.MapsForBot(catalog, bot.Id), request.MapName);
         return (bot, map);
     }
@@ -498,6 +542,8 @@ internal static class SmokeChecks
         string? Mode,
         string? PlayerRace,
         string? EnemyRace,
+        string? BotBuildId,
+        int ObserveSeconds,
         bool DryRun,
         bool PrepareOnly)
     {
@@ -515,6 +561,8 @@ internal static class SmokeChecks
                 ValueAfter(args, "--mode"),
                 ValueAfter(args, "--player-race"),
                 ValueAfter(args, "--enemy-race"),
+                ValueAfter(args, "--bot-build"),
+                ParseObserveSeconds(ValueAfter(args, "--observe-seconds")),
                 args.Any(arg => string.Equals(arg, "--dry-run", StringComparison.OrdinalIgnoreCase)),
                 args.Any(arg => string.Equals(arg, "--prepare-only", StringComparison.OrdinalIgnoreCase)));
         }
@@ -567,6 +615,18 @@ internal static class SmokeChecks
             }
 
             return null;
+        }
+
+        private static int ParseObserveSeconds(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return 0;
+            }
+
+            return int.TryParse(value, out var seconds)
+                ? Math.Clamp(seconds, 0, 600)
+                : throw new InvalidOperationException($"Invalid observe seconds: {value}");
         }
     }
 
@@ -769,6 +829,7 @@ internal static class SmokeChecks
             TextBox => true,
             CheckBox => true,
             NumericUpDown => true,
+            TrackBar => true,
             ListBox => true,
             PictureBox => true,
             DataGridView => true,

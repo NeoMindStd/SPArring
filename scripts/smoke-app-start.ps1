@@ -4,6 +4,8 @@ param(
     [string]$Mode,
     [string]$PlayerRace,
     [string]$EnemyRace,
+    [string]$BotBuildId,
+    [int]$ObserveSeconds = 0,
     [switch]$DryRun,
     [switch]$PrepareOnly
 )
@@ -38,6 +40,12 @@ try {
     }
     if (-not [string]::IsNullOrWhiteSpace($EnemyRace)) {
         $smokeArgs += @('--enemy-race', $EnemyRace)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($BotBuildId)) {
+        $smokeArgs += @('--bot-build', $BotBuildId)
+    }
+    if ($ObserveSeconds -gt 0) {
+        $smokeArgs += @('--observe-seconds', $ObserveSeconds.ToString())
     }
     if ($DryRun) {
         $smokeArgs += '--dry-run'

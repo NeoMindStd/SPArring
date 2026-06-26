@@ -33,6 +33,12 @@ public sealed record PracticeMap(
             : new HashSet<Guid> { Id };
 }
 
+public sealed record PracticeBotBuildOption(
+    string Id,
+    string Name,
+    string Matchups,
+    string Summary);
+
 public sealed record PracticeBot(
     Guid Id,
     string Name,
@@ -45,8 +51,13 @@ public sealed record PracticeBot(
     IReadOnlySet<Guid> SupportedMapIds,
     string? Description,
     string? Author,
-    string? SourceDirectory = null)
+    string? SourceDirectory = null,
+    IReadOnlyList<PracticeBotBuildOption>? BuildOptions = null)
 {
+    public IReadOnlyList<PracticeBotBuildOption> AvailableBuildOptions => BuildOptions ?? [];
+
+    public bool HasSelectableBuilds => AvailableBuildOptions.Count > 0;
+
     public bool SupportsMap(Guid mapId)
     {
         return SupportedMapIds.Count == 0 || SupportedMapIds.Contains(mapId);
@@ -69,5 +80,21 @@ public sealed record PracticeCatalog(
     {
         return Maps.FirstOrDefault(map => map.Id == id)
             ?? throw new InvalidOperationException($"Map not found: {id}");
+    }
+}
+
+public static class PracticeBotCandidatePolicy
+{
+    public static bool IsLadderEligible(PracticeBot bot)
+    {
+        return bot.UsesBwapiIniAiModule &&
+            !bot.PracticeOnly &&
+            bot.Elo is not null;
+    }
+
+    public static bool IsSparringRandomEligible(PracticeBot bot)
+    {
+        return bot.UsesBwapiIniAiModule &&
+            !bot.PracticeOnly;
     }
 }

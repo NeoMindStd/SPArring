@@ -16,9 +16,11 @@ internal sealed record SparringSettings(
     StarCraftRace? LastPlayerRace = null,
     string? LastBotName = null,
     string? LastMapName = null,
-    int GameSpeedOverrideMs = -1,
+    string? LastBotBuildId = null,
+    int GameSpeedOverrideMs = 42,
     int MouseScrollSpeed = 3,
     int KeyboardScrollSpeed = 3,
+    int MouseSensitivity = 50,
     string? SkippedUpdateVersion = null)
 {
     [JsonIgnore]

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Sparring.Core;
@@ -153,6 +154,143 @@ public sealed record RemasteredHotkeyImportResult(
     string SourcePath,
     int ParsedCount,
     int UpdatedCount);
+
+public sealed record StarCraftControlSettings(
+    int? GameSpeedOverrideMs,
+    int? MouseSensitivity,
+    int? MouseScrollSpeed,
+    int? KeyboardScrollSpeed);
+
+public sealed class StarCraftControlSettingsImporter
+{
+    private readonly IRegistryAccess _registry;
+
+    public StarCraftControlSettingsImporter()
+        : this(new WindowsRegistryAccess())
+    {
+    }
+
+    public StarCraftControlSettingsImporter(IRegistryAccess registry)
+    {
+        _registry = registry;
+    }
+
+    public StarCraftControlSettings Read(string? sourcePath = null)
+    {
+        var fileSettings = ReadSettingsJson(sourcePath);
+        return new StarCraftControlSettings(
+            fileSettings.GameSpeedOverrideMs ?? ReadGameSpeedOverrideMs(),
+            fileSettings.MouseSensitivity ?? ReadClampedRegistryInt(0, 100, "MouseSensitivity"),
+            fileSettings.MouseScrollSpeed ?? ReadClampedRegistryInt(0, 6, "mscroll", "m_mscroll"),
+            fileSettings.KeyboardScrollSpeed ?? ReadClampedRegistryInt(0, 6, "kscroll", "m_kscroll"));
+    }
+
+    private StarCraftControlSettings ReadSettingsJson(string? sourcePath)
+    {
+        if (string.IsNullOrWhiteSpace(sourcePath) ||
+            !File.Exists(sourcePath) ||
+            !string.Equals(Path.GetExtension(sourcePath), ".json", StringComparison.OrdinalIgnoreCase))
+        {
+            return new StarCraftControlSettings(null, null, null, null);
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(sourcePath, Encoding.UTF8));
+            var root = document.RootElement;
+            return new StarCraftControlSettings(
+                MapSpeedIndexToOverrideMs(ReadJsonInt(root, "speed")),
+                ClampNullable(ReadJsonInt(root, "MouseSensitivity"), 0, 100),
+                ClampNullable(ReadJsonInt(root, "mscroll") ?? ReadJsonInt(root, "m_mscroll"), 0, 6),
+                ClampNullable(ReadJsonInt(root, "kscroll") ?? ReadJsonInt(root, "m_kscroll"), 0, 6));
+        }
+        catch (JsonException)
+        {
+            return new StarCraftControlSettings(null, null, null, null);
+        }
+        catch (IOException)
+        {
+            return new StarCraftControlSettings(null, null, null, null);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return new StarCraftControlSettings(null, null, null, null);
+        }
+    }
+
+    private int? ReadGameSpeedOverrideMs()
+    {
+        return MapSpeedIndexToOverrideMs(ReadClampedRegistryInt(0, 6, "speed"));
+    }
+
+    private int? ReadClampedRegistryInt(int min, int max, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var value = _registry.ReadValue(
+                RegistryHiveKind.CurrentUser,
+                ChaosLauncherConfigurator.StarCraftUserSettingsKey,
+                name);
+            if (value.Exists && TryConvertInt(value.Value, out var parsed))
+            {
+                return Math.Clamp(parsed, min, max);
+            }
+        }
+
+        return null;
+    }
+
+    private static int? ReadJsonInt(JsonElement root, string name)
+    {
+        if (!root.TryGetProperty(name, out var value))
+        {
+            return null;
+        }
+
+        return value.ValueKind switch
+        {
+            JsonValueKind.Number when value.TryGetInt32(out var number) => number,
+            JsonValueKind.String when int.TryParse(value.GetString(), out var number) => number,
+            _ => null
+        };
+    }
+
+    private static int? ClampNullable(int? value, int min, int max)
+    {
+        return value is { } parsed ? Math.Clamp(parsed, min, max) : null;
+    }
+
+    private static int? MapSpeedIndexToOverrideMs(int? speedIndex)
+    {
+        return speedIndex switch
+        {
+            6 => 42,
+            5 => 48,
+            4 => 56,
+            3 => 67,
+            2 => 83,
+            1 => 111,
+            0 => 167,
+            _ => null
+        };
+    }
+
+    private static bool TryConvertInt(object? value, out int result)
+    {
+        switch (value)
+        {
+            case int intValue:
+                result = intValue;
+                return true;
+            case string text when int.TryParse(text, out var parsed):
+                result = parsed;
+                return true;
+            default:
+                result = 0;
+                return false;
+        }
+    }
+}
 
 public static class RemasteredHotkeyImporter
 {
@@ -447,7 +585,7 @@ public static class RemasteredHotkeyImporter
                     AttributesToSkip = FileAttributes.System
                 })
                 .Where(IsPotentialHotkeyFile)
-                .OrderBy(file => Path.GetFileName(file).Contains("hotkey", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                .OrderBy(HotkeyCandidateRank)
                 .ThenBy(file => file, StringComparer.OrdinalIgnoreCase);
 
             foreach (var file in files)
@@ -469,18 +607,43 @@ public static class RemasteredHotkeyImporter
 
     public static IReadOnlyList<string> DefaultCandidateRoots(IEnumerable<string>? extraRoots = null)
     {
+        return DefaultCandidateRoots(new WindowsRegistryAccess(), extraRoots);
+    }
+
+    public static IReadOnlyList<string> DefaultCandidateRoots(
+        IRegistryAccess registry,
+        IEnumerable<string>? extraRoots = null)
+    {
         var roots = new List<string>();
         if (extraRoots is not null)
         {
             roots.AddRange(extraRoots);
         }
 
+        AddRegistryInstallRoots(roots, registry);
         AddStarCraftDocumentRoots(roots, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
         var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (!string.IsNullOrWhiteSpace(userProfile))
         {
             AddStarCraftDocumentRoots(roots, Path.Combine(userProfile, "OneDrive", "Documents"));
         }
+
+        AddStarCraftDocumentRoots(roots, Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "Blizzard",
+            "StarCraft"));
+        AddStarCraftDocumentRoots(roots, Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Blizzard",
+            "StarCraft"));
+        AddStarCraftDocumentRoots(roots, Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "Blizzard Entertainment",
+            "StarCraft"));
+        AddStarCraftDocumentRoots(roots, Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Blizzard Entertainment",
+            "StarCraft"));
 
         foreach (var drive in DriveInfo.GetDrives().Where(drive => drive.IsReady))
         {
@@ -491,6 +654,30 @@ public static class RemasteredHotkeyImporter
             .Where(root => !string.IsNullOrWhiteSpace(root))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    private static void AddRegistryInstallRoots(List<string> roots, IRegistryAccess registry)
+    {
+        AddRegistryPath(roots, registry, "InstallPath");
+        AddRegistryPath(roots, registry, "Program", useDirectory: true);
+    }
+
+    private static void AddRegistryPath(
+        List<string> roots,
+        IRegistryAccess registry,
+        string valueName,
+        bool useDirectory = false)
+    {
+        var value = registry.ReadValue(
+            RegistryHiveKind.LocalMachine,
+            ChaosLauncherConfigurator.StarCraftInstallKey,
+            valueName);
+        if (!value.Exists || value.Value is not string path || string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        roots.Add(useDirectory ? Path.GetDirectoryName(path) ?? path : path);
     }
 
     private static void AddStarCraftDocumentRoots(List<string> roots, string documentsRoot)
@@ -506,8 +693,18 @@ public static class RemasteredHotkeyImporter
 
     private static Dictionary<string, string> ParseKeyValues(string sourcePath)
     {
+        if (string.Equals(Path.GetExtension(sourcePath), ".json", StringComparison.OrdinalIgnoreCase))
+        {
+            return ParseKeyValueLines(ReadHotkeyTextFromSettingsJson(sourcePath)?.Split('\n') ?? []);
+        }
+
+        return ParseKeyValueLines(File.ReadLines(sourcePath, Encoding.UTF8));
+    }
+
+    private static Dictionary<string, string> ParseKeyValueLines(IEnumerable<string> lines)
+    {
         var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var line in File.ReadLines(sourcePath, Encoding.UTF8))
+        foreach (var line in lines)
         {
             var trimmed = line.Trim();
             if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal))
@@ -534,6 +731,30 @@ public static class RemasteredHotkeyImporter
         return values;
     }
 
+    private static string? ReadHotkeyTextFromSettingsJson(string path)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(path, Encoding.UTF8));
+            return document.RootElement.TryGetProperty("Hotkeys", out var hotkeys) &&
+                   hotkeys.ValueKind == JsonValueKind.String
+                ? hotkeys.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
     private static bool LooksLikeRemasteredHotkeyFile(string path)
     {
         if (!IsPotentialHotkeyFile(path))
@@ -543,6 +764,11 @@ public static class RemasteredHotkeyImporter
 
         try
         {
+            if (string.Equals(Path.GetExtension(path), ".json", StringComparison.OrdinalIgnoreCase))
+            {
+                return ReadHotkeyTextFromSettingsJson(path)?.Contains("STR_", StringComparison.OrdinalIgnoreCase) == true;
+            }
+
             return File.ReadLines(path, Encoding.UTF8)
                 .Take(64)
                 .Any(line => line.TrimStart().StartsWith("STR_", StringComparison.OrdinalIgnoreCase));
@@ -562,7 +788,19 @@ public static class RemasteredHotkeyImporter
         var extension = Path.GetExtension(path);
         return string.Equals(extension, ".txt", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(extension, ".hotkeys", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(extension, ".ini", StringComparison.OrdinalIgnoreCase);
+               string.Equals(extension, ".ini", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(extension, ".json", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static int HotkeyCandidateRank(string path)
+    {
+        var fileName = Path.GetFileName(path);
+        if (string.Equals(fileName, "CSettings.json", StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+
+        return fileName.Contains("hotkey", StringComparison.OrdinalIgnoreCase) ? 1 : 2;
     }
 }
 
@@ -610,7 +848,7 @@ public sealed class HotkeyPatchApplier
             {
                 AppliedMpq = false,
                 WorkingCsvPath = csvPath,
-                Message = "작업용 핫키 CSV를 저장했습니다."
+                Message = "단축키를 저장했습니다."
             };
         }
 
@@ -623,7 +861,7 @@ public sealed class HotkeyPatchApplier
             AppliedMpq = true,
             WorkingCsvPath = csvPath,
             PatchedTblPath = patchedTbl,
-            Message = "작업용 CSV 저장과 런타임 patch_rt.mpq 핫키 반영을 완료했습니다."
+            Message = "단축키를 저장하고 게임에 적용했습니다."
         };
     }
 

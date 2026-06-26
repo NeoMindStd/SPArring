@@ -7,7 +7,8 @@ public sealed record PracticeRuntimeOptions(
     string ReplayRoot,
     int SpeedOverrideMs = -1,
     int MouseScrollSpeed = 3,
-    int KeyboardScrollSpeed = 3)
+    int KeyboardScrollSpeed = 3,
+    int MouseSensitivity = 50)
 {
     public static PracticeRuntimeOptions Defaults()
     {

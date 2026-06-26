@@ -14,7 +14,8 @@ public sealed record PracticeSelection(
     bool PlayerBorderless,
     bool ClipCursor,
     bool AllowApmAlert,
-    bool HideAiName = true);
+    bool HideAiName = true,
+    string? BotBuildId = null);
 
 public sealed record ClientLaunchSettings(
     ClientRuntimeRole Role,
@@ -33,7 +34,8 @@ public sealed record ClientLaunchSettings(
     bool ClipCursor,
     bool ApmAlertEnabled,
     bool EnableWModePlugin,
-    CncDdrawMode CncDdrawMode);
+    CncDdrawMode CncDdrawMode,
+    string? BotBuildId = null);
 
 public enum CncDdrawMode
 {
@@ -66,6 +68,13 @@ public static class PracticeLaunchPlanBuilder
         if (!PracticeCatalogCompatibility.IsCompatible(catalog, bot.Id, map.Id))
         {
             throw new InvalidOperationException($"Bot '{bot.Name}' does not support map '{map.Name}'.");
+        }
+
+        var botBuildId = NormalizeBotBuildId(selection.BotBuildId);
+        if (botBuildId is not null &&
+            !bot.AvailableBuildOptions.Any(option => string.Equals(option.Id, botBuildId, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException($"Bot '{bot.Name}' does not support build '{botBuildId}'.");
         }
 
         var player = new ClientLaunchSettings(
@@ -106,9 +115,21 @@ public static class PracticeLaunchPlanBuilder
             ClipCursor: false,
             ApmAlertEnabled: false,
             EnableWModePlugin: false,
-            CncDdrawMode: CncDdrawMode.Windowed);
+            CncDdrawMode: CncDdrawMode.Windowed,
+            BotBuildId: botBuildId);
 
         return new PracticeLaunchPlan(player, ai, bot, map);
+    }
+
+    private static string? NormalizeBotBuildId(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) ||
+            string.Equals(value, "random", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return value.Trim();
     }
 }
 

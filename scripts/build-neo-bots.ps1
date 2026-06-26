@@ -1,0 +1,106 @@
+param(
+    [string] $BwapiSdkRoot = '',
+    [switch] $SkipDownloads
+)
+
+$ErrorActionPreference = 'Stop'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+$repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
+$neoBots = @(
+    [pscustomobject]@{
+        Name = 'NeoProtossF'
+        Project = Join-Path $repo 'src\Sparring.Bots\NeoProtossF\NeoProtossF.vcxproj'
+        Output = Join-Path $repo 'src\Sparring.Bots\NeoProtossF\Release\NeoProtossF.dll'
+        Destination = Join-Path $repo 'data\bots\NeoProtossF\NeoProtossF.dll'
+    },
+    [pscustomobject]@{
+        Name = 'NeoTerranF'
+        Project = Join-Path $repo 'src\Sparring.Bots\NeoTerranF\NeoTerranF.vcxproj'
+        Output = Join-Path $repo 'src\Sparring.Bots\NeoTerranF\Release\NeoTerranF.dll'
+        Destination = Join-Path $repo 'data\bots\NeoTerranF\NeoTerranF.dll'
+    },
+    [pscustomobject]@{
+        Name = 'NeoZergF'
+        Project = Join-Path $repo 'src\Sparring.Bots\NeoZergF\NeoZergF.vcxproj'
+        Output = Join-Path $repo 'src\Sparring.Bots\NeoZergF\Release\NeoZergF.dll'
+        Destination = Join-Path $repo 'data\bots\NeoZergF\NeoZergF.dll'
+    }
+)
+$bwapiUrl = 'https://github.com/bwapi/bwapi/releases/download/v4.4.0/BWAPI.7z'
+
+function Test-BwapiSdk([string] $Root) {
+    return -not [string]::IsNullOrWhiteSpace($Root) -and
+        (Test-Path -LiteralPath (Join-Path $Root 'include\BWAPI.h')) -and
+        (Test-Path -LiteralPath (Join-Path $Root 'BWAPILIB\BWAPILIB.vcxproj'))
+}
+
+function Resolve-BwapiSdk {
+    if (Test-BwapiSdk $BwapiSdkRoot) {
+        return (Resolve-Path -LiteralPath $BwapiSdkRoot).Path
+    }
+
+    $candidates = @(
+        (Join-Path $repo 'artifacts\setup-runtime-smoke\deps\bwapi\v4.4.0\extracted\Release_Binary'),
+        (Join-Path $repo 'artifacts\deps\bwapi\v4.4.0\extracted\Release_Binary'),
+        (Join-Path $env:LOCALAPPDATA 'Sparring\deps\bwapi\v4.4.0\extracted\Release_Binary')
+    )
+
+    foreach ($candidate in $candidates) {
+        if (Test-BwapiSdk $candidate) {
+            return (Resolve-Path -LiteralPath $candidate).Path
+        }
+    }
+
+    if ($SkipDownloads) {
+        throw "BWAPI SDK was not found and -SkipDownloads was set. Expected a Release_Binary folder with include\BWAPI.h and BWAPILIB\BWAPILIB.vcxproj."
+    }
+
+    $cacheRoot = Join-Path $repo 'artifacts\deps\bwapi\v4.4.0'
+    $archive = Join-Path $cacheRoot 'BWAPI.7z'
+    $extract = Join-Path $cacheRoot 'extracted'
+    New-Item -ItemType Directory -Force -Path $cacheRoot | Out-Null
+
+    if (-not (Test-Path -LiteralPath $archive)) {
+        Write-Host "Downloading BWAPI SDK: $bwapiUrl"
+        Invoke-WebRequest -Uri $bwapiUrl -OutFile $archive -UseBasicParsing
+    }
+
+    if (-not (Test-BwapiSdk (Join-Path $extract 'Release_Binary'))) {
+        New-Item -ItemType Directory -Force -Path $extract | Out-Null
+        & tar -xf $archive -C $extract
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to extract BWAPI SDK archive: $archive"
+        }
+    }
+
+    $sdk = Join-Path $extract 'Release_Binary'
+    if (-not (Test-BwapiSdk $sdk)) {
+        throw "BWAPI SDK extraction did not contain the expected Release_Binary layout: $sdk"
+    }
+
+    return (Resolve-Path -LiteralPath $sdk).Path
+}
+
+$sdkRoot = Resolve-BwapiSdk
+$vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+if (-not $vs) {
+    throw 'Visual Studio Build Tools with MSBuild were not found. Install Visual Studio 2022 C++ build tools to build Neo bots.'
+}
+
+$env:BWAPI_SDK_ROOT = $sdkRoot
+foreach ($bot in $neoBots) {
+    $command = '"{0}\Common7\Tools\VsDevCmd.bat" -arch=x86 >nul && msbuild "{1}" /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /m /v:minimal' -f $vs, $bot.Project
+    cmd.exe /d /s /c $command
+    if ($LASTEXITCODE -ne 0) {
+        throw "$($bot.Name) native build failed."
+    }
+
+    if (-not (Test-Path -LiteralPath $bot.Output)) {
+        throw "$($bot.Name).dll was not produced: $($bot.Output)"
+    }
+
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $bot.Destination) | Out-Null
+    Copy-Item -LiteralPath $bot.Output -Destination $bot.Destination -Force
+    Get-Item -LiteralPath $bot.Destination | Select-Object FullName, Length, LastWriteTime
+}
