@@ -61,6 +61,7 @@ internal sealed class SetupForm : Form
         _backButton.Click += (_, _) => MoveBack();
         _nextButton.Click += async (_, _) => await MoveNextAsync();
         _cancelButton.Click += (_, _) => Close();
+        Resize += (_, _) => LayoutHeader();
 
         RenderPage();
     }
@@ -96,7 +97,40 @@ internal sealed class SetupForm : Form
         header.Controls.Add(_headerDescription);
         header.Controls.Add(_headerTitle);
         header.Controls.Add(icon);
+        header.Resize += (_, _) => LayoutHeader();
         return header;
+    }
+
+    private void LayoutHeader()
+    {
+        if (_headerTitle.Parent is not Panel header)
+        {
+            return;
+        }
+
+        var iconWidth = header.Controls.OfType<PictureBox>().FirstOrDefault()?.Width ?? 0;
+        var textWidth = Math.Max(120, header.ClientSize.Width - header.Padding.Horizontal - iconWidth - 8);
+        var titleHeight = Math.Max(
+            Font.Height + 8,
+            TextRenderer.MeasureText(
+                _headerTitle.Text,
+                _headerTitle.Font,
+                new Size(textWidth, int.MaxValue),
+                TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl).Height + 6);
+        var descriptionHeight = Math.Max(
+            Font.Height + 8,
+            TextRenderer.MeasureText(
+                _headerDescription.Text,
+                _headerDescription.Font,
+                new Size(textWidth, int.MaxValue),
+                TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl).Height + 6);
+        var height = Math.Max(84, header.Padding.Vertical + titleHeight + descriptionHeight);
+
+        _headerTitle.Height = titleHeight;
+        if (header.Height != height)
+        {
+            header.Height = height;
+        }
     }
 
     private Control CreateFooter()
@@ -198,6 +232,8 @@ internal sealed class SetupForm : Form
                 RenderProgressPage();
                 break;
         }
+
+        LayoutHeader();
     }
 
     private void RenderPathPage()

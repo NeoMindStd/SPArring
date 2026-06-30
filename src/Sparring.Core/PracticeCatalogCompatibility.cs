@@ -67,7 +67,8 @@ public static class PracticeCatalogCompatibility
                    bot.Name.Equals("XIAOYICOG2019", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("Zia bot", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("Feint", StringComparison.OrdinalIgnoreCase) ||
-                   bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase);
+                   bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase) ||
+                   IsReportedFightingSpiritBadPair(bot);
         }
 
         if (IsJadeVariant(map))
@@ -81,6 +82,18 @@ public static class PracticeCatalogCompatibility
         }
 
         return false;
+    }
+
+    private static bool IsReportedFightingSpiritBadPair(PracticeBot bot)
+    {
+        return bot.Name.Equals("Chris Coxe", StringComparison.OrdinalIgnoreCase) ||
+               bot.Name.Equals("Pineapple Cactus", StringComparison.OrdinalIgnoreCase) ||
+               bot.Name.Equals("Sijia Xu", StringComparison.OrdinalIgnoreCase) ||
+               bot.Name.Equals("Crona", StringComparison.OrdinalIgnoreCase) ||
+               bot.Name.Equals("BananaBrain", StringComparison.OrdinalIgnoreCase) ||
+               bot.Name.Equals("Locutus", StringComparison.OrdinalIgnoreCase) ||
+               bot.Name.Equals("ZNZZBot", StringComparison.OrdinalIgnoreCase) ||
+               bot.Name.Equals("DaQin", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsShortUnresolvedHistoryPair(PracticeBot bot, PracticeMap map)

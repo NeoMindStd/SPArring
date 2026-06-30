@@ -220,6 +220,67 @@ function Seed-AiRuntime {
     Copy-Tree $PlayerRuntimeRoot $AiRuntimeRoot @('/XD', 'Errors', 'logs', 'write', 'replays', 'Replays', '/XF', '*.rep', '*.log')
 }
 
+function Set-BwapiAiModule([string] $RuntimeRoot, [string] $AiModule) {
+    $iniPath = Join-Path $RuntimeRoot 'bwapi-data\bwapi.ini'
+    if (-not (Test-Path -LiteralPath $iniPath)) {
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $iniPath) | Out-Null
+        Set-Content -LiteralPath $iniPath -Value "[ai]`r`nai     = $AiModule`r`n" -Encoding ASCII
+        return
+    }
+
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $lines.AddRange([string[]](Get-Content -LiteralPath $iniPath -ErrorAction SilentlyContinue))
+    $output = [System.Collections.Generic.List[string]]::new()
+    $inAiSection = $false
+    $seenAiSection = $false
+    $wroteAi = $false
+
+    foreach ($line in $lines) {
+        if ($line -match '^\s*\[(.+)\]\s*$') {
+            if ($inAiSection -and -not $wroteAi) {
+                $output.Add("ai     = $AiModule")
+                $wroteAi = $true
+            }
+
+            $section = $Matches[1]
+            $inAiSection = [string]::Equals($section, 'ai', [StringComparison]::OrdinalIgnoreCase)
+            if ($inAiSection) {
+                $seenAiSection = $true
+            }
+
+            $output.Add($line)
+            continue
+        }
+
+        if ($inAiSection -and $line -match '^\s*ai\s*=') {
+            if (-not $wroteAi) {
+                $output.Add("ai     = $AiModule")
+                $wroteAi = $true
+            }
+
+            continue
+        }
+
+        $output.Add($line)
+    }
+
+    if ($inAiSection -and -not $wroteAi) {
+        $output.Add("ai     = $AiModule")
+        $wroteAi = $true
+    }
+
+    if (-not $seenAiSection) {
+        if ($output.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace($output[$output.Count - 1])) {
+            $output.Add('')
+        }
+
+        $output.Add('[ai]')
+        $output.Add("ai     = $AiModule")
+    }
+
+    Set-Content -LiteralPath $iniPath -Value $output -Encoding ASCII
+}
+
 function Assert-RequiredFile([string] $Root, [string] $RelativePath) {
     $path = Join-Path $Root $RelativePath
     if (-not (Test-Path -LiteralPath $path)) {
@@ -255,6 +316,8 @@ Disable-OptionalChaosPlugin $PlayerRuntimeRoot 'APMAlert.bwl'
 Seed-AiRuntime
 Disable-OptionalChaosPlugin $AiRuntimeRoot 'wmode.bwl'
 Disable-OptionalChaosPlugin $AiRuntimeRoot 'APMAlert.bwl'
+Set-BwapiAiModule $PlayerRuntimeRoot ''
+Set-BwapiAiModule $AiRuntimeRoot ''
 Test-Runtime
 
 Write-Host ""

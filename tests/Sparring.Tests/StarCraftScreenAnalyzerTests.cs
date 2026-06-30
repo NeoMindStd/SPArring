@@ -180,6 +180,47 @@ public sealed class StarCraftScreenAnalyzerTests
     }
 
     [Fact]
+    public void AnalyzeTreatsWorldWithCorruptedHudCaptureAsInGame()
+    {
+        using var bitmap = new Bitmap(666, 551);
+        FillRectangle(bitmap, 0, 0, bitmap.Width, bitmap.Height, Color.FromArgb(72, 65, 46));
+        FillRectangle(bitmap, 35, 125, 190, 220, Color.FromArgb(58, 86, 52));
+        FillRectangle(bitmap, 250, 120, 130, 120, Color.FromArgb(182, 134, 64));
+        FillRectangle(bitmap, 272, 246, 96, 48, Color.FromArgb(32, 205, 38));
+        FillRectangle(bitmap, 444, 58, 34, 18, Color.FromArgb(40, 170, 44));
+        FillRectangle(bitmap, 520, 58, 28, 18, Color.FromArgb(176, 142, 50));
+
+        FillRectangle(bitmap, 0, 380, 666, 171, Color.FromArgb(28, 48, 74));
+        FillRectangle(bitmap, 10, 390, 150, 112, Color.FromArgb(4, 4, 7));
+        FillRectangle(bitmap, 180, 420, 250, 80, Color.FromArgb(5, 5, 8));
+        FillRectangle(bitmap, 485, 410, 150, 78, Color.FromArgb(6, 6, 9));
+        FillRectangle(bitmap, 0, 380, 666, 14, Color.FromArgb(180, 18, 18));
+        FillRectangle(bitmap, 145, 438, 280, 22, Color.FromArgb(210, 22, 22));
+        FillRectangle(bitmap, 436, 466, 120, 20, Color.FromArgb(195, 24, 24));
+
+        Assert.Equal(StarCraftScreenState.InGame, StarCraftScreenAnalyzer.Analyze(bitmap));
+    }
+
+    [Fact]
+    public void AnalyzeTreatsDropPlayersOverlayAsBlocked()
+    {
+        using var bitmap = new Bitmap(640, 480);
+        FillRectangle(bitmap, 0, 0, bitmap.Width, 346, Color.FromArgb(90, 74, 46));
+        FillRectangle(bitmap, 0, 346, bitmap.Width, 134, Color.FromArgb(48, 58, 74));
+        FillRectangle(bitmap, 6, 372, 134, 102, Color.FromArgb(4, 4, 7));
+        FillRectangle(bitmap, 154, 394, 260, 78, Color.FromArgb(5, 5, 8));
+        FillRectangle(bitmap, 430, 354, 206, 118, Color.FromArgb(30, 52, 78));
+
+        FillRectangle(bitmap, 170, 40, 300, 250, Color.FromArgb(28, 36, 70));
+        FillRectangle(bitmap, 190, 58, 210, 12, Color.FromArgb(226, 226, 232));
+        FillRectangle(bitmap, 260, 82, 130, 12, Color.FromArgb(226, 226, 232));
+        FillRectangle(bitmap, 220, 238, 220, 28, Color.FromArgb(58, 61, 76));
+        FillRectangle(bitmap, 260, 246, 120, 12, Color.FromArgb(226, 226, 232));
+
+        Assert.Equal(StarCraftScreenState.BlockedDialog, StarCraftScreenAnalyzer.Analyze(bitmap));
+    }
+
+    [Fact]
     public void AnalyzeKeepsCreateScreenWithRedFramesAndDarkBottomAsGameRoom()
     {
         using var bitmap = CreateDarkBitmap();

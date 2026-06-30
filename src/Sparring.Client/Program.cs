@@ -14,7 +14,7 @@ static class Program
 
         if (args.Any(arg => string.Equals(arg, "--audit-compatibility", StringComparison.OrdinalIgnoreCase)))
         {
-            return CompatibilityAuditCommand.Run();
+            return CompatibilityAuditCommand.Run(args);
         }
 
         if (args.Any(arg => string.Equals(arg, "--smoke", StringComparison.OrdinalIgnoreCase)))

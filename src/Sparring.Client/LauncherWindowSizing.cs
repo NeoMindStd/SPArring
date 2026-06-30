@@ -2,7 +2,7 @@ namespace Sparring.Client;
 
 internal static class LauncherWindowSizing
 {
-    public static Size MinimumSize { get; } = new(900, 620);
+    public static Size MinimumSize { get; } = new(760, 520);
 
     public static Size InitialSize(Rectangle workingArea)
     {
@@ -13,8 +13,40 @@ internal static class LauncherWindowSizing
             ? workingArea.Height - 48
             : Math.Min(980, Math.Max(820, (int)Math.Round(workingArea.Height * 0.78)));
 
-        width = Math.Clamp(width, MinimumSize.Width, workingArea.Width);
-        height = Math.Clamp(height, MinimumSize.Height, workingArea.Height);
+        var maxWidth = Math.Max(1, workingArea.Width);
+        var maxHeight = Math.Max(1, workingArea.Height);
+        var minWidth = Math.Min(MinimumSize.Width, maxWidth);
+        var minHeight = Math.Min(MinimumSize.Height, maxHeight);
+
+        width = Math.Clamp(width, minWidth, maxWidth);
+        height = Math.Clamp(height, minHeight, maxHeight);
         return new Size(width, height);
+    }
+}
+
+internal static class LauncherLayoutScale
+{
+    public const int BaseDpi = 96;
+
+    public static int ToBaseDpi(int logicalPixels, int deviceDpi)
+    {
+        if (logicalPixels <= 0)
+        {
+            return 0;
+        }
+
+        var dpi = Math.Max(BaseDpi, deviceDpi);
+        return Math.Max(1, (int)Math.Round(logicalPixels * (double)BaseDpi / dpi));
+    }
+
+    public static int FromBaseDpi(int basePixels, int deviceDpi)
+    {
+        if (basePixels <= 0)
+        {
+            return 0;
+        }
+
+        var dpi = Math.Max(BaseDpi, deviceDpi);
+        return Math.Max(1, (int)Math.Round(basePixels * (double)dpi / BaseDpi));
     }
 }

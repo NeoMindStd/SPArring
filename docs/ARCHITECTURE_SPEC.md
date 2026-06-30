@@ -212,6 +212,8 @@ UI:
   - `CUBOT` + `(4)Fighting Spirit` / `(4)Fighting Spirit 1.4 [Remastered Ladder]`: 2026-06-10 릴리즈 후보 UI 검증 중 AI 런타임 `CUBOT.dll` 접근 위반 크래시 확인.
   - `Stone`: 투혼/Jade/Benzene에서 반복 접근 위반 크래시가 확인되어, 안전성이 다시 검증될 때까지 전체 호환 후보에서 제외.
   - `RedRum`: 로컬 카탈로그/봇 패키지/외부 봇 설명에서 안전하게 허용할 수 있는 지원 맵 목록을 확인하지 못했고, `(4)Fighting Spirit` 계열, `(4)Jade`, `(2)Benzene`, `(2)Destination`, `(2)Heartbreak Ridge`, `(3)Neo Moon Glaive`, `(3)Tau Cross`에서 `RedRum.dll` 접근 위반이 확인되어 검증된 whitelist가 생길 때까지 전체 후보에서 제외한다.
+  - `Chris Coxe`, `Pineapple Cactus`, `Sijia Xu`, `Crona`, `BananaBrain`, `Locutus`, `ZNZZBot`, `DaQin` + `(4)Fighting Spirit` 계열: 2026-06-30 사용자 제보에서 중간 AI drop 또는 일꾼 정지 상태가 확인되어 해당 맵 계열에서 차단한다.
+  - `NeoProtossF`, `NeoTerranF`, `NeoZergF`: 개발 중인 Sparring 내장 연습 봇이므로 래더/랜덤 후보에는 넣지 않지만, 수동 스파링 노출은 유지한다. 제보된 Neo 계열 미숙 동작은 known-bad 맵 차단으로 처리하지 않는다.
   - `Yuanheng Zhu` + `(4)Andromeda`: 2026-06-10 릴리즈 후보 UI 검증 중 AI 런타임 `Juno.dll` 접근 위반 크래시 확인.
 
 주의:

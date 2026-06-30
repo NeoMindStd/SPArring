@@ -82,10 +82,30 @@ function Resolve-BwapiSdk {
     return (Resolve-Path -LiteralPath $sdk).Path
 }
 
+function Use-ExistingNeoBotBinaries([string] $Reason) {
+    $missing = @($neoBots | Where-Object { -not (Test-Path -LiteralPath $_.Destination) })
+    if ($missing.Count -gt 0) {
+        $names = ($missing | ForEach-Object { $_.Name }) -join ', '
+        throw "$Reason Existing Neo bot binaries were not found for: $names"
+    }
+
+    Write-Warning "$Reason Reusing existing bundled Neo bot binaries."
+    foreach ($bot in $neoBots) {
+        Get-Item -LiteralPath $bot.Destination | Select-Object FullName, Length, LastWriteTime
+    }
+}
+
 $sdkRoot = Resolve-BwapiSdk
-$vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+if (-not (Test-Path -LiteralPath $vswhere)) {
+    Use-ExistingNeoBotBinaries "Visual Studio vswhere.exe was not found."
+    return
+}
+
+$vs = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
 if (-not $vs) {
-    throw 'Visual Studio Build Tools with MSBuild were not found. Install Visual Studio 2022 C++ build tools to build Neo bots.'
+    Use-ExistingNeoBotBinaries "Visual Studio Build Tools with MSBuild were not found."
+    return
 }
 
 $env:BWAPI_SDK_ROOT = $sdkRoot

@@ -36,6 +36,40 @@ public sealed class StarCraftGameExitControllerTests
     }
 
     [Fact]
+    public void GracefulAiShutdownRequiresLeaveSequenceAndCleanExit()
+    {
+        var normalLeave = new StarCraftAiShutdownResult(
+            ProcessWasRunning: true,
+            LeaveSequenceSent: true,
+            Exited: true,
+            LeaveConfirmed: true,
+            ForcedKillUsed: false);
+        var cleanCloseAfterLeaveAttempt = normalLeave with { LeaveConfirmed = false };
+        var forcedDisconnect = normalLeave with
+        {
+            LeaveSequenceSent = false,
+            LeaveConfirmed = true,
+            ForcedKillUsed = true
+        };
+
+        Assert.True(StarCraftGameExitController.IsGracefulAiShutdown(
+            normalLeave,
+            processGoneAfterCleanup: true,
+            playerStateAfterAiShutdown: StarCraftScreenState.InGame,
+            runtimeErrorsClean: true));
+        Assert.True(StarCraftGameExitController.IsGracefulAiShutdown(
+            cleanCloseAfterLeaveAttempt,
+            processGoneAfterCleanup: true,
+            playerStateAfterAiShutdown: StarCraftScreenState.MenuLike,
+            runtimeErrorsClean: true));
+        Assert.False(StarCraftGameExitController.IsGracefulAiShutdown(
+            forcedDisconnect,
+            processGoneAfterCleanup: true,
+            playerStateAfterAiShutdown: StarCraftScreenState.InGame,
+            runtimeErrorsClean: true));
+    }
+
+    [Fact]
     public void DisconnectProcessWithoutBwapiLeaveTreatsAlreadyExitedProcessAsClean()
     {
         var result = StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(

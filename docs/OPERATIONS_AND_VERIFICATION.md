@@ -128,6 +128,29 @@ known-bad 봇이 후보에서 빠졌는지는 강제 지정 dry-run이 실패하
 - 이 감사는 정적 파일/카탈로그/기존 런타임 로그 기반 전수검사다.
 - 모든 허용 조합을 실제 StarCraft로 부팅하는 동적 전수검사는 별도 장시간 작업으로 수행한다.
 
+## 봇-맵 매트릭스 검증
+
+릴리즈 번들 기준의 허용 조합은 매트릭스 스크립트로 dry-run 전수검사를 먼저 수행한다.
+
+```powershell
+.\scripts\test-compatible-matrix.ps1 -ValidationMode DryRun
+```
+
+성공 기준:
+
+- `compatibility-audit`가 `--bundled-catalog-only` 기준으로 `issues=0`, `runtimeCrashes=0`을 출력한다.
+- Neo 계열 개발 봇은 기본 매트릭스에서 제외된다. 수동 확인이 필요할 때만 `-IncludeNeo`를 쓴다.
+- 결과 CSV의 `exitCode`가 모두 `0`이어야 한다.
+- 사용자 개인 Remastered ladder/user map 폴더의 맵이 섞이면 안 된다.
+
+특정 조합을 실제 StarCraft로 확인할 때는 범위를 좁혀 Runtime 모드로 실행한다.
+
+```powershell
+.\scripts\test-compatible-matrix.ps1 -ValidationMode Runtime -BotName Stardust -MapName '(4)Fighting Spirit' -ObserveSeconds 90 -NoBuild
+```
+
+Runtime 모드는 로컬 `C:\sparring\SC116AI`와 `C:\sparring\SC116AI_ai`만 대상으로 하며, 사용자가 별도로 실행한 StarCraft/Remastered 창을 정리 대상으로 삼지 않는다.
+
 ## 프로세스 정리 원칙
 
 정리 대상:

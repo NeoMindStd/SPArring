@@ -121,16 +121,16 @@ internal static class SmokeChecks
             return 1;
         }
 
-        ApplicationConfiguration.Initialize();
         var request = SmokeStartRequest.Parse(args ?? []);
         var paths = PracticePaths.Defaults();
-        var cleaner = new LocalRuntimeProcessCleaner();
-        var preExistingStarCraftProcessIds = CurrentStarCraftProcessIds();
+        LocalRuntimeProcessCleaner? cleaner = null;
+        HashSet<int>? preExistingStarCraftProcessIds = null;
+        var runtimeLaunchStarted = false;
         StarCraftStartupTrace? startupTrace = null;
 
         try
         {
-            var catalog = LoadSmokeStartCatalog(paths);
+            var catalog = LoadSmokeStartCatalog(paths, includeConfiguredMaps: !request.BundledCatalogOnly);
             var playerRace = request.PlayerRaceOrDefault();
             var enemyRace = request.EnemyRaceOrDefault();
             var (bot, map) = request.IsLadderMode
@@ -169,11 +169,21 @@ internal static class SmokeChecks
                 return string.IsNullOrEmpty(prepared.Player.AiModule) && aiModuleExists && botBuildOk ? 0 : 1;
             }
 
+            if (ShouldInitializeWinFormsForStart(request.DryRun, request.PrepareOnly))
+            {
+                ApplicationConfiguration.Initialize();
+            }
+
             var screenBounds = Screen.PrimaryScreen?.Bounds ?? new Rectangle(0, 0, 1280, 720);
             var cncDdrawHandlesPlayerDisplay = plan.Player.CncDdrawMode == CncDdrawMode.BorderlessFullscreen;
             var borderlessApplied = false;
+            var playerErrorDirectory = Path.Combine(paths.PlayerRuntimeRoot, "Errors");
             var aiRuntimeErrorSnapshot = RuntimeErrorLogSnapshot.Capture(Path.Combine(aiRoot, "Errors"));
+            var playerRuntimeErrorSnapshot = RuntimeErrorLogSnapshot.Capture(playerErrorDirectory);
             var timing = Stopwatch.StartNew();
+            cleaner = new LocalRuntimeProcessCleaner();
+            preExistingStarCraftProcessIds = CurrentStarCraftProcessIds();
+            runtimeLaunchStarted = true;
             var report = new PracticeSessionLauncher().Launch(
                 plan,
                 PracticeRuntimeOptions.Defaults(),
@@ -259,11 +269,15 @@ internal static class SmokeChecks
             {
                 using var aiMinimizer = new StarCraftWindowMinimizeOnceWhenReady(
                     report.Ai.StarCraftProcessId.Value,
-                    TimeSpan.FromSeconds(3),
+                    TimeSpan.FromSeconds(8),
                     StarCraftScreenDetector.Detect,
                     StarCraftBorderlessWindow.MinimizeProcessWindowWhenReady,
                     startTimer: false);
-                _ = aiMinimizer.StepOnce();
+                while (!aiMinimizer.StepOnce())
+                {
+                    Thread.Sleep(250);
+                }
+
                 Thread.Sleep(300);
                 aiWindowMinimized = StarCraftBorderlessWindow.IsProcessWindowMinimized(report.Ai.StarCraftProcessId.Value);
             }
@@ -277,17 +291,30 @@ internal static class SmokeChecks
             }
 
             var observeMs = 0L;
+            var playerProcessAliveAfterObserve = report.Player.StarCraftProcessId is null ||
+                IsProcessRunning(report.Player.StarCraftProcessId.Value);
+            var aiProcessAliveAfterObserve = report.Ai.StarCraftProcessId is null ||
+                IsProcessRunning(report.Ai.StarCraftProcessId.Value);
+            var playerStateAfterObserve = StarCraftScreenState.Unknown;
+            var aiStateAfterObserve = StarCraftScreenState.Unknown;
             if (request.ObserveSeconds > 0 && inGameDetected && aiInGameDetected)
             {
                 var observeDuration = TimeSpan.FromSeconds(request.ObserveSeconds);
                 PumpWinFormsFor(observeDuration);
                 observeMs = timing.ElapsedMilliseconds;
+                playerProcessAliveAfterObserve = report.Player.StarCraftProcessId is not null &&
+                    IsProcessRunning(report.Player.StarCraftProcessId.Value);
+                aiProcessAliveAfterObserve = report.Ai.StarCraftProcessId is not null &&
+                    IsProcessRunning(report.Ai.StarCraftProcessId.Value);
                 if (report.Ai.StarCraftProcessId is not null)
                 {
                     _ = StarCraftBorderlessWindow.ActivateProcessWindowWhenReady(
                         report.Ai.StarCraftProcessId.Value,
                         TimeSpan.FromSeconds(3));
                     PumpWinFormsFor(TimeSpan.FromMilliseconds(500));
+                    aiStateAfterObserve = StarCraftScreenDetector.Detect(report.Ai.StarCraftProcessId.Value);
+                    aiProcessAliveAfterObserve = aiProcessAliveAfterObserve ||
+                        aiStateAfterObserve != StarCraftScreenState.Unknown;
                 }
 
                 SaveSmokeWindowScreenshot(paths, report.Ai.StarCraftProcessId, "smoke-start-ai-observe.png");
@@ -297,6 +324,9 @@ internal static class SmokeChecks
                         report.Player.StarCraftProcessId.Value,
                         TimeSpan.FromSeconds(3));
                     PumpWinFormsFor(TimeSpan.FromMilliseconds(500));
+                    playerStateAfterObserve = StarCraftScreenDetector.Detect(report.Player.StarCraftProcessId.Value);
+                    playerProcessAliveAfterObserve = playerProcessAliveAfterObserve ||
+                        playerStateAfterObserve != StarCraftScreenState.Unknown;
                 }
 
                 SaveSmokeWindowScreenshot(paths, report.Player.StarCraftProcessId, "smoke-start-player-observe.png");
@@ -309,6 +339,28 @@ internal static class SmokeChecks
                     : StarCraftScreenDetector.Detect(report.Player.StarCraftProcessId.Value);
             SaveSmokeWindowScreenshot(paths, report.Player.StarCraftProcessId, "smoke-start-player-final.png");
 
+            StarCraftAiShutdownResult? playerShutdown = null;
+            var playerCleanupStopped = 0;
+            var playerProcessGoneAfterCleanup = report.Player.StarCraftProcessId is null;
+            if (inGameDetected && report.Player.StarCraftProcessId is not null)
+            {
+                playerShutdown = StarCraftGameExitController.LeaveGameThenCloseProcess(
+                    report.Player.StarCraftProcessId.Value,
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(3));
+
+                Thread.Sleep(1000);
+                if (!playerShutdown.Exited)
+                {
+                    playerCleanupStopped = cleaner.StopKnown(report.Player.StarCraftProcessId.Value);
+                }
+
+                StarCraftGameExitController.RemoveExpectedShutdownCrashes(
+                    playerErrorDirectory,
+                    StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
+                playerProcessGoneAfterCleanup = !IsProcessRunning(report.Player.StarCraftProcessId.Value);
+            }
+
             StarCraftAiShutdownResult? aiShutdown = null;
             var playerStateAfterAiShutdown = StarCraftScreenState.Unknown;
             var aiCleanupStopped = 0;
@@ -316,10 +368,10 @@ internal static class SmokeChecks
             var aiErrorDirectory = Path.Combine(aiRoot, "Errors");
             if (aiInGameDetected && report.Ai.StarCraftProcessId is not null)
             {
-                aiShutdown = StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(
+                aiShutdown = StarCraftGameExitController.LeaveGameThenCloseProcess(
                     report.Ai.StarCraftProcessId.Value,
                     TimeSpan.FromSeconds(8),
-                    aiErrorDirectory);
+                    TimeSpan.FromSeconds(8));
 
                 Thread.Sleep(1500);
                 if (!aiShutdown.Exited)
@@ -331,7 +383,8 @@ internal static class SmokeChecks
                     aiErrorDirectory,
                     StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
                 aiProcessGoneAfterCleanup = !IsProcessRunning(report.Ai.StarCraftProcessId.Value);
-                if (report.Player.StarCraftProcessId is not null)
+                if (report.Player.StarCraftProcessId is not null &&
+                    IsProcessRunning(report.Player.StarCraftProcessId.Value))
                 {
                     _ = StarCraftBorderlessWindow.ActivateProcessWindowWhenReady(
                         report.Player.StarCraftProcessId.Value,
@@ -344,19 +397,37 @@ internal static class SmokeChecks
             var newAiRuntimeErrors = RuntimeErrorLogSnapshot.Capture(Path.Combine(aiRoot, "Errors"))
                 .FindNewOrChanged(aiRuntimeErrorSnapshot);
             var aiRuntimeErrorsClean = newAiRuntimeErrors.Count == 0;
+            var newPlayerRuntimeErrors = RuntimeErrorLogSnapshot.Capture(playerErrorDirectory)
+                .FindNewOrChanged(playerRuntimeErrorSnapshot);
+            var playerRuntimeErrorsClean = newPlayerRuntimeErrors.Count == 0;
+            var playerGracefulShutdown = playerShutdown is null ||
+                StarCraftGameExitController.IsGracefulAiShutdown(
+                    playerShutdown,
+                    playerProcessGoneAfterCleanup,
+                    StarCraftScreenState.Unknown,
+                    playerRuntimeErrorsClean);
             var aiShutdownExitedFinal = aiShutdown is { Exited: true } || aiProcessGoneAfterCleanup;
-            var aiGracefulShutdown = aiShutdown is not null &&
-                                     aiProcessGoneAfterCleanup &&
-                                     playerStateAfterAiShutdown != StarCraftScreenState.BlockedDialog &&
-                                     aiRuntimeErrorsClean;
+            var aiGracefulShutdown = StarCraftGameExitController.IsGracefulAiShutdown(
+                aiShutdown,
+                aiProcessGoneAfterCleanup,
+                playerStateAfterAiShutdown,
+                aiRuntimeErrorsClean);
+            var observeStable = SmokeStartObservationPolicy.IsStableAfterObserve(
+                request.ObserveSeconds,
+                playerProcessAliveAfterObserve,
+                aiProcessAliveAfterObserve,
+                playerStateAfterObserve,
+                aiStateAfterObserve);
 
             var passed = report.Player.CompletedStartCount > 0 &&
                          report.Ai.CompletedStartCount > 0 &&
                          borderlessApplied &&
                          inGameDetected &&
                          aiInGameDetected &&
+                         observeStable &&
                          aiWindowMinimized &&
                          timerOverlayVisible &&
+                         playerGracefulShutdown &&
                          aiGracefulShutdown;
             Console.Error.WriteLine(
                 $"smoke-start: bot={bot.Name}, map={map.Name}, playerStarts={report.Player.CompletedStartCount}, aiStarts={report.Ai.CompletedStartCount}, " +
@@ -365,6 +436,12 @@ internal static class SmokeChecks
                 $"borderless={borderlessApplied}, playerState={playerState}, aiState={aiState}, inGame={inGameDetected}, aiInGame={aiInGameDetected}, aiMinimized={aiWindowMinimized}, " +
                 $"timerOverlay={timerOverlayVisible}, playerHudMs={playerHudDetectedMs}, overlayStartMs={overlayStartedMs}, " +
                 $"overlayShotMs={overlayScreenshotMs}, aiHudMs={aiHudDetectedMs}, observeSeconds={request.ObserveSeconds}, observeMs={observeMs}, " +
+                $"observeStable={observeStable}, playerAliveAfterObserve={playerProcessAliveAfterObserve}, aiAliveAfterObserve={aiProcessAliveAfterObserve}, " +
+                $"playerStateAfterObserve={playerStateAfterObserve}, aiStateAfterObserve={aiStateAfterObserve}, " +
+                $"playerShutdownSent={playerShutdown?.LeaveSequenceSent.ToString() ?? "null"}, playerShutdownExited={playerProcessGoneAfterCleanup}, " +
+                $"playerLeaveConfirmed={playerShutdown?.LeaveConfirmed.ToString() ?? "null"}, playerForcedKill={playerShutdown?.ForcedKillUsed.ToString() ?? "null"}, " +
+                $"playerCleanupStopped={playerCleanupStopped}, playerRuntimeErrorsClean={playerRuntimeErrorsClean}, " +
+                $"playerRuntimeErrorFiles={RuntimeErrorLogSnapshot.Format(newPlayerRuntimeErrors)}, playerGracefulShutdown={playerGracefulShutdown}, " +
                 $"aiShutdownSent={aiShutdown?.LeaveSequenceSent.ToString() ?? "null"}, aiShutdownExited={aiShutdownExitedFinal}, " +
                 $"aiLeaveConfirmed={aiShutdown?.LeaveConfirmed.ToString() ?? "null"}, aiForcedKill={aiShutdown?.ForcedKillUsed.ToString() ?? "null"}, " +
                 $"aiCleanupStopped={aiCleanupStopped}, aiProcessGoneAfterCleanup={aiProcessGoneAfterCleanup}, " +
@@ -383,15 +460,22 @@ internal static class SmokeChecks
         finally
         {
             startupTrace?.Dispose();
-            cleaner.Stop(paths.PlayerRuntimeRoot, paths.AiRuntimeRoot);
-            StopNewStarCraftProcesses(preExistingStarCraftProcessIds);
-            StarCraftGameExitController.RemoveExpectedShutdownCrashes(
-                Path.Combine(paths.PlayerRuntimeRoot, "Errors"),
-                FinalPlayerShutdownCrashCleanupRetryWindow,
-                FinalPlayerShutdownCrashInitialQuietWindow);
-            StarCraftGameExitController.RemoveExpectedShutdownCrashes(
-                Path.Combine(paths.AiRuntimeRoot, "Errors"),
-                StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
+            if (ShouldRunRuntimeCleanupForStart(runtimeLaunchStarted))
+            {
+                cleaner?.Stop(paths.PlayerRuntimeRoot, paths.AiRuntimeRoot);
+                if (preExistingStarCraftProcessIds is not null)
+                {
+                    StopNewStarCraftProcesses(preExistingStarCraftProcessIds);
+                }
+
+                StarCraftGameExitController.RemoveExpectedShutdownCrashes(
+                    Path.Combine(paths.PlayerRuntimeRoot, "Errors"),
+                    FinalPlayerShutdownCrashCleanupRetryWindow,
+                    FinalPlayerShutdownCrashInitialQuietWindow);
+                StarCraftGameExitController.RemoveExpectedShutdownCrashes(
+                    Path.Combine(paths.AiRuntimeRoot, "Errors"),
+                    StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
+            }
         }
     }
 
@@ -500,10 +584,18 @@ internal static class SmokeChecks
             ?? throw new InvalidOperationException($"Smoke bot was not found or has no supported maps: {requestedName}");
     }
 
-    private static PracticeCatalog LoadSmokeStartCatalog(PracticePaths paths)
+    internal static PracticeCatalog LoadSmokeStartCatalog(
+        PracticePaths paths,
+        SparringSettings? settings = null,
+        bool includeConfiguredMaps = true)
     {
         var baseCatalog = PracticeAssetCatalogReader.Read(paths);
-        var settings = SparringSettingsStore.Default().Load();
+        if (!includeConfiguredMaps)
+        {
+            return baseCatalog;
+        }
+
+        settings ??= SparringSettingsStore.Default().Load();
         var ladderMapRoot = string.IsNullOrWhiteSpace(settings.LadderMapRoot)
             ? RemasteredLadderMapCatalogReader.DefaultDirectory()
             : settings.LadderMapRoot;
@@ -512,6 +604,16 @@ internal static class SmokeChecks
         return UserMapCatalogReader.Merge(
             UserMapCatalogReader.Merge(baseCatalog, ladderMaps),
             userMaps);
+    }
+
+    internal static bool ShouldInitializeWinFormsForStart(bool dryRun, bool prepareOnly)
+    {
+        return !dryRun && !prepareOnly;
+    }
+
+    internal static bool ShouldRunRuntimeCleanupForStart(bool runtimeLaunchStarted)
+    {
+        return runtimeLaunchStarted;
     }
 
     private static (PracticeBot Bot, PracticeMap Map) ResolveSmokeSparringSelection(
@@ -576,7 +678,8 @@ internal static class SmokeChecks
         string? BotBuildId,
         int ObserveSeconds,
         bool DryRun,
-        bool PrepareOnly)
+        bool PrepareOnly,
+        bool BundledCatalogOnly)
     {
         public bool IsLadderMode =>
             string.Equals(Mode, "Ladder", StringComparison.OrdinalIgnoreCase) ||
@@ -595,7 +698,8 @@ internal static class SmokeChecks
                 ValueAfter(args, "--bot-build"),
                 ParseObserveSeconds(ValueAfter(args, "--observe-seconds")),
                 args.Any(arg => string.Equals(arg, "--dry-run", StringComparison.OrdinalIgnoreCase)),
-                args.Any(arg => string.Equals(arg, "--prepare-only", StringComparison.OrdinalIgnoreCase)));
+                args.Any(arg => string.Equals(arg, "--prepare-only", StringComparison.OrdinalIgnoreCase)),
+                args.Any(arg => string.Equals(arg, "--bundled-catalog-only", StringComparison.OrdinalIgnoreCase)));
         }
 
         public StarCraftRace PlayerRaceOrDefault()
@@ -787,6 +891,8 @@ internal static class SmokeChecks
     {
         return
         [
+            ("narrow", new Size(760, 560)),
+            ("short", new Size(980, 540)),
             ("compact", new Size(980, 700)),
             ("default", new Size(1180, 820)),
             ("fhd", new Size(1600, 900)),
@@ -817,10 +923,138 @@ internal static class SmokeChecks
         }
 
         layoutIssues.AddRange(FindLayoutIssues(form).Select(issue => $"{tabName} {sizeName}: {issue}"));
+        layoutIssues.AddRange(FindHorizontalPageScrollIssues(selectedTab)
+            .Select(issue => $"{tabName} {sizeName}: {issue}"));
+        if (tabName.StartsWith("game-", StringComparison.Ordinal))
+        {
+            layoutIssues.AddRange(FindGameTabScaleIssues(selectedTab)
+                .Select(issue => $"{tabName} {sizeName}: {issue}"));
+        }
+        else if (tabName == "hotkeys")
+        {
+            layoutIssues.AddRange(FindHotkeyTabReadabilityIssues(selectedTab)
+                .Select(issue => $"{tabName} {sizeName}: {issue}"));
+        }
+        else if (tabName == "history")
+        {
+            layoutIssues.AddRange(FindHistoryTabReadabilityIssues(selectedTab)
+                .Select(issue => $"{tabName} {sizeName}: {issue}"));
+        }
+
         layoutIssues.AddRange(FindImportantOverlapIssues(selectedTab)
             .Select(issue => $"{tabName} {sizeName}: {issue}"));
 
         SaveFormScreenshot(form, Path.Combine(screenshotDirectory, $"sparring-launcher-{tabName}-{sizeName}-smoke.png"));
+    }
+
+    private static IEnumerable<string> FindHorizontalPageScrollIssues(TabPage page)
+    {
+        if (!page.AutoScroll)
+        {
+            yield break;
+        }
+
+        var horizontalScrollBudget = Math.Max(12, SystemInformation.VerticalScrollBarWidth);
+        if (page.AutoScrollMinSize.Width > page.ClientSize.Width + horizontalScrollBudget)
+        {
+            yield return $"page creates a horizontal scroll area. clientWidth={page.ClientSize.Width}, scrollWidth={page.AutoScrollMinSize.Width}.";
+        }
+
+        foreach (Control control in page.Controls)
+        {
+            if (!control.Visible || control.Left < 0)
+            {
+                continue;
+            }
+
+            if (control.Right > page.ClientSize.Width + horizontalScrollBudget)
+            {
+                yield return $"{DescribeControl(control)} extends past the visible page width. right={control.Right}, clientWidth={page.ClientSize.Width}.";
+            }
+        }
+    }
+
+    private static IEnumerable<string> FindGameTabScaleIssues(TabPage page)
+    {
+        var scaledWidth = LauncherLayoutScale.ToBaseDpi(page.ClientSize.Width, page.DeviceDpi);
+        var scaledHeight = LauncherLayoutScale.ToBaseDpi(page.ClientSize.Height, page.DeviceDpi);
+
+        if (scaledWidth < 700)
+        {
+            yield break;
+        }
+
+        var mapPreview = FindControls<PictureBox>(page)
+            .FirstOrDefault(control => string.Equals(control.Name, "MapPreviewBox", StringComparison.Ordinal));
+        var minimumPreviewSize = scaledWidth >= 1400
+            ? scaledHeight >= 760 ? 360 : 320
+            : 300;
+        if (mapPreview is not null && mapPreview.Width < minimumPreviewSize)
+        {
+            yield return $"{DescribeControl(mapPreview)} is too small for a large game tab. size={mapPreview.Size}, page={page.ClientSize}.";
+        }
+
+        var runtimeBox = FindControls<TextBox>(page)
+            .FirstOrDefault(textBox => textBox.Multiline && textBox.Text.StartsWith("사람:", StringComparison.Ordinal));
+        if (runtimeBox is not null && runtimeBox.Height < 70)
+        {
+            yield return $"{DescribeControl(runtimeBox)} is too short for runtime paths on a large game tab. size={runtimeBox.Size}, page={page.ClientSize}.";
+        }
+
+        if (scaledWidth >= 1400)
+        {
+            var minimumListWidth = scaledWidth >= 1900 ? 520 : 480;
+            foreach (var listName in new[] { "BotList", "MapList" })
+            {
+                var list = FindControls<ListBox>(page)
+                    .FirstOrDefault(control => string.Equals(control.Name, listName, StringComparison.Ordinal));
+                if (list is not null && list.Width < minimumListWidth)
+                {
+                    yield return $"{DescribeControl(list)} is too narrow for readable selection on a large game tab. width={list.Width}, minimum={minimumListWidth}, page={page.ClientSize}.";
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<string> FindHotkeyTabReadabilityIssues(TabPage page)
+    {
+        var scaledWidth = LauncherLayoutScale.ToBaseDpi(page.ClientSize.Width, page.DeviceDpi);
+        if (scaledWidth < 700)
+        {
+            yield break;
+        }
+
+        var objectList = FindControls<ListBox>(page)
+            .FirstOrDefault(control => string.Equals(control.Name, "HotkeyObjectList", StringComparison.Ordinal));
+        objectList ??= FindControls<ListBox>(page)
+            .OrderBy(control => control.Left)
+            .FirstOrDefault();
+        if (objectList is not null && objectList.Width < 320)
+        {
+            yield return $"{DescribeControl(objectList)} is too narrow for readable hotkey objects. width={objectList.Width}, page={page.ClientSize}.";
+        }
+    }
+
+    private static IEnumerable<string> FindHistoryTabReadabilityIssues(TabPage page)
+    {
+        var grid = FindControls<DataGridView>(page).FirstOrDefault();
+        if (grid is null ||
+            LauncherLayoutScale.ToBaseDpi(grid.Width, page.DeviceDpi) >= 1220)
+        {
+            yield break;
+        }
+
+        foreach (DataGridViewColumn column in grid.Columns)
+        {
+            if (column.Visible &&
+                column.DataPropertyName is nameof(PracticeSessionRecord.ActionCount)
+                    or nameof(PracticeSessionRecord.MatchupText)
+                    or nameof(PracticeSessionRecord.RatingText)
+                    or nameof(PracticeSessionRecord.ResultSourceText))
+            {
+                yield return $"{DescribeControl(grid)} keeps low-priority column '{column.HeaderText}' visible in a medium/narrow history tab.";
+            }
+        }
     }
 
     private static IEnumerable<string> FindImportantOverlapIssues(Control root)
@@ -857,6 +1091,11 @@ internal static class SmokeChecks
 
     private static bool IsToleratedEdgeOverlap(Control left, Control right, Rectangle intersection)
     {
+        if (left is TrackBar && right is TrackBar && intersection.Height <= 4)
+        {
+            return true;
+        }
+
         if (left is not Label && right is not Label)
         {
             return false;
@@ -1009,7 +1248,7 @@ internal static class SmokeChecks
         bool HasMapPreviewImage,
         IReadOnlyList<string> LayoutIssues);
 
-    private sealed record RuntimeErrorLogSnapshot(IReadOnlyDictionary<string, RuntimeErrorLogEntry> Entries)
+    internal sealed record RuntimeErrorLogSnapshot(IReadOnlyDictionary<string, RuntimeErrorLogEntry> Entries)
     {
         public static RuntimeErrorLogSnapshot Capture(string errorDirectory)
         {
@@ -1020,6 +1259,7 @@ internal static class SmokeChecks
 
             var entries = Directory.EnumerateFiles(errorDirectory)
                 .Where(path => Path.GetExtension(path) is ".txt" or ".ERR" or ".err")
+                .Where(path => !IsIgnorableRuntimeErrorFile(path))
                 .Select(path =>
                 {
                     var info = new FileInfo(path);
@@ -1029,6 +1269,37 @@ internal static class SmokeChecks
                 })
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
             return new RuntimeErrorLogSnapshot(entries);
+        }
+
+        internal static bool IsIgnorableRuntimeErrorFile(string path)
+        {
+            if (!Path.GetFileName(path).Equals("bwapi-error.txt", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            string[] lines;
+            try
+            {
+                lines = File.ReadAllLines(path);
+            }
+            catch
+            {
+                return false;
+            }
+
+            var meaningfulLines = lines
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .ToArray();
+            return meaningfulLines.Length > 0 &&
+                   meaningfulLines.All(IsExpectedMissingHumanAiModuleLine);
+        }
+
+        private static bool IsExpectedMissingHumanAiModuleLine(string line)
+        {
+            return line.Contains("Could not find ai under ai", StringComparison.OrdinalIgnoreCase) &&
+                   line.Contains("bwapi-data", StringComparison.OrdinalIgnoreCase) &&
+                   line.Contains("bwapi.ini", StringComparison.OrdinalIgnoreCase);
         }
 
         public IReadOnlyList<string> FindNewOrChanged(RuntimeErrorLogSnapshot baseline)
@@ -1049,7 +1320,7 @@ internal static class SmokeChecks
         }
     }
 
-    private sealed record RuntimeErrorLogEntry(long Length, DateTime LastWriteTimeUtc);
+    internal sealed record RuntimeErrorLogEntry(long Length, DateTime LastWriteTimeUtc);
 
     private const int ShowWindowHide = 0;
     private const int ShowWindowNoActivate = 4;

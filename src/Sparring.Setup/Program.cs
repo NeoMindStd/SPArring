@@ -20,11 +20,16 @@ internal static class Program
         var screenshotPath = args[1];
         var fontSize = 9F;
         var validate = false;
+        Size? requestedSize = null;
         for (var index = 2; index < args.Length; index++)
         {
             if (args[index] == "--font-size" && index + 1 < args.Length)
             {
                 fontSize = float.Parse(args[++index], System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else if (args[index] == "--size" && index + 1 < args.Length)
+            {
+                requestedSize = ParseSize(args[++index]);
             }
             else if (args[index] == "--validate")
             {
@@ -37,6 +42,11 @@ internal static class Program
         form.ShowInTaskbar = false;
         form.StartPosition = FormStartPosition.Manual;
         form.Location = new Point(-32000, -32000);
+        if (requestedSize is { } size)
+        {
+            form.Size = size;
+        }
+
         form.Show();
         form.Refresh();
         Application.DoEvents();
@@ -61,6 +71,21 @@ internal static class Program
 
         form.Close();
         return 0;
+    }
+
+    private static Size ParseSize(string value)
+    {
+        var parts = value.Split('x', 'X');
+        if (parts.Length != 2 ||
+            !int.TryParse(parts[0], out var width) ||
+            !int.TryParse(parts[1], out var height) ||
+            width <= 0 ||
+            height <= 0)
+        {
+            throw new ArgumentException("Size must use WIDTHxHEIGHT format.", nameof(value));
+        }
+
+        return new Size(width, height);
     }
 
     private static IEnumerable<string> FindLayoutIssues(Control root)
@@ -89,6 +114,19 @@ internal static class Program
                     preferred.Height + 8 > button.ClientSize.Height)
                 {
                     yield return $"{Describe(button)} text does not fit. Text='{button.Text}', preferred={preferred}, size={button.ClientSize}.";
+                }
+            }
+
+            if (control is Label label && !label.AutoSize && !string.IsNullOrWhiteSpace(label.Text))
+            {
+                var preferred = TextRenderer.MeasureText(
+                    label.Text,
+                    label.Font,
+                    new Size(Math.Max(1, label.ClientSize.Width), int.MaxValue),
+                    TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
+                if (preferred.Height > label.ClientSize.Height + 4)
+                {
+                    yield return $"{Describe(label)} text is clipped. Text='{label.Text}', preferred={preferred}, size={label.ClientSize}.";
                 }
             }
 

@@ -97,6 +97,22 @@ public sealed class PracticeCatalogCompatibilityTests
     [InlineData("Zia bot", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("LetaBot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("LetaBot", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Chris Coxe", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Chris Coxe", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Pineapple Cactus", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Pineapple Cactus", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Sijia Xu", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Sijia Xu", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Crona", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Crona", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("BananaBrain", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("BananaBrain", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Locutus", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Locutus", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("ZNZZBot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("ZNZZBot", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("DaQin", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("DaQin", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("Stone", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("Stone", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("Stone", "(4)Jade", "(4)Jade.scx")]
@@ -238,6 +254,56 @@ public sealed class PracticeCatalogCompatibilityTests
         Assert.True(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));
     }
 
+    [Fact]
+    public void BundledCatalogAppliesReportedFightingSpiritFeedback()
+    {
+        var repo = FindRepositoryRoot();
+        var catalog = PracticeAssetCatalogReader.Read(Path.Combine(repo, "data"));
+        var fightingSpiritMaps = catalog.Maps
+            .Where(map => IsFightingSpiritVariant(map))
+            .ToArray();
+
+        Assert.Contains(fightingSpiritMaps, map => map.Name == "(4)Fighting Spirit");
+        Assert.Contains(fightingSpiritMaps, map => map.Name == "(4)Fighting Spirit 1.4");
+
+        foreach (var botName in ReportedFightingSpiritBadBots)
+        {
+            var bot = Assert.Single(catalog.Bots, bot => bot.Name == botName);
+            foreach (var map in fightingSpiritMaps)
+            {
+                Assert.False(PracticeCatalogCompatibility.IsCompatible(catalog, bot.Id, map.Id), $"{botName} + {map.Name}");
+                Assert.DoesNotContain(PracticeCatalogCompatibility.MapsForBot(catalog, bot.Id), candidate => candidate.Id == map.Id);
+                Assert.DoesNotContain(PracticeCatalogCompatibility.BotsForMap(catalog, map.Id), candidate => candidate.Id == bot.Id);
+            }
+        }
+
+        var fightingSpirit = Assert.Single(catalog.Maps, map => map.Name == "(4)Fighting Spirit");
+        foreach (var botName in new[] { "Stardust", "skyFORKnet" })
+        {
+            var bot = Assert.Single(catalog.Bots, bot => bot.Name == botName);
+            Assert.True(PracticeCatalogCompatibility.IsCompatible(catalog, bot.Id, fightingSpirit.Id), botName);
+        }
+    }
+
+    [Theory]
+    [InlineData("NeoProtossF")]
+    [InlineData("NeoTerranF")]
+    [InlineData("NeoZergF")]
+    public void NeoPracticeBotsRemainSelectableOnFightingSpirit(string botName)
+    {
+        var mapId = Guid.NewGuid();
+        var botId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(botId, botName, mapId)
+            ],
+            [
+                new PracticeMap(mapId, "(4)Fighting Spirit", "(4)Fighting Spirit.scx", null, true)
+            ]);
+
+        Assert.True(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));
+    }
+
     private static PracticeBot Bot(Guid id, params Guid[] supportedMaps)
     {
         return Bot(id, "TestBot", supportedMaps);
@@ -268,4 +334,39 @@ public sealed class PracticeCatalogCompatibilityTests
         "Randomhammer",
         "Steamhammer"
     ];
+
+    private static readonly string[] ReportedFightingSpiritBadBots =
+    [
+        "Chris Coxe",
+        "Pineapple Cactus",
+        "Sijia Xu",
+        "Crona",
+        "BananaBrain",
+        "Locutus",
+        "ZNZZBot",
+        "DaQin"
+    ];
+
+    private static bool IsFightingSpiritVariant(PracticeMap map)
+    {
+        return map.Name.Contains("Fighting Spirit", StringComparison.OrdinalIgnoreCase) ||
+            map.FileName.Replace("_", " ", StringComparison.Ordinal).Contains("Fighting Spirit", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Sparring.sln")) &&
+                Directory.Exists(Path.Combine(directory.FullName, "data")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate Sparring repository root.");
+    }
 }

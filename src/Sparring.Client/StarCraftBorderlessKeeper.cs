@@ -154,7 +154,10 @@ internal sealed class StarCraftWindowMinimizeOnceWhenReady : IDisposable
 
         if (decision == AiWindowMinimizeDecision.MinimizeOnce)
         {
-            _ = _minimize(_processId, TimeSpan.FromMilliseconds(250));
+            if (!_minimize(_processId, TimeSpan.FromMilliseconds(500)))
+            {
+                return false;
+            }
         }
 
         Dispose();

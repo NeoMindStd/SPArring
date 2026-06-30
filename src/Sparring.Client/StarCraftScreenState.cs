@@ -114,15 +114,30 @@ internal static class StarCraftScreenAnalyzer
         var hudDarkPanelRatio = bottomSamples == 0 ? 0 : hudDarkPanelPixels / (double)bottomSamples;
         var hudDetected = hudRatio >= 0.02 || hudPanelRatio >= 0.08;
         var strongHudDetected = hudDetected && hudDarkPanelRatio >= 0.04;
-        if (strongHudDetected && roomFrameRatio < 0.0022)
+        var dialogLightRatio = centralSamples == 0 ? 0 : dialogLightPixels / (double)centralSamples;
+        var centralDialogFrameRatio = centralSamples == 0 ? 0 : centralDialogFramePixels / (double)centralSamples;
+        var preGamePanelRatio = centralSamples == 0 ? 0 : preGamePanelPixels / (double)centralSamples;
+        var centralBlueOverlayDetected = preGamePanelRatio >= 0.10;
+        var dialogDetected = dialogLightRatio >= 0.025 ||
+                             dialogLightRatio >= 0.008 && centralDialogFrameRatio >= 0.0008 ||
+                             hudDetected && centralBlueOverlayDetected;
+        if (strongHudDetected && !dialogDetected && roomFrameRatio < 0.0022)
         {
             return StarCraftScreenState.InGame;
         }
 
-        var dialogLightRatio = centralSamples == 0 ? 0 : dialogLightPixels / (double)centralSamples;
-        var centralDialogFrameRatio = centralSamples == 0 ? 0 : centralDialogFramePixels / (double)centralSamples;
-        var dialogDetected = dialogLightRatio >= 0.025 ||
-                             dialogLightRatio >= 0.008 && centralDialogFrameRatio >= 0.0008;
+        var worldWithHudDetected = hudDetected &&
+                                   gameWorldRatio >= 0.12 &&
+                                   roomFrameRatio < 0.20;
+        var worldDominantInGameDetected = gameWorldRatio >= 0.08 &&
+                                          roomFrameRatio < 0.20 &&
+                                          menuGreenRatio >= 0.0015;
+        if ((worldWithHudDetected || worldDominantInGameDetected) &&
+            (!dialogDetected || dialogLightRatio < 0.14 && !centralBlueOverlayDetected))
+        {
+            return StarCraftScreenState.InGame;
+        }
+
         if (dialogDetected)
         {
             if (strongHudDetected && dialogLightRatio < 0.06)
@@ -160,7 +175,6 @@ internal static class StarCraftScreenAnalyzer
             return StarCraftScreenState.InGame;
         }
 
-        var preGamePanelRatio = centralSamples == 0 ? 0 : preGamePanelPixels / (double)centralSamples;
         if (preGamePanelRatio >= 0.12)
         {
             return StarCraftScreenState.PreGameWait;

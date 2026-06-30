@@ -48,4 +48,20 @@ public sealed class AiWindowMinimizePolicyTests
         Assert.True(minimizer.StepOnce());
         Assert.Equal(1, minimizeCalls);
     }
+
+    [Fact]
+    public void StepOnceRetriesWhenWindowIsNotReadyYet()
+    {
+        var minimizeCalls = 0;
+        using var minimizer = new StarCraftWindowMinimizeOnceWhenReady(
+            123,
+            TimeSpan.FromSeconds(5),
+            _ => StarCraftScreenState.InGame,
+            (_, _) => ++minimizeCalls >= 2,
+            startTimer: false);
+
+        Assert.False(minimizer.StepOnce());
+        Assert.True(minimizer.StepOnce());
+        Assert.Equal(2, minimizeCalls);
+    }
 }

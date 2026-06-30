@@ -72,3 +72,6 @@ Invoke-NativeChecked -Name 'setup UI large-font smoke' -Command {
 Invoke-NativeChecked -Name 'setup UI extra-large-font smoke' -Command {
     dotnet $setupDll --ui-smoke (Join-Path $screenshotRoot 'setup-ui-extra-large-font.png') --font-size 18 --validate
 }
+Invoke-NativeChecked -Name 'setup UI compact large-font smoke' -Command {
+    dotnet $setupDll --ui-smoke (Join-Path $screenshotRoot 'setup-ui-compact-large-font.png') --size 620x460 --font-size 15 --validate
+}

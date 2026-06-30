@@ -5,7 +5,7 @@
 1. StarCraft 1.16.1 원본 클라이언트를 먼저 준비합니다.
    - [SSCAIT/BWAPI](https://sscaitournament.com/index.php?action=tutorial), [Dave Churchill AI 자료실](https://davechurchill.ca/starcraft/resources/), [StarEdit Network 안내 글](https://staredit.net/topic/17625/), [iCCup 시작 페이지](https://iccup.com/sc_start.html) 중 1곳에서 클라이언트를 설치해주세요.
    - 기존에 1.16.1 클라이언트가 설치되어 있었다면 이 단계를 스킵하셔도 무관합니다.
-   - 설치 프로그램에서 이 원본 폴더를 직접 지정해야 합니다.
+   - 준비한 폴더를 열었을 때 `StarCraft.exe`, `stardat.mpq`, `broodat.mpq`, `patch_rt.mpq`가 바로 보이는 폴더를 설치 프로그램에서 직접 지정해야 합니다.
 2. GitHub Releases에서 `Sparring-{{VERSION}}-setup.exe`를 다운로드합니다.
 3. 설치 프로그램을 실행합니다.
 4. 선택 구성요소를 확인합니다. VC++ x86 런타임은 봇 호환성을 위해 권장하고, Java 런타임은 커스텀 단축키 반영에 필요합니다.

@@ -22,7 +22,7 @@ public sealed class PracticeLaunchPlanBuilderTests
         var plan = PracticeLaunchPlanBuilder.Build(catalog, SafePaths(), selection);
 
         Assert.Equal(string.Empty, plan.Player.AiModule);
-        Assert.Equal("BananaBrain.dll", plan.Ai.AiModule);
+        Assert.Equal("Stardust.dll", plan.Ai.AiModule);
         Assert.True(plan.Player.SoundEnabled);
         Assert.False(plan.Ai.SoundEnabled);
         Assert.False(plan.Player.WindowedMode);
@@ -75,7 +75,7 @@ public sealed class PracticeLaunchPlanBuilderTests
 
         var plan = PracticeLaunchPlanBuilder.Build(catalog, SafePaths(), selection);
 
-        Assert.Equal("BananaBrain", plan.Ai.CharacterName);
+        Assert.Equal("Stardust", plan.Ai.CharacterName);
     }
 
     [Fact]
@@ -165,9 +165,9 @@ public sealed class PracticeLaunchPlanBuilderTests
             [
                 new PracticeBot(
                     botId,
-                    "BananaBrain",
-                    StarCraftRace.Zerg,
-                    "BananaBrain.dll",
+                    "Stardust",
+                    StarCraftRace.Protoss,
+                    "Stardust.dll",
                     BotExecutableKind.Dll,
                     "4.4.0",
                     961,

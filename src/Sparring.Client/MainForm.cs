@@ -472,12 +472,17 @@ public sealed class MainForm : Form
 
         var pad = 16;
         var gap = 16;
-        var width = Math.Max(900, page.ClientSize.Width - pad);
+        var width = Math.Max(1, page.ClientSize.Width);
         var compact = width < 1100;
         var height = Math.Max(compact ? 500 : 560, page.ClientSize.Height);
 
-        var leftWidth = compact ? 318 : 340;
-        var middleWidth = compact ? Math.Min(248, Math.Max(206, (width - leftWidth - (pad * 2) - (gap * 2)) / 2)) : 260;
+        var leftWidth = compact
+            ? Math.Min(318, Math.Max(248, (width - (pad * 2) - gap) / 2))
+            : width >= 1900 ? 520 : width >= 1400 ? 480 : 340;
+        var largePreviewTarget = width >= 1900 ? 420 : width >= 1400 ? 360 : 300;
+        var middleWidth = compact
+            ? Math.Min(248, Math.Max(190, (width - leftWidth - (pad * 2) - (gap * 2)) / 2))
+            : Math.Min(largePreviewTarget, Math.Max(280, (width - leftWidth - (pad * 2) - (gap * 2)) / 3));
         var rightX = compact
             ? pad + leftWidth + gap
             : pad + leftWidth + gap + middleWidth + gap;
@@ -517,25 +522,38 @@ public sealed class MainForm : Form
         var topControlX = rightX;
         var topControlWidth = Math.Max(280, rightWidth - 104);
         raceLabel?.SetBounds(topControlX, 24, 76, 24);
-        _playerRaceCombo.SetBounds(topControlX + 86, 18, Math.Min(150, topControlWidth - 92), 30);
+        var raceComboWidth = compact
+            ? Math.Max(80, Math.Min(150, width - pad - 124 - gap - (topControlX + 86)))
+            : Math.Min(150, topControlWidth - 92);
+        _playerRaceCombo.SetBounds(topControlX + 86, 18, raceComboWidth, 30);
         _buildLabel?.SetBounds(topControlX, 68, 76, 24);
         _buildCombo.SetBounds(topControlX + 86, 62, Math.Min(260, topControlWidth - 92), 30);
         refreshButton?.SetBounds(width - pad - 124, 18, 124, 34);
 
+        var runtimeTop = 150;
         _ladderRatingLabel.SetBounds(topControlX, 112, 118, 28);
         _ladderRatingText.SetBounds(topControlX + 126, 106, 70, 30);
         _applyRatingButton.SetBounds(topControlX + 206, 104, 80, 34);
-        _resetRatingButton.SetBounds(topControlX + 296, 104, 160, 34);
-        runtimeText?.SetBounds(topControlX, 150, Math.Max(320, rightWidth), 52);
+        if (compact && topControlX + 296 + 160 > width - pad)
+        {
+            _resetRatingButton.SetBounds(topControlX, 144, 160, 34);
+            runtimeTop = 188;
+        }
+        else
+        {
+            _resetRatingButton.SetBounds(topControlX + 296, 104, 160, 34);
+        }
 
-        var difficultyHeight = compact ? 42 : 46;
+        runtimeText?.SetBounds(topControlX, runtimeTop, Math.Max(280, rightWidth), compact ? 58 : 76);
+
+        var difficultyHeight = compact ? 112 : 84;
         var difficultyY = compact
             ? (runtimeText?.Bottom ?? 150) + 10
             : 112;
         _difficultyLabel.SetBounds(middleX, difficultyY, middleWidth, difficultyHeight);
         _mapPreviewLabel.SetBounds(middleX, _difficultyLabel.Bottom + 10, middleWidth, 24);
         var previewLimit = Math.Max(132, launchTop - (_mapPreviewLabel.Bottom + 4) - 12);
-        var previewSize = Math.Min(compact ? 232 : 260, Math.Max(170, middleWidth));
+        var previewSize = Math.Min(compact ? 232 : largePreviewTarget, Math.Max(170, middleWidth));
         if (compact)
         {
             previewSize = Math.Min(previewSize, previewLimit);
@@ -543,7 +561,7 @@ public sealed class MainForm : Form
         _mapPreviewBox.SetBounds(middleX, _mapPreviewLabel.Bottom + 4, previewSize, previewSize);
 
         var detailsX = compact ? middleX + previewSize + gap : rightX;
-        var detailsY = compact ? _mapPreviewBox.Top : 212;
+        var detailsY = compact ? _mapPreviewBox.Top : Math.Max(212, (runtimeText?.Bottom ?? 198) + 14);
         var detailsWidth = compact
             ? width - detailsX - pad
             : rightWidth;
@@ -551,16 +569,17 @@ public sealed class MainForm : Form
         {
             detailsX = middleX;
             detailsY = _mapPreviewBox.Bottom + gap;
-            detailsWidth = rightWidth;
+            detailsWidth = Math.Min(rightWidth, width - detailsX - pad);
         }
 
         var detailsHeight = compact
             ? Math.Max(118, launchTop - detailsY - 12)
             : Math.Max(170, height - detailsY - 72);
-        _detailsText.SetBounds(detailsX, detailsY, Math.Max(300, detailsWidth), detailsHeight);
-        _launchButton.SetBounds(width - pad - 184, launchTop, 184, 44);
+        _detailsText.SetBounds(detailsX, detailsY, Math.Max(compact ? 260 : 300, detailsWidth), detailsHeight);
+        var actualLaunchTop = Math.Max(launchTop, _detailsText.Bottom + 12);
+        _launchButton.SetBounds(width - pad - 220, actualLaunchTop, 220, 44);
         page.AutoScrollMinSize = compact
-            ? Size.Empty
+            ? new Size(0, Math.Max(height, _launchButton.Bottom + 20))
             : new Size(Math.Max(900, _detailsText.Right + pad), Math.Max(620, _launchButton.Bottom + 20));
     }
 
@@ -636,12 +655,12 @@ public sealed class MainForm : Form
         }
 
         var pad = 18;
-        var labelWidth = 180;
+        var labelWidth = page.ClientSize.Width < 760 ? 136 : 180;
         var gap = 12;
-        var browseWidth = 90;
-        var contentWidth = Math.Max(860, page.ClientSize.Width - (pad * 2));
+        var browseWidth = 96;
+        var contentWidth = Math.Max(1, page.ClientSize.Width - (pad * 2));
         var inputX = pad + labelWidth + gap;
-        var inputWidth = Math.Max(360, contentWidth - labelWidth - gap - browseWidth - gap);
+        var inputWidth = Math.Max(220, contentWidth - labelWidth - gap - browseWidth - gap);
         var browseX = inputX + inputWidth + gap;
         var browseButtons = FindButtons(page, "찾기")
             .OrderBy(button => button.Top)
@@ -669,7 +688,7 @@ public sealed class MainForm : Form
         }
 
         _hideAiNameCheck.SetBounds(inputX, 170, 220, 28);
-        FindButton(page, "설정 저장")?.SetBounds(inputX, 218, 120, 34);
+        FindButton(page, "설정 저장")?.SetBounds(inputX, 218, 150, 34);
 
         foreach (var box in page.Controls.OfType<TextBox>().Where(box => box.Multiline && box.ReadOnly))
         {
@@ -679,7 +698,7 @@ public sealed class MainForm : Form
             }
         }
 
-        page.AutoScrollMinSize = new Size(contentWidth + (pad * 2), 460);
+        page.AutoScrollMinSize = new Size(0, 460);
     }
 
     private TabPage BuildHotkeyTab()
@@ -899,7 +918,7 @@ public sealed class MainForm : Form
 
         var pad = 18;
         var gap = 16;
-        var width = Math.Max(760, page.ClientSize.Width);
+        var width = Math.Max(1, page.ClientSize.Width);
         var height = Math.Max(640, page.ClientSize.Height);
         var contentRight = width - pad;
         var contentWidth = contentRight - pad;
@@ -915,9 +934,9 @@ public sealed class MainForm : Form
         FindLabel(page, "설정 불러오기")?.SetBounds(importX, importY, importWidth, 28);
         var importBottom = LayoutButtonWrap(
             [
-                (FindButton(page, "기본 단축키 불러오기"), 156),
-                (FindButton(page, "Battle.net 설정 불러오기"), 176),
-                (FindButton(page, "설정 폴더 선택"), 150)
+                (FindButton(page, "기본 단축키 불러오기"), 270),
+                (FindButton(page, "Battle.net 설정 불러오기"), 300),
+                (FindButton(page, "설정 폴더 선택"), 200)
             ],
             importX,
             importY + 34,
@@ -936,14 +955,15 @@ public sealed class MainForm : Form
         _gameSpeedCombo.SetBounds(controlInputX, controlRowY, Math.Min(166, Math.Max(132, controlWidth - controlLabelWidth - 136)), 30);
 
         var saveButton = FindButton(page, "조작 설정 저장");
-        var saveX = controlX + controlWidth - 124;
+        var controlSaveWidth = 200;
+        var saveX = controlX + controlWidth - controlSaveWidth;
         if (saveX >= _gameSpeedCombo.Right + 12)
         {
-            saveButton?.SetBounds(saveX, controlRowY, 124, 32);
+            saveButton?.SetBounds(saveX, controlRowY, controlSaveWidth, 32);
         }
         else
         {
-            saveButton?.SetBounds(controlInputX, controlRowY + 156, 124, 32);
+            saveButton?.SetBounds(controlInputX, controlRowY + 156, controlSaveWidth, 32);
         }
 
         var mouseY = controlRowY + 46;
@@ -951,38 +971,29 @@ public sealed class MainForm : Form
         _mouseSensitivitySlider.SetBounds(controlInputX, mouseY - 2, sliderWidth, 36);
         _mouseSensitivityValueLabel.SetBounds(valueX, mouseY + 6, controlValueWidth, 24);
 
-        var scrollRowY = mouseY + 48;
-        if (!stackTopSections && controlWidth >= 540)
+        var trackbarRowGap = 86;
+        var scrollRowY = mouseY + trackbarRowGap;
+        FindLabel(page, "휠 화면 이동")?.SetBounds(controlX, scrollRowY + 6, controlLabelWidth, 24);
+        _mouseScrollSpeedSlider.SetBounds(controlInputX, scrollRowY - 2, sliderWidth, 36);
+        _mouseScrollSpeedValueLabel.SetBounds(valueX, scrollRowY + 6, controlValueWidth, 24);
+
+        var keyboardY = scrollRowY + trackbarRowGap;
+        FindLabel(page, "키보드 이동")?.SetBounds(controlX, keyboardY + 6, controlLabelWidth, 24);
+        _keyboardScrollSpeedSlider.SetBounds(controlInputX, keyboardY - 2, sliderWidth, 36);
+        _keyboardScrollSpeedValueLabel.SetBounds(valueX, keyboardY + 6, controlValueWidth, 24);
+        scrollRowY = keyboardY;
+
+        var controlBottom = new[]
         {
-            var secondControlX = controlX + Math.Min(292, controlWidth / 2 + 12);
-            var compactSliderWidth = Math.Max(98, Math.Min(126, secondControlX - controlInputX - 96));
-            var compactValueWidth = Math.Max(78, Math.Min(98, secondControlX - (controlInputX + compactSliderWidth + 8) - 8));
-            FindLabel(page, "휠 화면 이동")?.SetBounds(controlX, scrollRowY + 6, controlLabelWidth, 24);
-            _mouseScrollSpeedSlider.SetBounds(controlInputX, scrollRowY - 2, compactSliderWidth, 36);
-            _mouseScrollSpeedValueLabel.SetBounds(controlInputX + compactSliderWidth + 8, scrollRowY + 6, compactValueWidth, 24);
-
-            FindLabel(page, "키보드 이동")?.SetBounds(secondControlX, scrollRowY + 6, controlLabelWidth, 24);
-            _keyboardScrollSpeedSlider.SetBounds(secondControlX + controlLabelWidth, scrollRowY - 2, compactSliderWidth, 36);
-            _keyboardScrollSpeedValueLabel.SetBounds(secondControlX + controlLabelWidth + compactSliderWidth + 8, scrollRowY + 6, compactValueWidth, 24);
-        }
-        else
-        {
-            FindLabel(page, "휠 화면 이동")?.SetBounds(controlX, scrollRowY + 6, controlLabelWidth, 24);
-            _mouseScrollSpeedSlider.SetBounds(controlInputX, scrollRowY - 2, sliderWidth, 36);
-            _mouseScrollSpeedValueLabel.SetBounds(valueX, scrollRowY + 6, controlValueWidth, 24);
-
-            var keyboardY = scrollRowY + 48;
-            FindLabel(page, "키보드 이동")?.SetBounds(controlX, keyboardY + 6, controlLabelWidth, 24);
-            _keyboardScrollSpeedSlider.SetBounds(controlInputX, keyboardY - 2, sliderWidth, 36);
-            _keyboardScrollSpeedValueLabel.SetBounds(valueX, keyboardY + 6, controlValueWidth, 24);
-            scrollRowY = keyboardY;
-        }
-
-        var controlBottom = Math.Max(scrollRowY + 36, saveButton?.Bottom ?? 0);
+            _mouseSensitivitySlider.Bottom,
+            _mouseScrollSpeedSlider.Bottom,
+            _keyboardScrollSpeedSlider.Bottom,
+            saveButton?.Bottom ?? 0
+        }.Max();
         var hotkeyTop = Math.Max(importBottom, controlBottom) + 26;
         FindLabel(page, "핫키 커스터마이징")?.SetBounds(pad, hotkeyTop, 260, 30);
 
-        var leftWidth = contentWidth < 1160 ? 286 : 316;
+        var leftWidth = contentWidth < 900 ? Math.Max(250, Math.Min(320, (contentWidth - gap) / 3)) : 340;
         var commandX = pad + leftWidth + gap;
         var filterTop = hotkeyTop + 40;
         var availableForDetails = contentRight - commandX;
@@ -1005,25 +1016,25 @@ public sealed class MainForm : Form
         FindLabel(page, "검색")?.SetBounds(pad, filterTop + 6, 44, 24);
         _hotkeySearch.SetBounds(pad + 44, filterTop, Math.Max(160, leftWidth - 52), 30);
         FindLabel(page, "종족")?.SetBounds(commandX, filterTop + 6, 44, 24);
-        LayoutButtonWrap(_hotkeyRaceButtons, commandX + 48, filterTop, contentRight, 74, 36, 6);
-        var categoryTop = filterTop + 42;
+        var raceBottom = LayoutButtonWrap(_hotkeyRaceButtons, commandX + 48, filterTop, contentRight, 86, 36, 6);
+        var categoryTop = raceBottom + 6;
         FindLabel(page, "분류")?.SetBounds(commandX, categoryTop + 6, 44, 24);
         var categoryBottom = compact
-            ? LayoutButtonWrap(_hotkeyCategoryButtons, commandX + 48, categoryTop, contentRight, 82, 30, 6)
-            : LayoutButtonGroup(_hotkeyCategoryButtons, commandX + 48, categoryTop, 82, 30);
+            ? LayoutButtonWrap(_hotkeyCategoryButtons, commandX + 48, categoryTop, contentRight, 96, 30, 6)
+            : LayoutButtonGroup(_hotkeyCategoryButtons, commandX + 48, categoryTop, 96, 30);
 
         var cardY = categoryBottom + 8;
         FindLabel(page, "명령 화면")?.SetBounds(commandX, cardY + 6, 70, 24);
         var pageBottom = compact
-            ? LayoutButtonWrap(_hotkeyPageButtons, commandX + 76, cardY, contentRight, 100, 30, 6)
-            : LayoutButtonGroup(_hotkeyPageButtons, commandX + 76, cardY, 100, 30);
+            ? LayoutButtonWrap(_hotkeyPageButtons, commandX + 76, cardY, contentRight, 112, 30, 6)
+            : LayoutButtonGroup(_hotkeyPageButtons, commandX + 76, cardY, 112, 30);
 
         var hotkeyActionButtons = new (Button? Button, int Width)[]
         {
-            (FindButton(page, "현재 단축키 저장"), 128),
-            (FindButton(page, "스타에 단축키 적용"), 154)
+            (FindButton(page, "현재 단축키 저장"), 220),
+            (FindButton(page, "스타에 단축키 적용"), 250)
         };
-        var actionOnTitleLine = contentWidth >= 1000;
+        var actionOnTitleLine = false;
         var actionBottom = actionOnTitleLine
             ? LayoutButtonWrap(hotkeyActionButtons, contentRight - 290, hotkeyTop, contentRight, 32, 8)
             : LayoutButtonWrap(hotkeyActionButtons, commandX, pageBottom + 10, contentRight, 32, 8);
@@ -1056,7 +1067,7 @@ public sealed class MainForm : Form
         _hotkeyDefaultText.SetBounds(detailsX, _hotkeyCommandMeta.Bottom + 4, detailsWidth, defaultHeight);
         FindLabel(page, "현재 키")?.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 20, 64, 24);
         _hotkeyKeyText.SetBounds(detailsX + 64, _hotkeyDefaultText.Bottom + 14, 84, 30);
-        FindButton(page, "선택한 키 적용")?.SetBounds(detailsX + 162, _hotkeyDefaultText.Bottom + 10, 124, 36);
+        FindButton(page, "선택한 키 적용")?.SetBounds(detailsX + 162, _hotkeyDefaultText.Bottom + 10, 200, 36);
 
         _hotkeyHelpText.SetBounds(detailsX, _hotkeyDefaultText.Bottom + 72, detailsWidth, helpHeight);
 
@@ -1064,7 +1075,7 @@ public sealed class MainForm : Form
         runtimeHelpTop = Math.Max(runtimeHelpTop, _hotkeyHelpText.Bottom + 36);
         _hotkeyRuntimeHelpText.SetBounds(pad, runtimeHelpTop, width - (pad * 2), 42);
 
-        var scrollWidth = Math.Max(980, Math.Max(width, detailsX + detailsWidth + pad));
+        var scrollWidth = Math.Max(width, detailsX + detailsWidth + pad);
         var scrollHeight = Math.Max(680, page.Controls.Cast<Control>().Max(control => control.Bottom) + 20);
         page.AutoScrollMinSize = ShouldUseCompactScroll(page, 680, 430)
             ? new Size(scrollWidth, scrollHeight)
@@ -1210,9 +1221,21 @@ public sealed class MainForm : Form
         _historyGrid.SetBounds(
             pad,
             64,
-            Math.Max(760, page.ClientSize.Width - (pad * 2)),
+            Math.Max(1, page.ClientSize.Width - (pad * 2)),
             Math.Max(420, page.ClientSize.Height - 88));
-        page.AutoScrollMinSize = new Size(820, 540);
+        var showLowPriorityColumns = LauncherLayoutScale.ToBaseDpi(_historyGrid.Width, page.DeviceDpi) >= 1220;
+        foreach (DataGridViewColumn column in _historyGrid.Columns)
+        {
+            if (column.DataPropertyName is nameof(PracticeSessionRecord.ActionCount)
+                or nameof(PracticeSessionRecord.MatchupText)
+                or nameof(PracticeSessionRecord.RatingText)
+                or nameof(PracticeSessionRecord.ResultSourceText))
+            {
+                column.Visible = showLowPriorityColumns;
+            }
+        }
+
+        page.AutoScrollMinSize = new Size(0, 540);
     }
 
     private static DataGridViewTextBoxColumn CreateHistoryTextColumn(
@@ -3193,10 +3216,10 @@ public sealed class MainForm : Form
             var errorDirectory = Path.Combine(cleanup.RuntimeRoot, "Errors");
             if (cleanup.LeaveGameBeforeTerminate && cleanup.KnownStarCraftProcessId is { } aiProcessId)
             {
-                StarCraftGameExitController.DisconnectProcessWithoutBwapiLeave(
+                StarCraftGameExitController.LeaveGameThenCloseProcess(
                     aiProcessId,
-                    TimeSpan.FromSeconds(3),
-                    errorDirectory);
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(3));
             }
 
             var stoppedCount = cleaner.StopKnown(cleanup.KnownStarCraftProcessId) +

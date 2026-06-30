@@ -5,11 +5,11 @@ namespace Sparring.Client;
 
 internal static class CompatibilityAuditCommand
 {
-    public static int Run()
+    public static int Run(IReadOnlyList<string>? args = null)
     {
         var paths = PracticePaths.Defaults();
         var settings = SparringSettingsStore.Default().Load();
-        var catalog = LoadCatalog(paths, settings);
+        var catalog = LoadCatalog(paths, settings, includeConfiguredMaps: !UsesBundledCatalogOnly(args ?? []));
         var report = PracticeCompatibilityAuditor.Audit(
             catalog,
             Path.Combine(paths.AiRuntimeRoot, "Errors"));
@@ -37,9 +37,17 @@ internal static class CompatibilityAuditCommand
         return report.Issues.Count == 0 ? 0 : 1;
     }
 
-    private static PracticeCatalog LoadCatalog(PracticePaths paths, SparringSettings settings)
+    internal static PracticeCatalog LoadCatalog(
+        PracticePaths paths,
+        SparringSettings settings,
+        bool includeConfiguredMaps = true)
     {
         var baseCatalog = PracticeAssetCatalogReader.Read(paths);
+        if (!includeConfiguredMaps)
+        {
+            return baseCatalog;
+        }
+
         var ladderMapRoot = string.IsNullOrWhiteSpace(settings.LadderMapRoot)
             ? RemasteredLadderMapCatalogReader.DefaultDirectory()
             : settings.LadderMapRoot;
@@ -48,6 +56,11 @@ internal static class CompatibilityAuditCommand
         return UserMapCatalogReader.Merge(
             UserMapCatalogReader.Merge(baseCatalog, ladderMaps),
             userMaps);
+    }
+
+    internal static bool UsesBundledCatalogOnly(IReadOnlyList<string> args)
+    {
+        return args.Any(arg => string.Equals(arg, "--bundled-catalog-only", StringComparison.OrdinalIgnoreCase));
     }
 
     private static void WritePairs(string path, IEnumerable<PracticeCompatibilityAuditPair> pairs)

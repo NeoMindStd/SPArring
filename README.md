@@ -5,7 +5,7 @@ Sparring는 StarCraft 1.16.1 + BWAPI 기반의 로컬 AI 스파링 런처입니�
 ## 쉬운 설치
 
 1. StarCraft 1.16.1 원본 클라이언트를 먼저 준비합니다. 자세한 기준은 아래 [StarCraft 1.16.1 준비](#starcraft-1161-준비)를 참고하세요.
-2. GitHub Releases에서 최신 `Sparring-1.6.0-setup.exe`를 다운로드합니다.
+2. GitHub Releases에서 최신 `Sparring-1.6.1-setup.exe`를 다운로드합니다.
 3. 설치 프로그램을 실행합니다.
 4. 선택 구성요소를 확인합니다. VC++ x86 런타임은 봇 호환성을 위해 권장하고, Java 런타임은 커스텀 단축키 반영에 필요합니다.
 5. 설치 경로를 확인하고, StarCraft 1.16.1 원본 폴더를 지정합니다.
@@ -29,6 +29,8 @@ Sparring 릴리즈 패키지는 StarCraft 게임 본체를 포함하지 않습�
 설치 프로그램에는 사용자가 합법적으로 보유했거나 권한 있는 경로에서 확보한 StarCraft 1.16.1 폴더를 지정해 주세요. 필요한 파일은 `StarCraft.exe`, `stardat.mpq`, `broodat.mpq`, `patch_rt.mpq`입니다. 최신 Battle.net/Remastered 설치 폴더는 일반적으로 BWAPI 4.4 기반 1.16.1 런타임 소스로 그대로 사용할 수 없습니다.
 
 [SSCAIT/BWAPI](https://sscaitournament.com/index.php?action=tutorial), [Dave Churchill AI 자료실](https://davechurchill.ca/starcraft/resources/), [StarEdit Network 안내 글](https://staredit.net/topic/17625/), [iCCup 시작 페이지](https://iccup.com/sc_start.html) 중 1곳에서 StarCraft 1.16.1 클라이언트를 준비해주세요. 기존에 1.16.1 클라이언트가 설치되어 있었다면 이 단계를 스킵하셔도 무관합니다. 오래된 직접 다운로드 링크는 403/404로 막힐 수 있으니, 각 페이지의 최신 안내를 확인해 주세요.
+
+준비한 폴더를 열었을 때 `StarCraft.exe`, `stardat.mpq`, `broodat.mpq`, `patch_rt.mpq`가 바로 보이는 폴더를 Sparring 설치 프로그램의 `StarCraft 1.16.1` 항목에 지정하면 됩니다.
 
 현재 Battle.net/Remastered 클라이언트, 예를 들어 1.23.x 계열 설치 폴더를 Sparring 설치 프로그램이 1.16.1로 자동 다운그레이드하는 기능은 제공하지 않습니다. 파일 구조와 권리관계가 달라서, 설치 프로그램에는 별도로 준비한 1.16.1 폴더를 지정해야 합니다.
 
@@ -85,7 +87,7 @@ Sparring 봇/맵 기본 카탈로그는 릴리즈 패키지에 포함됩니다. 
 ## English Install Guide
 
 1. Prepare a legally obtained StarCraft 1.16.1 source folder first. Sparring does not redistribute the game files.
-2. Download `Sparring-1.6.0-setup.exe` from GitHub Releases.
+2. Download `Sparring-1.6.1-setup.exe` from GitHub Releases.
 3. Run the installer.
 4. Review optional prerequisites. VC++ x86 is recommended for older native bots; Java is needed for custom hotkey MPQ patching.
 5. Choose the install folder and select the StarCraft 1.16.1 source folder.

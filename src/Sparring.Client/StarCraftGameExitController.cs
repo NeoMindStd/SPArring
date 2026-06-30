@@ -138,6 +138,20 @@ internal static class StarCraftGameExitController
         return state is StarCraftScreenState.GameRoom or StarCraftScreenState.MenuLike;
     }
 
+    internal static bool IsGracefulAiShutdown(
+        StarCraftAiShutdownResult? shutdown,
+        bool processGoneAfterCleanup,
+        StarCraftScreenState playerStateAfterAiShutdown,
+        bool runtimeErrorsClean)
+    {
+        return shutdown is not null &&
+               shutdown.LeaveSequenceSent &&
+               (shutdown.LeaveConfirmed || shutdown.Exited && !shutdown.ForcedKillUsed) &&
+               processGoneAfterCleanup &&
+               playerStateAfterAiShutdown != StarCraftScreenState.BlockedDialog &&
+               runtimeErrorsClean;
+    }
+
     internal static bool IsExpectedBwapiShutdownCrashText(string text)
     {
         return text.Contains("EXCEPTION: 0xE06D7363", StringComparison.OrdinalIgnoreCase) &&
