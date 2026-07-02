@@ -121,6 +121,61 @@ public sealed class PracticeCatalogCompatibilityTests
     [InlineData("RedRum", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("RedRum", "(4)Jade", "(4)Jade.scx")]
     [InlineData("Yuanheng Zhu", "(4)Andromeda", "(4)Andromeda.scx")]
+    [InlineData("ABCDxyz", "(4)Electric Circuit", "(4)Electric Circuit.scx")]
+    [InlineData("AILien", "(3)Neo Moon Glaive", "(3)Neo Moon Glaive.scx")]
+    [InlineData("BananaBrain", "(4)Electric Circuit", "(4)Electric Circuit.scx")]
+    [InlineData("BetaStar", "(4)Electric Circuit", "(4)Electric Circuit.scx")]
+    [InlineData("Brainiac", "(4)Electric Circuit", "(4)Electric Circuit.scx")]
+    [InlineData("Crazyhammer", "(3)Neo Moon Glaive", "(3)Neo Moon Glaive.scx")]
+    [InlineData("DaQin", "(3)Neo Moon Glaive", "(3)Neo Moon Glaive.scx")]
+    [InlineData("DaQin", "(4)Andromeda", "(4)Andromeda.scx")]
+    [InlineData("DaQin", "(4)Electric Circuit", "(4)Electric Circuit.scx")]
+    [InlineData("Feint", "(2)Benzene", "(2)Benzene.scx")]
+    [InlineData("Feint", "(2)Destination", "(2)Destination.scx")]
+    [InlineData("Feint", "(2)Heartbreak Ridge", "(2)Heartbreak Ridge.scx")]
+    [InlineData("Feint", "(3)Neo Moon Glaive", "(3)Neo Moon Glaive.scx")]
+    [InlineData("Feint", "(3)Tau Cross", "(3)Tau Cross.scx")]
+    [InlineData("Feint", "(4)Andromeda", "(4)Andromeda.scx")]
+    [InlineData("Feint", "(4)Circuit Breaker", "(4)Circuit Breaker.scx")]
+    [InlineData("Feint", "(4)Electric Circuit", "(4)Electric Circuit.scx")]
+    [InlineData("Feint", "(4)Empire of the Sun", "(4)Empire of the Sun.scm")]
+    [InlineData("Feint", "(4)Icarus", "(4)Icarus.scm")]
+    [InlineData("Feint", "(4)Jade", "(4)Jade.scx")]
+    [InlineData("Feint", "(4)La Mancha1.1", "(4)La Mancha1.1.scx")]
+    [InlineData("Feint", "(4)Python", "(4)Python.scx")]
+    [InlineData("Feint", "(4)Roadrunner", "(4)Roadrunner.scx")]
+    [InlineData("Iron bot", "(2)Benzene", "(2)Benzene.scx")]
+    [InlineData("Iron bot", "(2)Destination", "(2)Destination.scx")]
+    [InlineData("Iron bot", "(2)Heartbreak Ridge", "(2)Heartbreak Ridge.scx")]
+    [InlineData("Iron bot", "(3)Neo Moon Glaive", "(3)Neo Moon Glaive.scx")]
+    [InlineData("Iron bot", "(3)Tau Cross", "(3)Tau Cross.scx")]
+    [InlineData("Iron bot", "(4)Andromeda", "(4)Andromeda.scx")]
+    [InlineData("Iron bot", "(4)Circuit Breaker", "(4)Circuit Breaker.scx")]
+    [InlineData("Iron bot", "(4)Electric Circuit", "(4)Electric Circuit.scx")]
+    [InlineData("Iron bot", "(4)Empire of the Sun", "(4)Empire of the Sun.scm")]
+    [InlineData("Iron bot", "(4)Icarus", "(4)Icarus.scm")]
+    [InlineData("Iron bot", "(4)Jade", "(4)Jade.scx")]
+    [InlineData("Iron bot", "(4)La Mancha1.1", "(4)La Mancha1.1.scx")]
+    [InlineData("Iron bot", "(4)Python", "(4)Python.scx")]
+    [InlineData("Iron bot", "(4)Roadrunner", "(4)Roadrunner.scx")]
+    [InlineData("LetaBot", "(2)Benzene", "(2)Benzene.scx")]
+    [InlineData("LetaBot", "(2)Destination", "(2)Destination.scx")]
+    [InlineData("LetaBot", "(2)Heartbreak Ridge", "(2)Heartbreak Ridge.scx")]
+    [InlineData("LetaBot", "(2)Overwatch(n)", "(2)Overwatch(n).scx")]
+    [InlineData("LetaBot", "(2)Tres Pass", "(2)Tres Pass.scx")]
+    [InlineData("LetaBot", "(3)Neo Moon Glaive", "(3)Neo Moon Glaive.scx")]
+    [InlineData("LetaBot", "(3)Power Bond)", "(3)Power Bond.scx")]
+    [InlineData("LetaBot", "(3)Tau Cross", "(3)Tau Cross.scx")]
+    [InlineData("LetaBot", "(4)Andromeda", "(4)Andromeda.scx")]
+    [InlineData("LetaBot", "(4)Circuit Breaker", "(4)Circuit Breaker.scx")]
+    [InlineData("LetaBot", "(4)Electric Circuit", "(4)Electric Circuit.scx")]
+    [InlineData("LetaBot", "(4)Empire of the Sun", "(4)Empire of the Sun.scm")]
+    [InlineData("LetaBot", "(4)Gladiator1.1", "(4)Gladiator1.1.scx")]
+    [InlineData("LetaBot", "(4)Icarus", "(4)Icarus.scm")]
+    [InlineData("LetaBot", "(4)Jade", "(4)Jade.scx")]
+    [InlineData("LetaBot", "(4)La Mancha1.1", "(4)La Mancha1.1.scx")]
+    [InlineData("LetaBot", "(4)Python", "(4)Python.scx")]
+    [InlineData("LetaBot", "(4)Roadrunner", "(4)Roadrunner.scx")]
     public void KnownBadRuntimePairsAreNotCompatible(string botName, string mapName, string fileName)
     {
         var schnailMapId = Guid.NewGuid();
@@ -143,6 +198,43 @@ public sealed class PracticeCatalogCompatibilityTests
         Assert.False(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));
         Assert.Empty(PracticeCatalogCompatibility.MapsForBot(catalog, botId));
         Assert.Empty(PracticeCatalogCompatibility.BotsForMap(catalog, mapId));
+    }
+
+    [Theory]
+    [InlineData("ABCDxyz", "(4)Andromeda", "(4)Andromeda.scx")]
+    [InlineData("Arrakhammer", "(3)Neo Moon Glaive", "(3)Neo Moon Glaive.scx")]
+    [InlineData("BananaBrain", "(3)Neo Moon Glaive", "(3)Neo Moon Glaive.scx")]
+    [InlineData("BananaBrain", "(4)Jade", "(4)Jade.scx")]
+    [InlineData("BetaStar", "(4)Andromeda", "(4)Andromeda.scx")]
+    [InlineData("BetaStar", "(3)Neo Moon Glaive", "(3)Neo Moon Glaive.scx")]
+    [InlineData("Brainiac", "(2)Match Point", "(2)Match Point.scx")]
+    [InlineData("Brainiac", "(3)Power Bond)", "(3)Power Bond.scx")]
+    [InlineData("Brainiac", "(4)Jade", "(4)Jade.scx")]
+    public void ReauditedRuntimeFalsePositivesRemainCompatible(
+        string botName,
+        string mapName,
+        string fileName)
+    {
+        var schnailMapId = Guid.NewGuid();
+        var mapId = Guid.NewGuid();
+        var botId = Guid.NewGuid();
+        var catalog = new PracticeCatalog(
+            [
+                Bot(botId, botName, schnailMapId)
+            ],
+            [
+                new PracticeMap(
+                    mapId,
+                    mapName,
+                    fileName,
+                    null,
+                    true,
+                    CompatibilityMapIds: new HashSet<Guid> { schnailMapId })
+            ]);
+
+        Assert.True(PracticeCatalogCompatibility.IsCompatible(catalog, botId, mapId));
+        Assert.Contains(PracticeCatalogCompatibility.MapsForBot(catalog, botId), candidate => candidate.Id == mapId);
+        Assert.Contains(PracticeCatalogCompatibility.BotsForMap(catalog, mapId), candidate => candidate.Id == botId);
     }
 
     [Theory]

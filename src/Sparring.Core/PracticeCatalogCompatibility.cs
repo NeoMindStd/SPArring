@@ -57,6 +57,21 @@ public static class PracticeCatalogCompatibility
             return true;
         }
 
+        if (IsObservedRuntimeFailurePair(bot, map))
+        {
+            return true;
+        }
+
+        if (IsObservedAiDropPair(bot, map))
+        {
+            return true;
+        }
+
+        if (IsObservedAiCrashPair(bot, map))
+        {
+            return true;
+        }
+
         if (IsFightingSpiritVariant(map))
         {
             return bot.Name.Equals("ICELab", StringComparison.OrdinalIgnoreCase) ||
@@ -104,6 +119,90 @@ public static class PracticeCatalogCompatibility
                 IsMap(map, "La Mancha")) ||
                (bot.Name.Equals("PurpleWave", StringComparison.OrdinalIgnoreCase) &&
                 IsMap(map, "Polypoid"));
+    }
+
+    private static bool IsObservedRuntimeFailurePair(PracticeBot bot, PracticeMap map)
+    {
+        return (bot.Name.Equals("ABCDxyz", StringComparison.OrdinalIgnoreCase) &&
+                IsMap(map, "Electric Circuit")) ||
+               (bot.Name.Equals("AILien", StringComparison.OrdinalIgnoreCase) &&
+                IsMap(map, "Neo Moon Glaive")) ||
+               (bot.Name.Equals("BananaBrain", StringComparison.OrdinalIgnoreCase) &&
+                IsMap(map, "Electric Circuit")) ||
+               (bot.Name.Equals("BetaStar", StringComparison.OrdinalIgnoreCase) &&
+                IsMap(map, "Electric Circuit")) ||
+               (bot.Name.Equals("Brainiac", StringComparison.OrdinalIgnoreCase) &&
+                IsMap(map, "Electric Circuit")) ||
+               (bot.Name.Equals("Crazyhammer", StringComparison.OrdinalIgnoreCase) &&
+                IsMap(map, "Neo Moon Glaive")) ||
+               (bot.Name.Equals("DaQin", StringComparison.OrdinalIgnoreCase) &&
+                (IsMap(map, "Neo Moon Glaive") ||
+                 IsAndromedaVariant(map) ||
+                 IsMap(map, "Electric Circuit")));
+    }
+
+    private static bool IsObservedAiDropPair(PracticeBot bot, PracticeMap map)
+    {
+        return bot.Name.Equals("Feint", StringComparison.OrdinalIgnoreCase) &&
+               (IsMap(map, "Benzene") ||
+                IsMap(map, "Destination") ||
+                IsMap(map, "Heartbreak Ridge") ||
+                IsMap(map, "Neo Moon Glaive") ||
+                IsMap(map, "Tau Cross") ||
+                IsAndromedaVariant(map) ||
+                IsMap(map, "Circuit Breaker") ||
+                IsMap(map, "Electric Circuit") ||
+                IsMap(map, "Empire of the Sun") ||
+                IsMap(map, "Icarus") ||
+                IsJadeVariant(map) ||
+                IsMap(map, "La Mancha") ||
+                IsMap(map, "Python") ||
+                IsMap(map, "Roadrunner"));
+    }
+
+    private static bool IsObservedAiCrashPair(PracticeBot bot, PracticeMap map)
+    {
+        if (bot.Name.Equals("Iron bot", StringComparison.OrdinalIgnoreCase))
+        {
+            return IsMap(map, "Benzene") ||
+                   IsMap(map, "Destination") ||
+                   IsMap(map, "Heartbreak Ridge") ||
+                   IsMap(map, "Neo Moon Glaive") ||
+                   IsMap(map, "Tau Cross") ||
+                   IsAndromedaVariant(map) ||
+                   IsMap(map, "Circuit Breaker") ||
+                   IsMap(map, "Electric Circuit") ||
+                   IsMap(map, "Empire of the Sun") ||
+                   IsMap(map, "Icarus") ||
+                   IsJadeVariant(map) ||
+                   IsMap(map, "La Mancha") ||
+                   IsMap(map, "Python") ||
+                   IsMap(map, "Roadrunner");
+        }
+
+        if (bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase))
+        {
+            return IsMap(map, "Benzene") ||
+                   IsMap(map, "Destination") ||
+                   IsMap(map, "Heartbreak Ridge") ||
+                   IsMap(map, "Overwatch") ||
+                   IsMap(map, "Tres Pass") ||
+                   IsMap(map, "Neo Moon Glaive") ||
+                   IsMap(map, "Power Bond") ||
+                   IsMap(map, "Tau Cross") ||
+                   IsAndromedaVariant(map) ||
+                   IsMap(map, "Circuit Breaker") ||
+                   IsMap(map, "Electric Circuit") ||
+                   IsMap(map, "Empire of the Sun") ||
+                   IsMap(map, "Gladiator") ||
+                   IsMap(map, "Icarus") ||
+                   IsJadeVariant(map) ||
+                   IsMap(map, "La Mancha") ||
+                   IsMap(map, "Python") ||
+                   IsMap(map, "Roadrunner");
+        }
+
+        return false;
     }
 
     private static bool IsMap(PracticeMap map, string token)

@@ -6,9 +6,11 @@ param(
     [string[]]$MapName = @(),
     [int]$Limit = 0,
     [int]$ObserveSeconds = 0,
+    [int]$InterRunDelaySeconds = 3,
     [switch]$IncludeNeo,
     [switch]$NoBuild,
     [switch]$RetryFailures,
+    [switch]$SkipAiActivityCheck,
 
     [ValidateSet('None', 'Failures', 'All')]
     [string]$KeepScreenshots = 'Failures',
@@ -218,6 +220,9 @@ foreach ($pair in $pairs) {
     }
     elseif ($runtimeObserveSeconds -gt 0) {
         $args += @('--observe-seconds', $runtimeObserveSeconds.ToString())
+        if (-not $SkipAiActivityCheck) {
+            $args += '--require-ai-activity'
+        }
     }
 
     Write-Host ("compatibility-matrix [{0}/{1}] {2} + {3}" -f $index, $pairs.Count, $pair.botName, $pair.mapName)
@@ -254,6 +259,10 @@ foreach ($pair in $pairs) {
     }
     else {
         $row | Export-Csv -LiteralPath $ResultPath -NoTypeInformation -Encoding UTF8
+    }
+
+    if ($ValidationMode -eq 'Runtime' -and $InterRunDelaySeconds -gt 0 -and $index -lt $pairs.Count) {
+        Start-Sleep -Seconds $InterRunDelaySeconds
     }
 }
 

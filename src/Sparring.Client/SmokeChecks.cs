@@ -7,9 +7,9 @@ namespace Sparring.Client;
 
 internal static class SmokeChecks
 {
-    private static readonly TimeSpan FinalPlayerShutdownCrashCleanupRetryWindow = TimeSpan.FromSeconds(90);
+    private static readonly TimeSpan FinalRuntimeShutdownCrashCleanupRetryWindow = TimeSpan.FromSeconds(2);
 
-    private static readonly TimeSpan FinalPlayerShutdownCrashInitialQuietWindow = TimeSpan.FromSeconds(45);
+    private static readonly TimeSpan FinalRuntimeShutdownCrashInitialQuietWindow = TimeSpan.FromSeconds(1);
 
     public static int Run()
     {
@@ -126,7 +126,11 @@ internal static class SmokeChecks
         LocalRuntimeProcessCleaner? cleaner = null;
         HashSet<int>? preExistingStarCraftProcessIds = null;
         var runtimeLaunchStarted = false;
+        int? launchedPlayerStarCraftProcessId = null;
+        int? launchedAiStarCraftProcessId = null;
         StarCraftStartupTrace? startupTrace = null;
+        Bitmap? aiActivityStartBitmap = null;
+        Bitmap? aiActivityEndBitmap = null;
 
         try
         {
@@ -141,7 +145,8 @@ internal static class SmokeChecks
                 Console.WriteLine(
                     $"smoke-start dry-run: mode={request.ModeLabel}, playerRace={playerRace}, " +
                     $"enemyRace={(enemyRace?.ToString() ?? "Any")}, bot={bot.Name}, map={map.Name}, " +
-                    $"executable={bot.ExecutableName}, kind={bot.ExecutableKind}, botBuild={request.BotBuildId ?? "random"}");
+                    $"executable={bot.ExecutableName}, kind={bot.ExecutableKind}, botBuild={request.BotBuildId ?? "random"}, " +
+                    $"allowIncompatible={request.AllowIncompatible}");
                 return 0;
             }
 
@@ -155,7 +160,10 @@ internal static class SmokeChecks
                 ClipCursor: false,
                 AllowApmAlert: false,
                 BotBuildId: request.BotBuildId);
-            var plan = PracticeLaunchPlanBuilder.Build(catalog, paths with { AiRuntimeRoot = aiRoot }, selection);
+            var launchCatalog = request.AllowIncompatible
+                ? MarkMapAsUserMapForSmokeVerification(catalog, map.Id)
+                : catalog;
+            var plan = PracticeLaunchPlanBuilder.Build(launchCatalog, paths with { AiRuntimeRoot = aiRoot }, selection);
             if (request.PrepareOnly)
             {
                 var prepared = RuntimeProvisioner.PrepareRuntimeAssets(plan);
@@ -178,8 +186,10 @@ internal static class SmokeChecks
             var cncDdrawHandlesPlayerDisplay = plan.Player.CncDdrawMode == CncDdrawMode.BorderlessFullscreen;
             var borderlessApplied = false;
             var playerErrorDirectory = Path.Combine(paths.PlayerRuntimeRoot, "Errors");
+            var aiWriteDirectory = Path.Combine(aiRoot, "bwapi-data", "write");
             var aiRuntimeErrorSnapshot = RuntimeErrorLogSnapshot.Capture(Path.Combine(aiRoot, "Errors"));
             var playerRuntimeErrorSnapshot = RuntimeErrorLogSnapshot.Capture(playerErrorDirectory);
+            var aiActivityLogSnapshot = SmokeAiActivityLogSnapshot.Capture(aiWriteDirectory);
             var timing = Stopwatch.StartNew();
             cleaner = new LocalRuntimeProcessCleaner();
             preExistingStarCraftProcessIds = CurrentStarCraftProcessIds();
@@ -193,6 +203,8 @@ internal static class SmokeChecks
                     AiLaunchDelay = TimeSpan.FromSeconds(3),
                     StopExistingLocalRuntime = true
                 });
+            launchedPlayerStarCraftProcessId = report.Player.StarCraftProcessId;
+            launchedAiStarCraftProcessId = report.Ai.StarCraftProcessId;
             var playerProcessPath = ProcessPath(report.Player.StarCraftProcessId);
             var aiProcessPath = ProcessPath(report.Ai.StarCraftProcessId);
             Console.WriteLine(
@@ -240,8 +252,11 @@ internal static class SmokeChecks
 
                     overlay.StartSession(overlayBounds, DateTime.UtcNow, actionCounter);
                     overlayStartedMs = timing.ElapsedMilliseconds;
-                    PumpWinFormsFor(TimeSpan.FromMilliseconds(300));
-                    timerOverlayVisible = CaptureContainsPracticeOverlay(report.Player.StarCraftProcessId.Value);
+                    timerOverlayVisible = WaitForPracticeOverlay(
+                        () => CaptureContainsPracticeOverlay(report.Player.StarCraftProcessId.Value),
+                        PumpWinFormsFor,
+                        TimeSpan.FromSeconds(2),
+                        TimeSpan.FromMilliseconds(100));
                     SaveSmokeWindowScreenshot(paths, report.Player.StarCraftProcessId, "smoke-start-player-overlay.png");
                     overlayScreenshotMs = timing.ElapsedMilliseconds;
                     playerStateAtOverlay = StarCraftScreenDetector.Detect(report.Player.StarCraftProcessId.Value);
@@ -263,7 +278,11 @@ internal static class SmokeChecks
             var aiState = report.Ai.StarCraftProcessId is null
                 ? StarCraftScreenState.Unknown
                 : StarCraftScreenDetector.Detect(report.Ai.StarCraftProcessId.Value);
-            SaveSmokeWindowScreenshot(paths, report.Ai.StarCraftProcessId, "smoke-start-ai-final.png");
+            aiActivityStartBitmap = SaveSmokeWindowScreenshot(
+                paths,
+                report.Ai.StarCraftProcessId,
+                "smoke-start-ai-final.png",
+                keepBitmap: request.RequireAiActivity);
             var aiWindowMinimized = false;
             if (aiInGameDetected && report.Ai.StarCraftProcessId is not null)
             {
@@ -291,45 +310,126 @@ internal static class SmokeChecks
             }
 
             var observeMs = 0L;
+            var observeElapsedMs = 0L;
             var playerProcessAliveAfterObserve = report.Player.StarCraftProcessId is null ||
                 IsProcessRunning(report.Player.StarCraftProcessId.Value);
             var aiProcessAliveAfterObserve = report.Ai.StarCraftProcessId is null ||
                 IsProcessRunning(report.Ai.StarCraftProcessId.Value);
             var playerStateAfterObserve = StarCraftScreenState.Unknown;
             var aiStateAfterObserve = StarCraftScreenState.Unknown;
-            if (request.ObserveSeconds > 0 && inGameDetected && aiInGameDetected)
+            var observeStoppedEarly = false;
+            var aiLogActivityDuringObserve = SmokeAiActivityLogSummary.Empty;
+            if (request.ObserveSeconds > 0 &&
+                inGameDetected &&
+                (aiInGameDetected || report.Ai.StarCraftProcessId is not null))
             {
+                var observeStartedMs = timing.ElapsedMilliseconds;
                 var observeDuration = TimeSpan.FromSeconds(request.ObserveSeconds);
-                PumpWinFormsFor(observeDuration);
+                void CapturePostObserveScreens()
+                {
+                    playerProcessAliveAfterObserve = report.Player.StarCraftProcessId is not null &&
+                        IsProcessRunning(report.Player.StarCraftProcessId.Value);
+                    aiProcessAliveAfterObserve = report.Ai.StarCraftProcessId is not null &&
+                        IsProcessRunning(report.Ai.StarCraftProcessId.Value);
+                    if (report.Ai.StarCraftProcessId is not null)
+                    {
+                        _ = StarCraftBorderlessWindow.ActivateProcessWindowWhenReady(
+                            report.Ai.StarCraftProcessId.Value,
+                            TimeSpan.FromSeconds(3));
+                        PumpWinFormsFor(TimeSpan.FromMilliseconds(500));
+                        aiStateAfterObserve = StarCraftScreenDetector.Detect(report.Ai.StarCraftProcessId.Value);
+                        aiProcessAliveAfterObserve = aiProcessAliveAfterObserve ||
+                            aiStateAfterObserve != StarCraftScreenState.Unknown;
+                    }
+
+                    aiActivityEndBitmap?.Dispose();
+                    aiActivityEndBitmap = SaveSmokeWindowScreenshot(
+                        paths,
+                        report.Ai.StarCraftProcessId,
+                        "smoke-start-ai-observe.png",
+                        keepBitmap: request.RequireAiActivity);
+                    if (report.Player.StarCraftProcessId is not null)
+                    {
+                        _ = StarCraftBorderlessWindow.ActivateProcessWindowWhenReady(
+                            report.Player.StarCraftProcessId.Value,
+                            TimeSpan.FromSeconds(3));
+                        PumpWinFormsFor(TimeSpan.FromMilliseconds(500));
+                        playerStateAfterObserve = StarCraftScreenDetector.Detect(report.Player.StarCraftProcessId.Value);
+                        playerProcessAliveAfterObserve = playerProcessAliveAfterObserve ||
+                            playerStateAfterObserve != StarCraftScreenState.Unknown;
+                    }
+
+                    SaveSmokeWindowScreenshot(paths, report.Player.StarCraftProcessId, "smoke-start-player-observe.png");
+                    aiLogActivityDuringObserve = SmokeAiActivityLogSnapshot
+                        .Capture(aiWriteDirectory)
+                        .FindActivitySince(aiActivityLogSnapshot);
+                }
+
+                if (request.RequireAiActivity)
+                {
+                    var observeTimer = Stopwatch.StartNew();
+                    while (observeTimer.Elapsed < observeDuration)
+                    {
+                        var remaining = observeDuration - observeTimer.Elapsed;
+                        var interval = remaining < SmokeStartObservationPolicy.ActivityProbeInterval
+                            ? remaining
+                            : SmokeStartObservationPolicy.ActivityProbeInterval;
+                        if (interval > TimeSpan.Zero)
+                        {
+                            PumpWinFormsFor(interval);
+                        }
+
+                        playerProcessAliveAfterObserve = report.Player.StarCraftProcessId is not null &&
+                            IsProcessRunning(report.Player.StarCraftProcessId.Value);
+                        aiProcessAliveAfterObserve = report.Ai.StarCraftProcessId is not null &&
+                            IsProcessRunning(report.Ai.StarCraftProcessId.Value);
+                        if (!playerProcessAliveAfterObserve || !aiProcessAliveAfterObserve)
+                        {
+                            break;
+                        }
+
+                        if (observeTimer.Elapsed < SmokeStartObservationPolicy.MinimumEarlyActivityObserveDuration &&
+                            observeTimer.Elapsed < observeDuration)
+                        {
+                            continue;
+                        }
+
+                        CapturePostObserveScreens();
+                        var currentActivity = SmokeScreenActivityAnalyzer.Compare(
+                            aiActivityStartBitmap,
+                            aiActivityEndBitmap);
+                        var currentAiActivityDetected =
+                            currentActivity.HasMeaningfulActivity ||
+                            aiLogActivityDuringObserve.HasMeaningfulActivity;
+                        if (SmokeStartObservationPolicy.CanStopEarlyAfterActivity(
+                            request.ObserveSeconds,
+                            request.RequireAiActivity,
+                            observeTimer.Elapsed,
+                            playerProcessAliveAfterObserve,
+                            aiProcessAliveAfterObserve,
+                            playerStateAfterObserve,
+                            aiStateAfterObserve,
+                            currentAiActivityDetected,
+                            aiLogActivityDuringObserve.HasMeaningfulActivity))
+                        {
+                            observeStoppedEarly = true;
+                            break;
+                        }
+                    }
+
+                    if (aiActivityEndBitmap is null)
+                    {
+                        CapturePostObserveScreens();
+                    }
+                }
+                else
+                {
+                    PumpWinFormsFor(observeDuration);
+                    CapturePostObserveScreens();
+                }
+
                 observeMs = timing.ElapsedMilliseconds;
-                playerProcessAliveAfterObserve = report.Player.StarCraftProcessId is not null &&
-                    IsProcessRunning(report.Player.StarCraftProcessId.Value);
-                aiProcessAliveAfterObserve = report.Ai.StarCraftProcessId is not null &&
-                    IsProcessRunning(report.Ai.StarCraftProcessId.Value);
-                if (report.Ai.StarCraftProcessId is not null)
-                {
-                    _ = StarCraftBorderlessWindow.ActivateProcessWindowWhenReady(
-                        report.Ai.StarCraftProcessId.Value,
-                        TimeSpan.FromSeconds(3));
-                    PumpWinFormsFor(TimeSpan.FromMilliseconds(500));
-                    aiStateAfterObserve = StarCraftScreenDetector.Detect(report.Ai.StarCraftProcessId.Value);
-                    aiProcessAliveAfterObserve = aiProcessAliveAfterObserve ||
-                        aiStateAfterObserve != StarCraftScreenState.Unknown;
-                }
-
-                SaveSmokeWindowScreenshot(paths, report.Ai.StarCraftProcessId, "smoke-start-ai-observe.png");
-                if (report.Player.StarCraftProcessId is not null)
-                {
-                    _ = StarCraftBorderlessWindow.ActivateProcessWindowWhenReady(
-                        report.Player.StarCraftProcessId.Value,
-                        TimeSpan.FromSeconds(3));
-                    PumpWinFormsFor(TimeSpan.FromMilliseconds(500));
-                    playerStateAfterObserve = StarCraftScreenDetector.Detect(report.Player.StarCraftProcessId.Value);
-                    playerProcessAliveAfterObserve = playerProcessAliveAfterObserve ||
-                        playerStateAfterObserve != StarCraftScreenState.Unknown;
-                }
-
-                SaveSmokeWindowScreenshot(paths, report.Player.StarCraftProcessId, "smoke-start-player-observe.png");
+                observeElapsedMs = Math.Max(0, observeMs - observeStartedMs);
             }
 
             var playerState = report.Player.StarCraftProcessId is null
@@ -338,6 +438,14 @@ internal static class SmokeChecks
                     ? playerStateAtOverlay
                     : StarCraftScreenDetector.Detect(report.Player.StarCraftProcessId.Value);
             SaveSmokeWindowScreenshot(paths, report.Player.StarCraftProcessId, "smoke-start-player-final.png");
+            var aiActivity = SmokeScreenActivityAnalyzer.Compare(aiActivityStartBitmap, aiActivityEndBitmap);
+            var aiLogActivity = SmokeAiActivityLogSnapshot
+                .Capture(aiWriteDirectory)
+                .FindActivitySince(aiActivityLogSnapshot);
+            var aiRuntimeActivityDetected =
+                aiActivity.HasMeaningfulActivity ||
+                aiLogActivity.HasMeaningfulActivity;
+            var aiInGameVerified = aiInGameDetected || aiLogActivity.HasMeaningfulActivity;
 
             StarCraftAiShutdownResult? playerShutdown = null;
             var playerCleanupStopped = 0;
@@ -366,7 +474,7 @@ internal static class SmokeChecks
             var aiCleanupStopped = 0;
             var aiProcessGoneAfterCleanup = false;
             var aiErrorDirectory = Path.Combine(aiRoot, "Errors");
-            if (aiInGameDetected && report.Ai.StarCraftProcessId is not null)
+            if (aiInGameVerified && report.Ai.StarCraftProcessId is not null)
             {
                 aiShutdown = StarCraftGameExitController.LeaveGameThenCloseProcess(
                     report.Ai.StarCraftProcessId.Value,
@@ -417,27 +525,35 @@ internal static class SmokeChecks
                 playerProcessAliveAfterObserve,
                 aiProcessAliveAfterObserve,
                 playerStateAfterObserve,
-                aiStateAfterObserve);
+                aiStateAfterObserve,
+                aiLogActivity.HasMeaningfulActivity);
+            var aiActivityOk = !request.RequireAiActivity ||
+                               (request.ObserveSeconds > 0 && aiRuntimeActivityDetected);
 
             var passed = report.Player.CompletedStartCount > 0 &&
-                         report.Ai.CompletedStartCount > 0 &&
-                         borderlessApplied &&
-                         inGameDetected &&
-                         aiInGameDetected &&
-                         observeStable &&
-                         aiWindowMinimized &&
-                         timerOverlayVisible &&
-                         playerGracefulShutdown &&
-                         aiGracefulShutdown;
+                          report.Ai.CompletedStartCount > 0 &&
+                          borderlessApplied &&
+                          inGameDetected &&
+                          aiInGameVerified &&
+                           observeStable &&
+                           aiWindowMinimized &&
+                           timerOverlayVisible &&
+                          aiActivityOk &&
+                          playerGracefulShutdown &&
+                          aiGracefulShutdown;
             Console.Error.WriteLine(
                 $"smoke-start: bot={bot.Name}, map={map.Name}, playerStarts={report.Player.CompletedStartCount}, aiStarts={report.Ai.CompletedStartCount}, " +
                 $"playerPid={report.Player.StarCraftProcessId?.ToString() ?? "null"}, aiPid={report.Ai.StarCraftProcessId?.ToString() ?? "null"}, " +
                 $"playerPath={playerProcessPath}, aiPath={aiProcessPath}, " +
-                $"borderless={borderlessApplied}, playerState={playerState}, aiState={aiState}, inGame={inGameDetected}, aiInGame={aiInGameDetected}, aiMinimized={aiWindowMinimized}, " +
+                $"borderless={borderlessApplied}, playerState={playerState}, aiState={aiState}, inGame={inGameDetected}, aiInGame={aiInGameDetected}, aiInGameVerified={aiInGameVerified}, aiMinimized={aiWindowMinimized}, " +
                 $"timerOverlay={timerOverlayVisible}, playerHudMs={playerHudDetectedMs}, overlayStartMs={overlayStartedMs}, " +
-                $"overlayShotMs={overlayScreenshotMs}, aiHudMs={aiHudDetectedMs}, observeSeconds={request.ObserveSeconds}, observeMs={observeMs}, " +
+                $"overlayShotMs={overlayScreenshotMs}, aiHudMs={aiHudDetectedMs}, observeSeconds={request.ObserveSeconds}, observeMs={observeMs}, observeElapsedMs={observeElapsedMs}, observeStoppedEarly={observeStoppedEarly}, " +
                 $"observeStable={observeStable}, playerAliveAfterObserve={playerProcessAliveAfterObserve}, aiAliveAfterObserve={aiProcessAliveAfterObserve}, " +
                 $"playerStateAfterObserve={playerStateAfterObserve}, aiStateAfterObserve={aiStateAfterObserve}, " +
+                $"requireAiActivity={request.RequireAiActivity}, aiActivitySamples={aiActivity.SampleCount}, " +
+                $"aiActivityChanged={aiActivity.ChangedSamples}, aiActivityRatio={aiActivity.ChangedRatio:F6}, " +
+                $"aiActivityAverageDelta={aiActivity.AverageDelta:F3}, aiActivityDetected={aiActivity.HasMeaningfulActivity}, " +
+                $"aiLogActivityDetected={aiLogActivity.HasMeaningfulActivity}, aiLogActivityLines={aiLogActivity.MeaningfulLineCount}, aiLogActivityFiles={aiLogActivity.FormatFiles()}, " +
                 $"playerShutdownSent={playerShutdown?.LeaveSequenceSent.ToString() ?? "null"}, playerShutdownExited={playerProcessGoneAfterCleanup}, " +
                 $"playerLeaveConfirmed={playerShutdown?.LeaveConfirmed.ToString() ?? "null"}, playerForcedKill={playerShutdown?.ForcedKillUsed.ToString() ?? "null"}, " +
                 $"playerCleanupStopped={playerCleanupStopped}, playerRuntimeErrorsClean={playerRuntimeErrorsClean}, " +
@@ -459,9 +575,12 @@ internal static class SmokeChecks
         }
         finally
         {
+            aiActivityStartBitmap?.Dispose();
+            aiActivityEndBitmap?.Dispose();
             startupTrace?.Dispose();
             if (ShouldRunRuntimeCleanupForStart(runtimeLaunchStarted))
             {
+                cleaner?.StopKnown(launchedPlayerStarCraftProcessId, launchedAiStarCraftProcessId);
                 cleaner?.Stop(paths.PlayerRuntimeRoot, paths.AiRuntimeRoot);
                 if (preExistingStarCraftProcessIds is not null)
                 {
@@ -470,11 +589,12 @@ internal static class SmokeChecks
 
                 StarCraftGameExitController.RemoveExpectedShutdownCrashes(
                     Path.Combine(paths.PlayerRuntimeRoot, "Errors"),
-                    FinalPlayerShutdownCrashCleanupRetryWindow,
-                    FinalPlayerShutdownCrashInitialQuietWindow);
+                    FinalRuntimeShutdownCrashCleanupRetryWindow,
+                    FinalRuntimeShutdownCrashInitialQuietWindow);
                 StarCraftGameExitController.RemoveExpectedShutdownCrashes(
                     Path.Combine(paths.AiRuntimeRoot, "Errors"),
-                    StarCraftGameExitController.ExpectedShutdownCrashCleanupRetryWindow);
+                    FinalRuntimeShutdownCrashCleanupRetryWindow,
+                    FinalRuntimeShutdownCrashInitialQuietWindow);
             }
         }
     }
@@ -486,6 +606,29 @@ internal static class SmokeChecks
         {
             Application.DoEvents();
             Thread.Sleep(50);
+        }
+    }
+
+    internal static bool WaitForPracticeOverlay(
+        Func<bool> captureContainsOverlay,
+        Action<TimeSpan> pump,
+        TimeSpan timeout,
+        TimeSpan interval)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        while (true)
+        {
+            if (captureContainsOverlay())
+            {
+                return true;
+            }
+
+            if (stopwatch.Elapsed >= timeout)
+            {
+                return false;
+            }
+
+            pump(interval);
         }
     }
 
@@ -520,10 +663,10 @@ internal static class SmokeChecks
         }
     }
 
-    private static bool ContainsPracticeOverlay(Bitmap bitmap)
+    internal static bool ContainsPracticeOverlay(Bitmap bitmap)
     {
-        var maxX = Math.Min(bitmap.Width, 640);
-        var maxY = Math.Min(bitmap.Height, 360);
+        var maxX = Math.Min(bitmap.Width, 360);
+        var maxY = Math.Min(bitmap.Height, 140);
         var greenPixels = 0;
         var darkPixels = 0;
         for (var y = 0; y < maxY; y++)
@@ -543,16 +686,20 @@ internal static class SmokeChecks
             }
         }
 
-        return greenPixels >= 150 && darkPixels >= 80000;
+        return greenPixels >= 80 && darkPixels >= 1200;
     }
 
-    private static void SaveSmokeWindowScreenshot(PracticePaths paths, int? processId, string fileName)
+    private static Bitmap? SaveSmokeWindowScreenshot(
+        PracticePaths paths,
+        int? processId,
+        string fileName,
+        bool keepBitmap = false)
     {
         if (processId is null ||
             !StarCraftScreenDetector.TryCaptureWindowBitmap(processId.Value, out var bitmap) ||
             bitmap is null)
         {
-            return;
+            return null;
         }
 
         using (bitmap)
@@ -560,6 +707,7 @@ internal static class SmokeChecks
             var screenshotDirectory = Path.Combine(paths.RepositoryRoot, "artifacts", "screenshots");
             Directory.CreateDirectory(screenshotDirectory);
             bitmap.Save(Path.Combine(screenshotDirectory, fileName), ImageFormat.Png);
+            return keepBitmap ? new Bitmap(bitmap) : null;
         }
     }
 
@@ -625,8 +773,13 @@ internal static class SmokeChecks
             !string.Equals(request.BotName, "Random", StringComparison.OrdinalIgnoreCase);
         var candidateBots = catalog.Bots
             .Where(candidate => candidate.ExecutableKind == BotExecutableKind.Dll)
-            .Where(candidate => enemyRace is null || candidate.Race == enemyRace.Value)
-            .Where(candidate => PracticeCatalogCompatibility.MapsForBot(catalog, candidate.Id).Any());
+            .Where(candidate => enemyRace is null || candidate.Race == enemyRace.Value);
+        if (!request.AllowIncompatible)
+        {
+            candidateBots = candidateBots
+                .Where(candidate => PracticeCatalogCompatibility.MapsForBot(catalog, candidate.Id).Any());
+        }
+
         if (!explicitBotRequested)
         {
             candidateBots = candidateBots.Where(PracticeBotCandidatePolicy.IsSparringRandomEligible);
@@ -634,8 +787,21 @@ internal static class SmokeChecks
 
         var candidates = candidateBots.ToList();
         var bot = SelectBot(candidates, request.BotName);
-        var map = SelectMap(PracticeCatalogCompatibility.MapsForBot(catalog, bot.Id), request.MapName);
+        var mapCandidates = request.AllowIncompatible
+            ? catalog.Maps.Where(map => map.Enabled).OrderBy(map => map.Name, StringComparer.OrdinalIgnoreCase).ToList()
+            : PracticeCatalogCompatibility.MapsForBot(catalog, bot.Id);
+        var map = SelectMap(mapCandidates, request.MapName);
         return (bot, map);
+    }
+
+    private static PracticeCatalog MarkMapAsUserMapForSmokeVerification(PracticeCatalog catalog, Guid mapId)
+    {
+        return catalog with
+        {
+            Maps = catalog.Maps
+                .Select(map => map.Id == mapId ? map with { IsUserMap = true } : map)
+                .ToList()
+        };
     }
 
     private static (PracticeBot Bot, PracticeMap Map) ResolveSmokeLadderSelection(
@@ -679,7 +845,9 @@ internal static class SmokeChecks
         int ObserveSeconds,
         bool DryRun,
         bool PrepareOnly,
-        bool BundledCatalogOnly)
+        bool BundledCatalogOnly,
+        bool RequireAiActivity,
+        bool AllowIncompatible)
     {
         public bool IsLadderMode =>
             string.Equals(Mode, "Ladder", StringComparison.OrdinalIgnoreCase) ||
@@ -699,7 +867,9 @@ internal static class SmokeChecks
                 ParseObserveSeconds(ValueAfter(args, "--observe-seconds")),
                 args.Any(arg => string.Equals(arg, "--dry-run", StringComparison.OrdinalIgnoreCase)),
                 args.Any(arg => string.Equals(arg, "--prepare-only", StringComparison.OrdinalIgnoreCase)),
-                args.Any(arg => string.Equals(arg, "--bundled-catalog-only", StringComparison.OrdinalIgnoreCase)));
+                args.Any(arg => string.Equals(arg, "--bundled-catalog-only", StringComparison.OrdinalIgnoreCase)),
+                args.Any(arg => string.Equals(arg, "--require-ai-activity", StringComparison.OrdinalIgnoreCase)),
+                args.Any(arg => string.Equals(arg, "--allow-incompatible", StringComparison.OrdinalIgnoreCase)));
         }
 
         public StarCraftRace PlayerRaceOrDefault()
@@ -780,15 +950,7 @@ internal static class SmokeChecks
 
     private static bool IsProcessRunning(int processId)
     {
-        try
-        {
-            using var process = System.Diagnostics.Process.GetProcessById(processId);
-            return !process.HasExited;
-        }
-        catch
-        {
-            return false;
-        }
+        return ProcessEnumeration.IsProcessRunning(processId);
     }
 
     private static LauncherUiSmokeSummary CaptureLauncherScreenshots(PracticePaths paths)
@@ -1334,6 +1496,11 @@ internal static class SmokeChecks
         {
             using (process)
             {
+                if (!ProcessEnumeration.IsRunning(process))
+                {
+                    continue;
+                }
+
                 if (preExistingProcessIds.Contains(process.Id))
                 {
                     continue;

@@ -67,7 +67,10 @@ public sealed class PracticeSessionLauncher
         var playerReport = LaunchClient(prepared.Player, runtimeOptions, launchOptions.StarCraftStartupTimeout);
         launchOptions.AfterClientStarted?.Invoke(prepared.Player);
         Thread.Sleep(launchOptions.AiLaunchDelay);
-        var aiReport = LaunchClient(prepared.Ai, runtimeOptions, launchOptions.StarCraftStartupTimeout);
+        var aiExcludedProcessIds = playerReport.StarCraftProcessId is { } playerProcessId
+            ? new HashSet<int> { playerProcessId }
+            : [];
+        var aiReport = LaunchClient(prepared.Ai, runtimeOptions, launchOptions.StarCraftStartupTimeout, aiExcludedProcessIds);
         launchOptions.AfterClientStarted?.Invoke(prepared.Ai);
 
         return new PracticeSessionLaunchReport(playerReport, aiReport, stopped);
@@ -77,9 +80,15 @@ public sealed class PracticeSessionLauncher
     private SparringClientLaunchReport LaunchClient(
         ClientLaunchSettings settings,
         PracticeRuntimeOptions runtimeOptions,
-        TimeSpan timeout)
+        TimeSpan timeout,
+        IReadOnlySet<int>? additionalExcludedStarCraftProcessIds = null)
     {
         var beforeStarCraftProcessIds = CurrentStarCraftProcessIds();
+        if (additionalExcludedStarCraftProcessIds is not null)
+        {
+            beforeStarCraftProcessIds.UnionWith(additionalExcludedStarCraftProcessIds);
+        }
+
         var before = ChaosLauncherLog.CountCompletedStarts(settings.RuntimeRoot);
         var requestedAt = DateTime.UtcNow;
         using var tournamentEnvironment = TournamentModuleEnvironment.ApplyFor(settings.Role);
@@ -177,11 +186,35 @@ public sealed class PracticeSessionLauncher
                 return true;
             }
 
+            if (!IsRunningStarCraftProcess(processId))
+            {
+                return true;
+            }
+
             result = processId;
             return false;
         }, IntPtr.Zero);
 
         return result;
+    }
+
+    private static bool IsRunningStarCraftProcess(int processId)
+    {
+        try
+        {
+            using var process = Process.GetProcessById(processId);
+            if (!ProcessEnumeration.IsRunning(process))
+            {
+                return false;
+            }
+
+            return process.ProcessName.Equals("StarCraft", StringComparison.OrdinalIgnoreCase) ||
+                   process.ProcessName.Equals("Brood War", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     internal static bool IsBroodWarWindowTitle(string title)

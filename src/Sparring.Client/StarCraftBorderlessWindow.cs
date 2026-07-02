@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Sparring.Core;
 
 namespace Sparring.Client;
 
@@ -338,19 +339,33 @@ internal static class StarCraftBorderlessWindow
         try
         {
             using var process = Process.GetProcessById(processId);
+            if (!ProcessEnumeration.IsRunning(process))
+            {
+                return false;
+            }
+
             if (!process.ProcessName.Equals("StarCraft", StringComparison.OrdinalIgnoreCase) &&
                 !process.ProcessName.Equals("Brood War", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            var actualPath = process.MainModule?.FileName;
+            string? actualPath;
+            try
+            {
+                actualPath = process.MainModule?.FileName;
+            }
+            catch
+            {
+                return true;
+            }
+
             return string.IsNullOrWhiteSpace(actualPath) ||
                    string.Equals(Path.GetFullPath(actualPath), expectedExe, StringComparison.OrdinalIgnoreCase);
         }
         catch
         {
-            return true;
+            return false;
         }
     }
 

@@ -38,6 +38,22 @@ if (-not (Test-Path -LiteralPath (Join-Path $repo 'scripts\setup-runtime.ps1')))
     throw "Runtime setup script is missing: scripts\setup-runtime.ps1"
 }
 
+function Resolve-Dotnet {
+    $local = Join-Path $repo '.dotnet\dotnet.exe'
+    if (Test-Path -LiteralPath $local -PathType Leaf) {
+        return $local
+    }
+
+    $command = Get-Command dotnet -ErrorAction SilentlyContinue
+    if ($command) {
+        return $command.Source
+    }
+
+    throw 'dotnet was not found. Install .NET SDK or place it under .dotnet\dotnet.exe.'
+}
+
+$dotnet = Resolve-Dotnet
+
 $neoBotBuildScript = Join-Path $repo 'scripts\build-neo-bots.ps1'
 if (Test-Path -LiteralPath $neoBotBuildScript) {
     & $neoBotBuildScript
@@ -58,7 +74,7 @@ function Convert-ToRelativePath([string] $Root, [string] $Path) {
 Remove-Item -LiteralPath $publishDir, $setupPublishDir, $setupExternalPublishDir, $payloadStage, $externalSetupStage, $payloadZip -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $publishDir, $setupPublishDir, $setupExternalPublishDir, $payloadStage, $externalSetupStage, $distDir | Out-Null
 
-dotnet publish $appProject `
+& $dotnet publish $appProject `
     -c Release `
     -r win-x64 `
     --self-contained true `
@@ -106,7 +122,7 @@ Remove-Item -LiteralPath $zipPath, $setupExePath, $setupFolderZipPath -Force -Er
 Compress-Archive -Path (Join-Path $payloadStage '*') -DestinationPath $payloadZip -Force
 Compress-Archive -Path (Join-Path $payloadStage '*') -DestinationPath $zipPath -Force
 
-dotnet publish $setupProject `
+& $dotnet publish $setupProject `
     -c Release `
     -r win-x64 `
     --self-contained true `
@@ -123,7 +139,7 @@ Copy-Item -LiteralPath (Join-Path $setupPublishDir 'Sparring.Setup.exe') -Destin
 
 $setupObjRoot = Join-Path $repo 'src\Sparring.Setup\obj\Release'
 Remove-Item -LiteralPath $setupObjRoot -Recurse -Force -ErrorAction SilentlyContinue
-dotnet publish $setupProject `
+& $dotnet publish $setupProject `
     -c Release `
     -r win-x64 `
     --self-contained true `

@@ -149,7 +149,15 @@ known-bad 봇이 후보에서 빠졌는지는 강제 지정 dry-run이 실패하
 .\scripts\test-compatible-matrix.ps1 -ValidationMode Runtime -BotName Stardust -MapName '(4)Fighting Spirit' -ObserveSeconds 90 -NoBuild
 ```
 
+이미 카탈로그에서 차단된 조합을 재검증할 때는 일반 런처 경로가 아니라 smoke 전용 우회 플래그를 명시한다. 이 플래그는 검증용이며 사용자 실행 후보를 바꾸지 않는다.
+
+```powershell
+.\.dotnet\dotnet.exe .\src\Sparring.Client\bin\Release\net8.0-windows\Sparring.Client.dll --smoke-start --bundled-catalog-only --allow-incompatible --mode Sparring --bot ABCDxyz --map '(4)Andromeda' --observe-seconds 120 --require-ai-activity
+```
+
 Runtime 모드는 로컬 `C:\sparring\SC116AI`와 `C:\sparring\SC116AI_ai`만 대상으로 하며, 사용자가 별도로 실행한 StarCraft/Remastered 창을 정리 대상으로 삼지 않는다.
+
+Runtime 모드는 기본적으로 AI 화면의 시작 시점과 관찰 후 스크린샷을 비교해 의미 있는 화면 변화가 있는지도 확인한다. 이 검사는 드롭되지 않았지만 일꾼이 멈춰 있는 조합을 찾기 위한 보조 신호다. 캡처 환경 문제를 분리해야 할 때만 `-SkipAiActivityCheck`를 사용한다.
 
 ## 프로세스 정리 원칙
 

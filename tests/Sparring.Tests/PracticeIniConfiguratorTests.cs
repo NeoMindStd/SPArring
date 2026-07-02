@@ -5,7 +5,7 @@ namespace Sparring.Tests;
 public sealed class PracticeIniConfiguratorTests
 {
     [Fact]
-    public void ApplyPlayerHostRemovesAiModuleKeyAndUsesTournamentModule()
+    public void ApplyPlayerHostKeepsAiModuleKeyEmptyAndUsesTournamentModule()
     {
         var root = NewTempRoot();
         var settings = ClientSettings(root, ClientRuntimeRole.PlayerHost, aiModule: string.Empty, sound: true);
@@ -13,7 +13,8 @@ public sealed class PracticeIniConfiguratorTests
         var path = PracticeIniConfigurator.Apply(settings, PracticeRuntimeOptions.Defaults());
         var ini = IniDocument.Parse(File.ReadAllText(path));
 
-        Assert.Null(ini.Get("ai", "ai"));
+        Assert.Equal(string.Empty, ini.Get("ai", "ai"));
+        Assert.Equal(string.Empty, ini.Get("ai", "ai_dbg"));
         Assert.Equal(PracticeIniConfigurator.PlayerTournamentModule, ini.Get("ai", "tournament"));
         Assert.Equal("SparringHuman", ini.Get("auto_menu", "character_name"));
         Assert.Equal("Fighting.scx", ini.Get("auto_menu", "map"));
@@ -29,7 +30,8 @@ public sealed class PracticeIniConfiguratorTests
         var path = PracticeIniConfigurator.Apply(settings, PracticeRuntimeOptions.Defaults());
         var ini = IniDocument.Parse(File.ReadAllText(path));
 
-        Assert.Equal(@"bwapi-data\AI\Sparring\Bot.dll", ini.Get("ai", "ai"));
+        Assert.Equal("bwapi-data/AI/Sparring/Bot.dll", ini.Get("ai", "ai"));
+        Assert.Equal(string.Empty, ini.Get("ai", "ai_dbg"));
         Assert.Equal(string.Empty, ini.Get("ai", "tournament"));
         Assert.Equal(string.Empty, ini.Get("auto_menu", "map"));
         Assert.Equal("OFF", ini.Get("starcraft", "sound"));
@@ -59,7 +61,7 @@ public sealed class PracticeIniConfiguratorTests
         var path = PracticeIniConfigurator.DisableAutoMenu(root);
         var ini = IniDocument.Parse(File.ReadAllText(path));
 
-        Assert.Equal(@"bwapi-data\AI\Sparring\Bot.dll", ini.Get("ai", "ai"));
+        Assert.Equal("bwapi-data/AI/Sparring/Bot.dll", ini.Get("ai", "ai"));
         Assert.Equal("OFF", ini.Get("auto_menu", "auto_menu"));
         Assert.Equal(string.Empty, ini.Get("auto_menu", "map"));
         Assert.Equal(string.Empty, ini.Get("auto_menu", "game"));

@@ -144,9 +144,13 @@ internal static class StarCraftGameExitController
         StarCraftScreenState playerStateAfterAiShutdown,
         bool runtimeErrorsClean)
     {
+        var cleanExitAfterLeaveAttempt = processGoneAfterCleanup && shutdown is { ForcedKillUsed: false };
+
         return shutdown is not null &&
                shutdown.LeaveSequenceSent &&
-               (shutdown.LeaveConfirmed || shutdown.Exited && !shutdown.ForcedKillUsed) &&
+               (shutdown.LeaveConfirmed ||
+                (shutdown.Exited && !shutdown.ForcedKillUsed) ||
+                cleanExitAfterLeaveAttempt) &&
                processGoneAfterCleanup &&
                playerStateAfterAiShutdown != StarCraftScreenState.BlockedDialog &&
                runtimeErrorsClean;

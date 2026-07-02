@@ -35,14 +35,15 @@ public static class PracticeIniConfigurator
         EnsureBackup(iniPath);
 
         var ini = IniDocument.LoadOrCreate(iniPath, "ai");
+        ini.Set("ai", "ai_dbg", string.Empty);
         if (settings.Role == ClientRuntimeRole.PlayerHost && string.IsNullOrWhiteSpace(settings.AiModule))
         {
-            ini.Remove("ai", "ai");
+            ini.Set("ai", "ai", string.Empty);
             ini.Set("ai", "tournament", PlayerTournamentModule);
         }
         else
         {
-            ini.Set("ai", "ai", settings.AiModule);
+            ini.Set("ai", "ai", NormalizeBwapiModulePath(settings.AiModule));
             ini.Set("ai", "tournament", string.Empty);
         }
         ini.Set("auto_menu", "auto_menu", "LAN");
@@ -78,6 +79,13 @@ public static class PracticeIniConfigurator
     private static string ReplayPattern(string replayRoot)
     {
         return Path.Combine(replayRoot, "$Y $b $d", "Sparring_%BOTNAME6%_%MAP%_$H$M$S.rep");
+    }
+
+    private static string NormalizeBwapiModulePath(string path)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? string.Empty
+            : path.Trim().Replace('\\', '/');
     }
 
     private static string FormatRace(StarCraftRace race)

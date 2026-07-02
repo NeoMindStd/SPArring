@@ -108,7 +108,7 @@ public static class PracticeCompatibilityAuditor
             crashes.AddRange(ParseRuntimeCrashEvidence(File.ReadAllText(path), path));
         }
 
-        return crashes;
+        return PreferBotDirectoryCrashEvidence(crashes);
     }
 
     public static IReadOnlyList<RuntimeCrashEvidence> ParseRuntimeCrashEvidence(string text, string sourcePath)
@@ -156,7 +156,7 @@ public static class PracticeCompatibilityAuditor
                 continue;
             }
 
-            var faultAddress = Regex.Match(line, @"Fault address:\s+.*?(?<path>[A-Z]:\\.*?\.dll)", RegexOptions.IgnoreCase);
+            var faultAddress = Regex.Match(line, @"Fault address:\s*.*?(?<path>[A-Z]:\\.*?\.dll)", RegexOptions.IgnoreCase);
             if (faultAddress.Success)
             {
                 var modulePath = faultAddress.Groups["path"].Value;
@@ -170,6 +170,56 @@ public static class PracticeCompatibilityAuditor
         }
 
         return crashes;
+    }
+
+    private static IReadOnlyList<RuntimeCrashEvidence> PreferBotDirectoryCrashEvidence(
+        IReadOnlyList<RuntimeCrashEvidence> crashes)
+    {
+        return crashes
+            .Where(crash => !ShouldSuppressModuleOnlyCrash(crash, crashes))
+            .ToList();
+    }
+
+    private static bool ShouldSuppressModuleOnlyCrash(
+        RuntimeCrashEvidence crash,
+        IReadOnlyList<RuntimeCrashEvidence> crashes)
+    {
+        if (!string.IsNullOrWhiteSpace(crash.BotDirectoryName))
+        {
+            return false;
+        }
+
+        return crashes.Any(other =>
+            !ReferenceEquals(other, crash) &&
+            !string.IsNullOrWhiteSpace(other.BotDirectoryName) &&
+            string.Equals(other.ModuleName, crash.ModuleName, StringComparison.OrdinalIgnoreCase) &&
+            (CrashMapsOverlap(crash, other) || !HasCrashMap(crash) || !HasCrashMap(other)));
+    }
+
+    private static bool HasCrashMap(RuntimeCrashEvidence crash)
+    {
+        return !string.IsNullOrWhiteSpace(crash.MapFileName) ||
+               !string.IsNullOrWhiteSpace(crash.MapName);
+    }
+
+    private static bool CrashMapsOverlap(RuntimeCrashEvidence left, RuntimeCrashEvidence right)
+    {
+        var leftKeys = CrashMapKeys(left);
+        var rightKeys = CrashMapKeys(right).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return leftKeys.Any(rightKeys.Contains);
+    }
+
+    private static IEnumerable<string> CrashMapKeys(RuntimeCrashEvidence crash)
+    {
+        if (!string.IsNullOrWhiteSpace(crash.MapFileName))
+        {
+            yield return NormalizeMapKey(Path.GetFileNameWithoutExtension(crash.MapFileName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(crash.MapName))
+        {
+            yield return NormalizeMapKey(crash.MapName);
+        }
     }
 
     private static void AddBotFileIssues(

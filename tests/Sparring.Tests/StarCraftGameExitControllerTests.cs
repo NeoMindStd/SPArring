@@ -45,6 +45,11 @@ public sealed class StarCraftGameExitControllerTests
             LeaveConfirmed: true,
             ForcedKillUsed: false);
         var cleanCloseAfterLeaveAttempt = normalLeave with { LeaveConfirmed = false };
+        var delayedCleanCloseAfterLeaveAttempt = normalLeave with
+        {
+            Exited = false,
+            LeaveConfirmed = false
+        };
         var forcedDisconnect = normalLeave with
         {
             LeaveSequenceSent = false,
@@ -61,6 +66,11 @@ public sealed class StarCraftGameExitControllerTests
             cleanCloseAfterLeaveAttempt,
             processGoneAfterCleanup: true,
             playerStateAfterAiShutdown: StarCraftScreenState.MenuLike,
+            runtimeErrorsClean: true));
+        Assert.True(StarCraftGameExitController.IsGracefulAiShutdown(
+            delayedCleanCloseAfterLeaveAttempt,
+            processGoneAfterCleanup: true,
+            playerStateAfterAiShutdown: StarCraftScreenState.Unknown,
             runtimeErrorsClean: true));
         Assert.False(StarCraftGameExitController.IsGracefulAiShutdown(
             forcedDisconnect,
