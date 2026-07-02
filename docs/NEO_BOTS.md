@@ -10,9 +10,11 @@ The launcher writes the selected build into `bwapi-data\AI\Sparring\Bots\<BotNam
 build=23_nexus
 ```
 
-If the value is absent, `random`, or unknown to the bot, the bot chooses one matchup-appropriate opening from its own pool.
+If the value is absent, `random`, or unknown to the bot, the bot chooses one matchup-appropriate opening from its own default pool.
 
 These bots are BWAPI rule-based practice bots, not trained ML models. Keep descriptions honest about that limitation and use them as controllable sparring partners rather than tournament-strength opponents. Current Neo bots are development-preview bots: they stay selectable for manual sparring, but are excluded from ladder and random matchmaking.
+
+Gas worker assignment defaults to three workers on a completed refinery/extractor. The bots can temporarily reduce that target to one or two when gas is already banked and minerals are low, then refill gas later when the mineral balance recovers.
 
 ## NeoProtossF
 
@@ -20,14 +22,14 @@ These bots are BWAPI rule-based practice bots, not trained ML models. Keep descr
 
 ### Opening Pool
 
-At game start the bot chooses one opening from the matchup-appropriate pool:
+At game start the bot chooses one opening from a conservative default pool:
 
 - All matchups: 1012 two-gate zealot pressure, fast power dragoon.
-- Versus Terran: 23 Nexus, 29 Arbiter, naked double, fast Dark Templar, forward-gate Dark Templar.
 - Versus Zerg: Forge double, gate double into Corsair/Dark Templar.
-- Versus Protoss or unknown race: naked double, fast Dark Templar, forward-gate Dark Templar, plus the all-matchup openings.
 
-The opening rules are intentionally simple and supply-threshold based. If visible early pressure reaches the main or natural, emergency defense takes priority: probes are pulled, Zealots are trained, and Cannons are added when Forge tech exists.
+Greedier or more fragile openings such as 23 Nexus, 29 Arbiter, naked double, fast Dark Templar, and forward-gate Dark Templar remain available as explicit build choices, but they are not part of the default random pool.
+
+The opening rules are intentionally simple and supply-threshold based. The default pylon buffer is kept slightly early to reduce hard supply blocks. If visible early pressure reaches the main or natural, emergency defense takes priority: probes are pulled, Zealots are trained, and Cannons are added when Forge tech exists.
 
 ### Supported Maps
 
@@ -51,7 +53,7 @@ Run:
 .\scripts\build-neo-bots.ps1
 ```
 
-The script uses BWAPI 4.4.0 Release_Binary headers and BWAPILIB, builds a Win32 DLL with Visual Studio C++ tools, and copies the result into `data\bots\NeoProtossF\NeoProtossF.dll`.
+The script uses BWAPI 4.4.0 Release_Binary headers and BWAPILIB, builds Win32 DLLs with Visual Studio C++ tools, and copies the results into `data\bots\<BotName>`. If MSVC is unavailable, the script may reuse already bundled Neo DLLs only when the edited source is not newer than the packaged binaries.
 
 ## NeoTerranF
 

@@ -246,24 +246,10 @@ void NeoProtossF::chooseOpening()
     candidates.push_back(Opening::FastPowerDragoon);
 
     Race enemyRace = Broodwar->enemy() ? Broodwar->enemy()->getRace() : Races::Unknown;
-    if (enemyRace == Races::Terran)
-    {
-        candidates.push_back(Opening::Nexus23);
-        candidates.push_back(Opening::Arbiter29);
-        candidates.push_back(Opening::NakedDouble);
-        candidates.push_back(Opening::RealFastDark);
-        candidates.push_back(Opening::ForwardGateDark);
-    }
-    else if (enemyRace == Races::Zerg)
+    if (enemyRace == Races::Zerg)
     {
         candidates.push_back(Opening::ForgeDouble);
         candidates.push_back(Opening::GateDoubleCorsairDark);
-    }
-    else
-    {
-        candidates.push_back(Opening::NakedDouble);
-        candidates.push_back(Opening::RealFastDark);
-        candidates.push_back(Opening::ForwardGateDark);
     }
 
     const int seed = static_cast<int>(std::time(nullptr)) ^
@@ -322,6 +308,31 @@ void NeoProtossF::manageWorkers()
         if (defenseProbeIds_.find(probe->getID()) != defenseProbeIds_.end() &&
             Broodwar->getFrameCount() - lastDefenseFrame_ < 96)
         {
+            continue;
+        }
+
+        if (probe->isGatheringGas())
+        {
+            Unit gasTarget = probe->getTarget();
+            if (!gasTarget ||
+                !gasTarget->exists() ||
+                gasTarget->getType() != UnitTypes::Protoss_Assimilator)
+            {
+                gasTarget = probe->getOrderTarget();
+            }
+
+            if (gasTarget &&
+                gasTarget->exists() &&
+                gasTarget->getType() == UnitTypes::Protoss_Assimilator &&
+                gasWorkersFor(gasTarget) > gasWorkerTarget(gasTarget))
+            {
+                Unit mineral = nearestMineral(probe->getPosition());
+                if (mineral)
+                {
+                    probe->gather(mineral);
+                }
+            }
+
             continue;
         }
 
@@ -1006,7 +1017,7 @@ bool NeoProtossF::ensurePylon()
         return ensureBuilding(UnitTypes::Protoss_Pylon, 1, mainTile_);
     }
 
-    if (supplyTotal() - supplyUsed() <= 4 &&
+    if (supplyTotal() - supplyUsed() <= 6 &&
         allCount(UnitTypes::Protoss_Pylon) < 12 &&
         Broodwar->self()->incompleteUnitCount(UnitTypes::Protoss_Pylon) == 0)
     {
@@ -1374,7 +1385,7 @@ Unit NeoProtossF::nearestRefineryNeedingWorkers(Position near) const
             !unit->exists() ||
             unit->getType() != UnitTypes::Protoss_Assimilator ||
             !unit->isCompleted() ||
-            gasWorkersFor(unit) >= 3)
+            gasWorkersFor(unit) >= gasWorkerTarget(unit))
         {
             continue;
         }
@@ -1457,15 +1468,48 @@ Position NeoProtossF::attackTarget() const
     return Position(Broodwar->mapWidth() * 16, Broodwar->mapHeight() * 16);
 }
 
+int NeoProtossF::gasWorkerTarget(Unit refinery) const
+{
+    if (!refinery || !refinery->exists() || !refinery->isCompleted())
+    {
+        return 0;
+    }
+
+    const int gas = Broodwar->self()->gas();
+    const int minerals = Broodwar->self()->minerals();
+    const int supply = supplyUsed();
+
+    if (gas >= 300 && minerals < 200)
+    {
+        return 1;
+    }
+
+    if (supply < 40 && gas >= 180 && minerals < 150)
+    {
+        return 1;
+    }
+
+    if (supply < 32 && gas >= 110 && minerals < 120)
+    {
+        return 2;
+    }
+
+    return 3;
+}
+
 int NeoProtossF::gasWorkersFor(Unit refinery) const
 {
     int count = 0;
     for (auto unit : Broodwar->self()->getUnits())
     {
+        Unit target = unit ? unit->getTarget() : nullptr;
         if (unit &&
             unit->exists() &&
             unit->getType() == UnitTypes::Protoss_Probe &&
-            unit->getOrderTarget() == refinery)
+            ((target &&
+                target->getType() == UnitTypes::Protoss_Assimilator &&
+                unit->getTarget() == refinery) ||
+                unit->getOrderTarget() == refinery))
         {
             ++count;
         }

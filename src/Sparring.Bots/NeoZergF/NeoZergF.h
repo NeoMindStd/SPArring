@@ -87,6 +87,7 @@ private:
     BWAPI::Unit nearestEnemyTarget() const;
     int combatUnitCountNear(BWAPI::Position near, int radius) const;
     int enemyThreatCountNear(BWAPI::Position near, int radius, bool workersOnly) const;
+    int gasWorkerTarget(BWAPI::Unit extractor) const;
     int gasWorkersFor(BWAPI::Unit extractor) const;
     BWAPI::TilePosition findExpansionTile() const;
     BWAPI::Position attackTarget() const;

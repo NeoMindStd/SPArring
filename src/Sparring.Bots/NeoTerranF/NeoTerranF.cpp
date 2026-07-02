@@ -292,6 +292,31 @@ void NeoTerranF::manageWorkers()
             continue;
         }
 
+        if (scv->isGatheringGas())
+        {
+            Unit gasTarget = scv->getTarget();
+            if (!gasTarget ||
+                !gasTarget->exists() ||
+                gasTarget->getType() != UnitTypes::Terran_Refinery)
+            {
+                gasTarget = scv->getOrderTarget();
+            }
+
+            if (gasTarget &&
+                gasTarget->exists() &&
+                gasTarget->getType() == UnitTypes::Terran_Refinery &&
+                gasWorkersFor(gasTarget) > gasWorkerTarget(gasTarget))
+            {
+                Unit mineral = nearestMineral(scv->getPosition());
+                if (mineral)
+                {
+                    scv->gather(mineral);
+                }
+            }
+
+            continue;
+        }
+
         Unit gas = nearestRefineryNeedingWorkers(scv->getPosition());
         if (gas && !scv->isCarryingMinerals() && !scv->isCarryingGas())
         {
@@ -1072,7 +1097,7 @@ Unit NeoTerranF::nearestRefineryNeedingWorkers(Position near) const
             !unit->exists() ||
             unit->getType() != UnitTypes::Terran_Refinery ||
             !unit->isCompleted() ||
-            gasWorkersFor(unit) >= 3)
+            gasWorkersFor(unit) >= gasWorkerTarget(unit))
         {
             continue;
         }
@@ -1182,16 +1207,49 @@ int NeoTerranF::gasWorkersFor(Unit refinery) const
     int count = 0;
     for (auto unit : Broodwar->self()->getUnits())
     {
+        Unit target = unit ? unit->getTarget() : nullptr;
         if (unit &&
             unit->exists() &&
             unit->getType() == UnitTypes::Terran_SCV &&
-            unit->getOrderTarget() == refinery)
+            ((target &&
+                target->getType() == UnitTypes::Terran_Refinery &&
+                unit->getTarget() == refinery) ||
+                unit->getOrderTarget() == refinery))
         {
             ++count;
         }
     }
 
     return count;
+}
+
+int NeoTerranF::gasWorkerTarget(Unit refinery) const
+{
+    if (!refinery || !refinery->exists() || !refinery->isCompleted())
+    {
+        return 0;
+    }
+
+    const int gas = Broodwar->self()->gas();
+    const int minerals = Broodwar->self()->minerals();
+    const int supply = supplyUsed();
+
+    if (gas >= 300 && minerals < 200)
+    {
+        return 1;
+    }
+
+    if (supply < 40 && gas >= 180 && minerals < 150)
+    {
+        return 1;
+    }
+
+    if (supply < 32 && gas >= 110 && minerals < 120)
+    {
+        return 2;
+    }
+
+    return 3;
 }
 
 TilePosition NeoTerranF::findExpansionTile() const

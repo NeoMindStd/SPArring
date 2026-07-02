@@ -301,7 +301,17 @@ void NeoZergF::manageWorkers()
             continue;
         }
 
-        if (unit->isIdle() || unit->isGatheringGas() && gasWorkersFor(unit->getTarget()) > 3)
+        Unit gasTarget = unit->getTarget();
+        if (!gasTarget ||
+            !gasTarget->exists() ||
+            gasTarget->getType() != UnitTypes::Zerg_Extractor)
+        {
+            gasTarget = unit->getOrderTarget();
+        }
+
+        if (unit->isIdle() ||
+            (unit->isGatheringGas() &&
+                gasWorkersFor(gasTarget) > gasWorkerTarget(gasTarget)))
         {
             Unit gas = nearestExtractorNeedingWorkers(unit->getPosition());
             if (gas)
@@ -1223,7 +1233,7 @@ Unit NeoZergF::nearestExtractorNeedingWorkers(Position near) const
             !unit->exists() ||
             unit->getType() != UnitTypes::Zerg_Extractor ||
             !unit->isCompleted() ||
-            gasWorkersFor(unit) >= 3)
+            gasWorkersFor(unit) >= gasWorkerTarget(unit))
         {
             continue;
         }
@@ -1364,17 +1374,49 @@ int NeoZergF::gasWorkersFor(Unit extractor) const
     int count = 0;
     for (auto unit : Broodwar->self()->getUnits())
     {
+        Unit target = unit ? unit->getTarget() : nullptr;
         if (unit &&
             unit->exists() &&
             unit->getType() == UnitTypes::Zerg_Drone &&
-            unit->isGatheringGas() &&
-            unit->getTarget() == extractor)
+            (((target &&
+                target->getType() == UnitTypes::Zerg_Extractor &&
+                unit->getTarget() == extractor) ||
+                unit->getOrderTarget() == extractor)))
         {
             count++;
         }
     }
 
     return count;
+}
+
+int NeoZergF::gasWorkerTarget(Unit extractor) const
+{
+    if (!extractor || !extractor->exists() || !extractor->isCompleted())
+    {
+        return 0;
+    }
+
+    const int gas = Broodwar->self()->gas();
+    const int minerals = Broodwar->self()->minerals();
+    const int supply = supplyUsed();
+
+    if (gas >= 300 && minerals < 200)
+    {
+        return 1;
+    }
+
+    if (supply < 40 && gas >= 180 && minerals < 150)
+    {
+        return 1;
+    }
+
+    if (supply < 32 && gas >= 110 && minerals < 120)
+    {
+        return 2;
+    }
+
+    return 3;
 }
 
 TilePosition NeoZergF::findExpansionTile() const

@@ -96,6 +96,7 @@ private:
     BWAPI::TilePosition findExpansionTile() const;
     BWAPI::TilePosition findForwardTile() const;
     BWAPI::Position attackTarget() const;
+    int gasWorkerTarget(BWAPI::Unit refinery) const;
     int gasWorkersFor(BWAPI::Unit refinery) const;
     double distance(BWAPI::Position a, BWAPI::Position b) const;
     std::string configuredBuildId() const;

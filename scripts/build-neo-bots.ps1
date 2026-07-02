@@ -89,6 +89,30 @@ function Use-ExistingNeoBotBinaries([string] $Reason) {
         throw "$Reason Existing Neo bot binaries were not found for: $names"
     }
 
+    $stale = @($neoBots | Where-Object {
+        $bot = $_
+        $sourceRoot = Split-Path -Parent $bot.Project
+        $latestSource = Get-ChildItem -LiteralPath $sourceRoot -File |
+            Where-Object { $_.Extension -in '.cpp', '.h', '.vcxproj' } |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -First 1
+
+        $sourceGitStatus = @()
+        $binaryGitStatus = @()
+        if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
+            $sourceGitStatus = @(& git -C $repo status --porcelain -- $sourceRoot)
+            $binaryGitStatus = @(& git -C $repo status --porcelain -- $bot.Destination)
+        }
+
+        ($sourceGitStatus.Count -gt 0 -and $binaryGitStatus.Count -eq 0) -or
+            ($latestSource -and ((Get-Item -LiteralPath $bot.Destination).LastWriteTimeUtc -lt $latestSource.LastWriteTimeUtc))
+    })
+
+    if ($stale.Count -gt 0) {
+        $names = ($stale | ForEach-Object { $_.Name }) -join ', '
+        throw "$Reason Existing Neo bot binaries are older than edited source files for: $names. Install MSVC Build Tools or copy freshly built MSVC binaries before packaging."
+    }
+
     Write-Warning "$Reason Reusing existing bundled Neo bot binaries."
     foreach ($bot in $neoBots) {
         Get-Item -LiteralPath $bot.Destination | Select-Object FullName, Length, LastWriteTime
