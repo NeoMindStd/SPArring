@@ -4,7 +4,9 @@ public sealed class NeoBotSourceTests
 {
     [Theory]
     [InlineData("NeoProtossF", "Protoss_Probe", "Protoss_Assimilator", "refinery", "probe")]
+    [InlineData("NeoProtossE", "Protoss_Probe", "Protoss_Assimilator", "refinery", "probe")]
     [InlineData("NeoTerranF", "Terran_SCV", "Terran_Refinery", "refinery", "scv")]
+    [InlineData("NeoTerranE", "Terran_SCV", "Terran_Refinery", "refinery", "scv")]
     public void TerranAndProtossGasWorkerLimitCountsAssignedAndGatheringWorkers(
         string botName,
         string workerType,
@@ -27,9 +29,37 @@ public sealed class NeoBotSourceTests
     [Fact]
     public void ZergGasWorkerLimitUsesFlexibleTargetAndKeepsOperatorPrecedenceExplicit()
     {
-        var source = ReadBotSource("NeoZergF");
+        AssertZergGasWorkerLimit("NeoZergF");
+        AssertZergGasWorkerLimit("NeoZergE");
+    }
 
-        Assert.Contains("int NeoZergF::gasWorkerTarget(Unit extractor) const", source);
+    [Fact]
+    public void NeoEBotsUseSeparatedConfigPathsAndSlightlyStrongerTimingConstants()
+    {
+        var protoss = ReadBotSource("NeoProtossE");
+        var terran = ReadBotSource("NeoTerranE");
+        var zerg = ReadBotSource("NeoZergE");
+
+        Assert.Contains(@"bwapi-data\\AI\\Sparring\\Bots\\NeoProtossE\\sparring-bot.ini", protoss);
+        Assert.Contains(@"bwapi-data\\AI\\Sparring\\Bots\\NeoTerranE\\sparring-bot.ini", terran);
+        Assert.Contains(@"bwapi-data\\AI\\Sparring\\Bots\\NeoZergE\\sparring-bot.ini", zerg);
+        Assert.DoesNotContain(@"bwapi-data\\AI\\Sparring\\Bots\\NeoProtossF\\sparring-bot.ini", protoss);
+        Assert.DoesNotContain(@"bwapi-data\\AI\\Sparring\\Bots\\NeoTerranF\\sparring-bot.ini", terran);
+        Assert.DoesNotContain(@"bwapi-data\\AI\\Sparring\\Bots\\NeoZergF\\sparring-bot.ini", zerg);
+
+        Assert.Contains("shouldAttack = zealots >= 2 || frame > 24 * 240;", protoss);
+        Assert.Contains("return std::min(70, 24 + nexuses * 17);", protoss);
+        Assert.Contains("shouldAttack = marines >= 8 || frame > 24 * 320;", terran);
+        Assert.Contains("return std::min(70, 24 + commandCenters * 17);", terran);
+        Assert.Contains("shouldAttack = zerglings >= 8 || armyCount() >= 14 || frame > 24 * 290;", zerg);
+        Assert.Contains("return std::min(target, 64);", zerg);
+    }
+
+    private static void AssertZergGasWorkerLimit(string botName)
+    {
+        var source = ReadBotSource(botName);
+
+        Assert.Contains($"int {botName}::gasWorkerTarget(Unit extractor) const", source);
         Assert.Contains("gasTarget = unit->getOrderTarget();", source);
         Assert.Contains("gasWorkersFor(gasTarget) > gasWorkerTarget(gasTarget)", source);
         Assert.Contains("unit->getTarget() == extractor", source);

@@ -16,6 +16,8 @@ These bots are BWAPI rule-based practice bots, not trained ML models. Keep descr
 
 Gas worker assignment defaults to three workers on a completed refinery/extractor. The bots can temporarily reduce that target to one or two when gas is already banked and minerals are low, then refill gas later when the mineral balance recovers.
 
+The E-grade Neo bots share the same supported map pool and build-option packaging as the F-grade bots. They are intended to feel one step harder: slightly higher worker caps, more production, and earlier attack transitions. They are still development-preview, rule-based practice bots and remain excluded from ladder/random matchmaking.
+
 ## NeoProtossF
 
 `NeoProtossF` is the first built-in Protoss practice bot. It targets low-level manual sparring rather than tournament strength. It has no public ladder ELO yet and is excluded from ladder/random matchmaking until its midgame judgment is more reliable.
@@ -127,6 +129,38 @@ Run:
 ```
 
 The script builds all three Neo bots and copies the DLLs into `data\bots\<BotName>`.
+
+## NeoE Bots
+
+`NeoProtossE`, `NeoTerranE`, and `NeoZergE` are one grade above the F bots. They reuse the same conservative map pool and selectable build IDs so launcher and runtime packaging stay consistent, but their timing constants are tuned to be a little more decisive.
+
+### NeoProtossE
+
+- Adds 23 Nexus to the default Protoss-vs-Terran candidate pool.
+- Builds a little more army and production than NeoProtossF.
+- Attacks earlier on 1012, fast Dragoon, Dark Templar, Arbiter, and generic macro plans.
+
+### NeoTerranE
+
+- Adds Barracks/Factory production a little earlier than NeoTerranF.
+- Raises Marine/Medic, Vulture/Tank, and Wraith caps slightly.
+- Starts the first attack with a smaller army than the F-grade Terran bot.
+
+### NeoZergE
+
+- Raises Drone, Zergling, Hydralisk, Mutalisk, and follow-up Hydra caps slightly.
+- Attacks earlier across Muta, Hydra, Lurker, and Ling plans.
+- Keeps the same gas-worker flexibility as NeoZergF.
+
+### Build
+
+Run:
+
+```powershell
+.\scripts\build-neo-bots.ps1
+```
+
+The script builds all six Neo bots and copies the DLLs into `data\bots\<BotName>`.
 
 ## Roadmap
 

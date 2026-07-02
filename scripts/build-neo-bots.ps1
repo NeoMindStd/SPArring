@@ -25,6 +25,24 @@ $neoBots = @(
         Project = Join-Path $repo 'src\Sparring.Bots\NeoZergF\NeoZergF.vcxproj'
         Output = Join-Path $repo 'src\Sparring.Bots\NeoZergF\Release\NeoZergF.dll'
         Destination = Join-Path $repo 'data\bots\NeoZergF\NeoZergF.dll'
+    },
+    [pscustomobject]@{
+        Name = 'NeoProtossE'
+        Project = Join-Path $repo 'src\Sparring.Bots\NeoProtossE\NeoProtossE.vcxproj'
+        Output = Join-Path $repo 'src\Sparring.Bots\NeoProtossE\Release\NeoProtossE.dll'
+        Destination = Join-Path $repo 'data\bots\NeoProtossE\NeoProtossE.dll'
+    },
+    [pscustomobject]@{
+        Name = 'NeoTerranE'
+        Project = Join-Path $repo 'src\Sparring.Bots\NeoTerranE\NeoTerranE.vcxproj'
+        Output = Join-Path $repo 'src\Sparring.Bots\NeoTerranE\Release\NeoTerranE.dll'
+        Destination = Join-Path $repo 'data\bots\NeoTerranE\NeoTerranE.dll'
+    },
+    [pscustomobject]@{
+        Name = 'NeoZergE'
+        Project = Join-Path $repo 'src\Sparring.Bots\NeoZergE\NeoZergE.vcxproj'
+        Output = Join-Path $repo 'src\Sparring.Bots\NeoZergE\Release\NeoZergE.dll'
+        Destination = Join-Path $repo 'data\bots\NeoZergE\NeoZergE.dll'
     }
 )
 $bwapiUrl = 'https://github.com/bwapi/bwapi/releases/download/v4.4.0/BWAPI.7z'
