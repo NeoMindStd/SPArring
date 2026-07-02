@@ -16,12 +16,27 @@ $repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $appProject = Join-Path $repo 'src\Sparring.Client\Sparring.Client.csproj'
 $starCraftBefore = @((Get-Process -Name 'StarCraft' -ErrorAction SilentlyContinue).Id)
 
+function Resolve-Dotnet {
+    $local = Join-Path $repo '.dotnet\dotnet.exe'
+    if (Test-Path -LiteralPath $local -PathType Leaf) {
+        return $local
+    }
+
+    $command = Get-Command dotnet -ErrorAction SilentlyContinue
+    if ($command) {
+        return $command.Source
+    }
+
+    throw 'dotnet was not found. Install .NET SDK or place it under .dotnet\dotnet.exe.'
+}
+
 function Get-ScreenSignature {
     Add-Type -AssemblyName System.Windows.Forms
     return ([System.Windows.Forms.Screen]::AllScreens |
         ForEach-Object { "$($_.DeviceName):$($_.Bounds.X),$($_.Bounds.Y),$($_.Bounds.Width),$($_.Bounds.Height)" }) -join ';'
 }
 
+$dotnet = Resolve-Dotnet
 $screenBefore = Get-ScreenSignature
 
 try {
@@ -54,7 +69,7 @@ try {
         $smokeArgs += '--prepare-only'
     }
 
-    dotnet run --project $appProject -c Release -- $smokeArgs
+    & $dotnet run --project $appProject -c Release -- $smokeArgs
     $exitCode = $LASTEXITCODE
 }
 finally {

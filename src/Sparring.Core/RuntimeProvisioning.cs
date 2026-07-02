@@ -34,11 +34,54 @@ public static partial class RuntimeProvisioner
         };
     }
 
+    public static BotMatchLaunchPlan PrepareBotMatchRuntimeAssets(BotMatchLaunchPlan plan)
+    {
+        Directory.CreateDirectory(plan.Left.RuntimeRoot);
+        Directory.CreateDirectory(plan.Right.RuntimeRoot);
+        EnsureRuntimeWorkDirectories(plan.Left.RuntimeRoot);
+        EnsureRuntimeWorkDirectories(plan.Right.RuntimeRoot);
+
+        var leftMap = ProvisionMap(plan.Map, plan.Left.RuntimeRoot);
+        _ = ProvisionMap(plan.Map, plan.Right.RuntimeRoot);
+        var leftBotExecutable = ProvisionBot(plan.LeftBot, plan.Left.RuntimeRoot, plan.Left.BotBuildId);
+        var rightBotExecutable = ProvisionBot(plan.RightBot, plan.Right.RuntimeRoot, plan.Right.BotBuildId);
+        var leftModule = plan.LeftBot.UsesBwapiIniAiModule ? leftBotExecutable.RelativeExecutablePath : string.Empty;
+        var rightModule = plan.RightBot.UsesBwapiIniAiModule ? rightBotExecutable.RelativeExecutablePath : string.Empty;
+
+        return plan with
+        {
+            Left = plan.Left with
+            {
+                MapFileName = leftMap.RelativeMapPath,
+                AiModule = leftModule,
+                BotExecutable = leftBotExecutable.RelativeExecutablePath
+            },
+            Right = plan.Right with
+            {
+                AiModule = rightModule,
+                BotExecutable = rightBotExecutable.RelativeExecutablePath
+            }
+        };
+    }
+
     public static string EnsureAiRoot(string playerRoot)
     {
         var sourceRoot = Path.GetFullPath(playerRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         var aiRoot = sourceRoot + "_ai";
-        Directory.CreateDirectory(aiRoot);
+        CopyRuntimeBase(sourceRoot, aiRoot);
+        return aiRoot;
+    }
+
+    public static void CopyRuntimeBase(string sourceRoot, string targetRoot)
+    {
+        sourceRoot = Path.GetFullPath(sourceRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        targetRoot = Path.GetFullPath(targetRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        if (RuntimeWritePolicy.IsSameOrUnder(targetRoot, sourceRoot))
+        {
+            throw new InvalidOperationException("Runtime copy target must not be the source root or inside it.");
+        }
+
+        Directory.CreateDirectory(targetRoot);
 
         foreach (var sourcePath in Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories))
         {
@@ -48,10 +91,8 @@ public static partial class RuntimeProvisioner
                 continue;
             }
 
-            CopyIfDifferent(sourcePath, Path.Combine(aiRoot, relativePath));
+            CopyIfDifferent(sourcePath, Path.Combine(targetRoot, relativePath));
         }
-
-        return aiRoot;
     }
 
     private static void EnsureRuntimeWorkDirectories(string runtimeRoot)

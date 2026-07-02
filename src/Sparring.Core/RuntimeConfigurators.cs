@@ -206,10 +206,40 @@ public static class PracticeRuntimeConfigurator
             WindowY: 32));
     }
 
+    public static void Apply(BotMatchLaunchPlan plan, PracticeRuntimeOptions options)
+    {
+        PracticeIniConfigurator.Apply(plan.Left, options);
+        PracticeIniConfigurator.Apply(plan.Right, options);
+        ChaosPluginFileConfigurator.Apply(plan.Left.RuntimeRoot, plan.Left.EnableWModePlugin, plan.Left.ApmAlertEnabled);
+        ChaosPluginFileConfigurator.Apply(plan.Right.RuntimeRoot, plan.Right.EnableWModePlugin, plan.Right.ApmAlertEnabled);
+        CncDdrawConfigurator.Apply(plan.Left.RuntimeRoot, plan.Left.CncDdrawMode);
+        CncDdrawConfigurator.Apply(plan.Right.RuntimeRoot, plan.Right.CncDdrawMode);
+        WModeConfigurator.Apply(plan.Left.RuntimeRoot, new WModeSettings(
+            WindowedMode: plan.Left.EnableWModePlugin,
+            ClipCursor: false,
+            DoubleSize: false,
+            MuteNotFocused: true,
+            WindowX: 0,
+            WindowY: 0));
+        WModeConfigurator.Apply(plan.Right.RuntimeRoot, new WModeSettings(
+            WindowedMode: plan.Right.EnableWModePlugin,
+            ClipCursor: false,
+            DoubleSize: false,
+            MuteNotFocused: true,
+            WindowX: 680,
+            WindowY: 0));
+    }
+
     public static void DisableAutoMenuAfterGameStart(PracticeLaunchPlan plan)
     {
         PracticeIniConfigurator.DisableAutoMenu(plan.Player.RuntimeRoot);
         PracticeIniConfigurator.DisableAutoMenu(plan.Ai.RuntimeRoot);
+    }
+
+    public static void DisableAutoMenuAfterGameStart(BotMatchLaunchPlan plan)
+    {
+        PracticeIniConfigurator.DisableAutoMenu(plan.Left.RuntimeRoot);
+        PracticeIniConfigurator.DisableAutoMenu(plan.Right.RuntimeRoot);
     }
 }
 

@@ -30,6 +30,11 @@ public sealed record PracticeSessionLaunchReport(
     SparringClientLaunchReport Ai,
     int StoppedLocalProcesses);
 
+public sealed record BotMatchSessionLaunchReport(
+    SparringClientLaunchReport Left,
+    SparringClientLaunchReport Right,
+    int StoppedLocalProcesses);
+
 public sealed class PracticeSessionLauncher
 {
     private readonly ChaosLauncherClient _chaos;
@@ -74,6 +79,40 @@ public sealed class PracticeSessionLauncher
         launchOptions.AfterClientStarted?.Invoke(prepared.Ai);
 
         return new PracticeSessionLaunchReport(playerReport, aiReport, stopped);
+    }
+
+    [SupportedOSPlatform("windows")]
+    public BotMatchSessionLaunchReport Launch(
+        BotMatchLaunchPlan plan,
+        PracticeRuntimeOptions runtimeOptions,
+        PracticeSessionLaunchOptions launchOptions)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            throw new PlatformNotSupportedException("Bot match launch is only supported on Windows.");
+        }
+
+        var prepared = RuntimeProvisioner.PrepareBotMatchRuntimeAssets(plan);
+        PracticeRuntimeConfigurator.Apply(prepared, runtimeOptions);
+
+        var stopped = launchOptions.StopExistingLocalRuntime
+            ? _cleaner.Stop(prepared.Left.RuntimeRoot, prepared.Right.RuntimeRoot)
+            : 0;
+
+        var leftReport = LaunchClient(prepared.Left, runtimeOptions, launchOptions.StarCraftStartupTimeout);
+        launchOptions.AfterClientStarted?.Invoke(prepared.Left);
+        Thread.Sleep(launchOptions.AiLaunchDelay);
+        var rightExcludedProcessIds = leftReport.StarCraftProcessId is { } leftProcessId
+            ? new HashSet<int> { leftProcessId }
+            : [];
+        var rightReport = LaunchClient(
+            prepared.Right,
+            runtimeOptions,
+            launchOptions.StarCraftStartupTimeout,
+            rightExcludedProcessIds);
+        launchOptions.AfterClientStarted?.Invoke(prepared.Right);
+
+        return new BotMatchSessionLaunchReport(leftReport, rightReport, stopped);
     }
 
     [SupportedOSPlatform("windows")]

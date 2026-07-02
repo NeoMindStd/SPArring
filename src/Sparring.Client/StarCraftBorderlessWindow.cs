@@ -234,6 +234,58 @@ internal static class StarCraftBorderlessWindow
         return false;
     }
 
+    public static bool MoveProcessWindowWhenReady(int processId, Rectangle targetBounds, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        var stableMatches = 0;
+        while (DateTime.UtcNow < deadline)
+        {
+            var moved = false;
+            EnumWindows((handle, _) =>
+            {
+                if (!IsWindowVisible(handle) || !IsBroodWarWindow(handle))
+                {
+                    return true;
+                }
+
+                GetWindowThreadProcessId(handle, out var currentProcessId);
+                if (currentProcessId != processId)
+                {
+                    return true;
+                }
+
+                ShowWindow(handle, ShowRestore);
+                SetWindowPos(
+                    handle,
+                    IntPtr.Zero,
+                    targetBounds.Left,
+                    targetBounds.Top,
+                    targetBounds.Width,
+                    targetBounds.Height,
+                    SwpNoActivate | SwpNoOwnerZOrder | SwpShowWindow);
+                moved = WindowMatches(handle, targetBounds);
+                return false;
+            }, IntPtr.Zero);
+
+            if (moved)
+            {
+                stableMatches++;
+                if (stableMatches >= 3)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                stableMatches = 0;
+            }
+
+            Thread.Sleep(150);
+        }
+
+        return false;
+    }
+
     public static bool TryFindBroodWarWindow(int processId, out IntPtr windowHandle)
     {
         var result = IntPtr.Zero;

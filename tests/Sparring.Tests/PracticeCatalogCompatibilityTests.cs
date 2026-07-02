@@ -89,8 +89,6 @@ public sealed class PracticeCatalogCompatibilityTests
     [InlineData("Steamhammer", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("KillAlll", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("KillAlll", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
-    [InlineData("Iron bot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
-    [InlineData("Iron bot", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("XIAOYICOG2019", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("XIAOYICOG2019", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("Zia bot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
@@ -113,10 +111,8 @@ public sealed class PracticeCatalogCompatibilityTests
     [InlineData("ZNZZBot", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("DaQin", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("DaQin", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
-    [InlineData("Stone", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
-    [InlineData("Stone", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
+    [InlineData("Stone", "(4)Andromeda", "(4)Andromeda.scx")]
     [InlineData("Stone", "(4)Jade", "(4)Jade.scx")]
-    [InlineData("Stone", "(2)Benzene", "(2)Benzene.scx")]
     [InlineData("RedRum", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     [InlineData("RedRum", "(4)Fighting Spirit 1.4 [Remastered Ladder]", "(4)Fighting_Spirit 1.4.scx")]
     [InlineData("RedRum", "(4)Jade", "(4)Jade.scx")]
@@ -144,20 +140,9 @@ public sealed class PracticeCatalogCompatibilityTests
     [InlineData("Feint", "(4)La Mancha1.1", "(4)La Mancha1.1.scx")]
     [InlineData("Feint", "(4)Python", "(4)Python.scx")]
     [InlineData("Feint", "(4)Roadrunner", "(4)Roadrunner.scx")]
-    [InlineData("Iron bot", "(2)Benzene", "(2)Benzene.scx")]
-    [InlineData("Iron bot", "(2)Destination", "(2)Destination.scx")]
-    [InlineData("Iron bot", "(2)Heartbreak Ridge", "(2)Heartbreak Ridge.scx")]
-    [InlineData("Iron bot", "(3)Neo Moon Glaive", "(3)Neo Moon Glaive.scx")]
-    [InlineData("Iron bot", "(3)Tau Cross", "(3)Tau Cross.scx")]
     [InlineData("Iron bot", "(4)Andromeda", "(4)Andromeda.scx")]
     [InlineData("Iron bot", "(4)Circuit Breaker", "(4)Circuit Breaker.scx")]
-    [InlineData("Iron bot", "(4)Electric Circuit", "(4)Electric Circuit.scx")]
-    [InlineData("Iron bot", "(4)Empire of the Sun", "(4)Empire of the Sun.scm")]
-    [InlineData("Iron bot", "(4)Icarus", "(4)Icarus.scm")]
     [InlineData("Iron bot", "(4)Jade", "(4)Jade.scx")]
-    [InlineData("Iron bot", "(4)La Mancha1.1", "(4)La Mancha1.1.scx")]
-    [InlineData("Iron bot", "(4)Python", "(4)Python.scx")]
-    [InlineData("Iron bot", "(4)Roadrunner", "(4)Roadrunner.scx")]
     [InlineData("LetaBot", "(2)Benzene", "(2)Benzene.scx")]
     [InlineData("LetaBot", "(2)Destination", "(2)Destination.scx")]
     [InlineData("LetaBot", "(2)Heartbreak Ridge", "(2)Heartbreak Ridge.scx")]
@@ -210,6 +195,13 @@ public sealed class PracticeCatalogCompatibilityTests
     [InlineData("Brainiac", "(2)Match Point", "(2)Match Point.scx")]
     [InlineData("Brainiac", "(3)Power Bond)", "(3)Power Bond.scx")]
     [InlineData("Brainiac", "(4)Jade", "(4)Jade.scx")]
+    [InlineData("Iron bot", "(2)Benzene", "(2)Benzene.scx")]
+    [InlineData("Iron bot", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
+    [InlineData("Iron bot", "(4)Python", "(4)Python.scx")]
+    [InlineData("Stone", "(2)Benzene", "(2)Benzene.scx")]
+    [InlineData("Stone", "(4)Circuit Breaker", "(4)Circuit Breaker.scx")]
+    [InlineData("Stone", "(4)Electric Circuit", "(4)Electric Circuit.scx")]
+    [InlineData("Stone", "(4)Fighting Spirit", "(4)Fighting Spirit.scx")]
     public void ReauditedRuntimeFalsePositivesRemainCompatible(
         string botName,
         string mapName,
@@ -267,25 +259,28 @@ public sealed class PracticeCatalogCompatibilityTests
     }
 
     [Fact]
-    public void StoneIsExcludedFromEveryDeclaredMapUntilRuntimeSafetyIsProven()
+    public void StoneAllowsRuntimeVerifiedMapsAndBlocksCrashReproductions()
     {
         var benzeneId = Guid.NewGuid();
         var pythonId = Guid.NewGuid();
-        var circuitBreakerId = Guid.NewGuid();
+        var andromedaId = Guid.NewGuid();
+        var jadeId = Guid.NewGuid();
         var botId = Guid.NewGuid();
         var catalog = new PracticeCatalog(
             [
-                Bot(botId, "Stone", benzeneId, pythonId, circuitBreakerId)
+                Bot(botId, "Stone", benzeneId, pythonId, andromedaId, jadeId)
             ],
             [
                 new PracticeMap(benzeneId, "(2)Benzene", "(2)Benzene.scx", null, true),
                 new PracticeMap(pythonId, "(4)Python", "(4)Python.scx", null, true),
-                new PracticeMap(circuitBreakerId, "(4)Circuit Breaker", "(4)CircuitBreaker.scx", null, true)
+                new PracticeMap(andromedaId, "(4)Andromeda", "(4)Andromeda.scx", null, true),
+                new PracticeMap(jadeId, "(4)Jade", "(4)Jade.scx", null, true)
             ]);
 
-        Assert.Empty(PracticeCatalogCompatibility.MapsForBot(catalog, botId));
-        Assert.All(catalog.Maps, map =>
-            Assert.DoesNotContain(PracticeCatalogCompatibility.BotsForMap(catalog, map.Id), bot => bot.Id == botId));
+        Assert.True(PracticeCatalogCompatibility.IsCompatible(catalog, botId, benzeneId));
+        Assert.True(PracticeCatalogCompatibility.IsCompatible(catalog, botId, pythonId));
+        Assert.False(PracticeCatalogCompatibility.IsCompatible(catalog, botId, andromedaId));
+        Assert.False(PracticeCatalogCompatibility.IsCompatible(catalog, botId, jadeId));
     }
 
     [Fact]

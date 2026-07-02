@@ -213,8 +213,8 @@ public sealed class LadderBotSelectorTests
             remasteredFightingSpiritId,
             StarCraftRace.Terran);
 
-        var bot = Assert.Single(candidates);
-        Assert.Equal("Dragon", bot.Name);
+        Assert.Equal(["Stone", "Dragon"], candidates.Select(bot => bot.Name).ToArray());
+        Assert.DoesNotContain(candidates, bot => bot.Name == "LetaBot");
     }
 
     private static PracticeBot Bot(Guid id, string name, StarCraftRace race, int elo, params Guid[] supportedMaps)

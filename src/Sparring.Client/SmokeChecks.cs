@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Sparring.Client;
 
-internal static class SmokeChecks
+internal static partial class SmokeChecks
 {
     private static readonly TimeSpan FinalRuntimeShutdownCrashCleanupRetryWindow = TimeSpan.FromSeconds(2);
 

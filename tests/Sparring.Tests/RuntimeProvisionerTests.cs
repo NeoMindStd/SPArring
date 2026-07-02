@@ -5,6 +5,97 @@ namespace Sparring.Tests;
 public sealed class RuntimeProvisionerTests
 {
     [Fact]
+    public void CopyRuntimeBaseCopiesGameFilesButSkipsRuntimeArtifacts()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "sparring-provision-tests", Guid.NewGuid().ToString("N"));
+        var sourceRoot = Path.Combine(root, "source");
+        var targetRoot = Path.Combine(root, "target");
+        Directory.CreateDirectory(Path.Combine(sourceRoot, "bwapi-data", "write"));
+        Directory.CreateDirectory(Path.Combine(sourceRoot, "bwapi-data", "logs"));
+        Directory.CreateDirectory(Path.Combine(sourceRoot, "Errors"));
+        Directory.CreateDirectory(Path.Combine(sourceRoot, "maps"));
+        File.WriteAllText(Path.Combine(sourceRoot, "StarCraft.exe"), "exe");
+        File.WriteAllText(Path.Combine(sourceRoot, "maps", "Fighting.scx"), "map");
+        File.WriteAllText(Path.Combine(sourceRoot, "bwapi-data", "write", "game_log.txt"), "log");
+        File.WriteAllText(Path.Combine(sourceRoot, "bwapi-data", "logs", "bwapi.log"), "log");
+        File.WriteAllText(Path.Combine(sourceRoot, "Errors", "crash.txt"), "crash");
+        File.WriteAllText(Path.Combine(sourceRoot, "test.rep"), "replay");
+
+        RuntimeProvisioner.CopyRuntimeBase(sourceRoot, targetRoot);
+
+        Assert.True(File.Exists(Path.Combine(targetRoot, "StarCraft.exe")));
+        Assert.True(File.Exists(Path.Combine(targetRoot, "maps", "Fighting.scx")));
+        Assert.False(File.Exists(Path.Combine(targetRoot, "bwapi-data", "write", "game_log.txt")));
+        Assert.False(File.Exists(Path.Combine(targetRoot, "bwapi-data", "logs", "bwapi.log")));
+        Assert.False(File.Exists(Path.Combine(targetRoot, "Errors", "crash.txt")));
+        Assert.False(File.Exists(Path.Combine(targetRoot, "test.rep")));
+    }
+
+    [Fact]
+    public void PrepareBotMatchRuntimeAssetsCopiesMapAndBothBotsToSeparateRuntimes()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "sparring-provision-tests", Guid.NewGuid().ToString("N"));
+        var leftRoot = Path.Combine(root, "left");
+        var rightRoot = Path.Combine(root, "right");
+        var mapSource = Path.Combine(root, "maps", "(2)Test.scx");
+        var leftBotSource = Path.Combine(root, "bots", "LeftBot");
+        var rightBotSource = Path.Combine(root, "bots", "RightBot");
+        Directory.CreateDirectory(Path.GetDirectoryName(mapSource)!);
+        Directory.CreateDirectory(leftBotSource);
+        Directory.CreateDirectory(rightBotSource);
+        File.WriteAllText(mapSource, "map");
+        File.WriteAllText(Path.Combine(leftBotSource, "LeftBot.dll"), "left");
+        File.WriteAllText(Path.Combine(rightBotSource, "RightBot.dll"), "right");
+        var mapId = Guid.NewGuid();
+        var leftBot = new PracticeBot(
+            Guid.NewGuid(),
+            "LeftBot",
+            StarCraftRace.Protoss,
+            "LeftBot.dll",
+            BotExecutableKind.Dll,
+            "4.4.0",
+            1000,
+            false,
+            new HashSet<Guid> { mapId },
+            null,
+            null,
+            leftBotSource);
+        var rightBot = new PracticeBot(
+            Guid.NewGuid(),
+            "RightBot",
+            StarCraftRace.Terran,
+            "RightBot.dll",
+            BotExecutableKind.Dll,
+            "4.4.0",
+            1000,
+            false,
+            new HashSet<Guid> { mapId },
+            null,
+            null,
+            rightBotSource);
+        var map = new PracticeMap(mapId, "(2)Test", "(2)Test.scx", null, true, mapSource);
+        var plan = new BotMatchLaunchPlan(
+            Client(leftRoot, ClientRuntimeRole.AiOpponent, "LeftBot.dll", "(2)Test.scx"),
+            Client(rightRoot, ClientRuntimeRole.AiOpponent, "RightBot.dll", string.Empty),
+            leftBot,
+            rightBot,
+            map);
+
+        var prepared = RuntimeProvisioner.PrepareBotMatchRuntimeAssets(plan);
+
+        Assert.True(File.Exists(Path.Combine(leftRoot, "maps", "Sparring", "(2)Test.scx")));
+        Assert.True(File.Exists(Path.Combine(rightRoot, "maps", "Sparring", "(2)Test.scx")));
+        Assert.True(File.Exists(Path.Combine(leftRoot, prepared.Left.BotExecutable)));
+        Assert.True(File.Exists(Path.Combine(rightRoot, prepared.Right.BotExecutable)));
+        Assert.Equal(prepared.Left.BotExecutable, prepared.Left.AiModule);
+        Assert.Equal(prepared.Right.BotExecutable, prepared.Right.AiModule);
+        Assert.Equal(Path.Combine("maps", "Sparring", "(2)Test.scx"), prepared.Left.MapFileName);
+        Assert.Equal(string.Empty, prepared.Right.MapFileName);
+        Assert.True(Directory.Exists(Path.Combine(leftRoot, "bwapi-data", "write")));
+        Assert.True(Directory.Exists(Path.Combine(rightRoot, "bwapi-data", "write")));
+    }
+
+    [Fact]
     public void PrepareRuntimeAssetsCopiesMapToBothRuntimesAndBotToAiRuntime()
     {
         var root = Path.Combine(Path.GetTempPath(), "sparring-provision-tests", Guid.NewGuid().ToString("N"));

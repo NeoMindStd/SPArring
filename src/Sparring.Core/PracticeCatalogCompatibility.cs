@@ -41,11 +41,6 @@ public static class PracticeCatalogCompatibility
 
     private static bool IsKnownBadRuntimePair(PracticeBot bot, PracticeMap map)
     {
-        if (bot.Name.Equals("Stone", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
         if (bot.Name.Equals("RedRum", StringComparison.OrdinalIgnoreCase))
         {
             // RedRum crashes on multiple declared maps and has no trustworthy safe-map whitelist yet.
@@ -78,7 +73,6 @@ public static class PracticeCatalogCompatibility
                    bot.Name.Equals("CUBOT", StringComparison.OrdinalIgnoreCase) ||
                    IsSteamhammerFamily(bot) ||
                    bot.Name.Equals("KillAlll", StringComparison.OrdinalIgnoreCase) ||
-                   bot.Name.Equals("Iron bot", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("XIAOYICOG2019", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("Zia bot", StringComparison.OrdinalIgnoreCase) ||
                    bot.Name.Equals("Feint", StringComparison.OrdinalIgnoreCase) ||
@@ -164,20 +158,15 @@ public static class PracticeCatalogCompatibility
     {
         if (bot.Name.Equals("Iron bot", StringComparison.OrdinalIgnoreCase))
         {
-            return IsMap(map, "Benzene") ||
-                   IsMap(map, "Destination") ||
-                   IsMap(map, "Heartbreak Ridge") ||
-                   IsMap(map, "Neo Moon Glaive") ||
-                   IsMap(map, "Tau Cross") ||
-                   IsAndromedaVariant(map) ||
+            return IsAndromedaVariant(map) ||
                    IsMap(map, "Circuit Breaker") ||
-                   IsMap(map, "Electric Circuit") ||
-                   IsMap(map, "Empire of the Sun") ||
-                   IsMap(map, "Icarus") ||
-                   IsJadeVariant(map) ||
-                   IsMap(map, "La Mancha") ||
-                   IsMap(map, "Python") ||
-                   IsMap(map, "Roadrunner");
+                   IsJadeVariant(map);
+        }
+
+        if (bot.Name.Equals("Stone", StringComparison.OrdinalIgnoreCase))
+        {
+            return IsAndromedaVariant(map) ||
+                   IsJadeVariant(map);
         }
 
         if (bot.Name.Equals("LetaBot", StringComparison.OrdinalIgnoreCase))

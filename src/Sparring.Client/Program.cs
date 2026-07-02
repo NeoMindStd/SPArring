@@ -12,6 +12,11 @@ static class Program
             return SmokeChecks.RunStart(args);
         }
 
+        if (args.Any(arg => string.Equals(arg, "--smoke-bot-match", StringComparison.OrdinalIgnoreCase)))
+        {
+            return SmokeChecks.RunBotMatch(args);
+        }
+
         if (args.Any(arg => string.Equals(arg, "--audit-compatibility", StringComparison.OrdinalIgnoreCase)))
         {
             return CompatibilityAuditCommand.Run(args);
