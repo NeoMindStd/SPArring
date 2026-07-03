@@ -162,7 +162,27 @@ internal static class StarCraftScreenAnalyzer
                                     gameWorldRatio >= 0.12 &&
                                     hudDarkPanelRatio >= 0.20 &&
                                     hudRatio < 0.01;
-        if (roomInfoPanelDetected)
+        var lanLobbyChromeDetected = rightRoomInfoLightRatio >= 0.002 &&
+                                     menuGreenRatio >= 0.0015 &&
+                                     gameWorldRatio >= 0.08 &&
+                                     hudDarkPanelRatio >= 0.10 &&
+                                     centralDialogFrameRatio >= 0.0004;
+        var capturedLanLobbyChromeDetected = rightRoomInfoLightRatio >= 0.006 &&
+                                             gameWorldRatio >= 0.12 &&
+                                             hudDarkPanelRatio >= 0.20 &&
+                                             hudRatio < 0.01 &&
+                                             centralDialogFrameRatio >= 0.002;
+        if (capturedLanLobbyChromeDetected)
+        {
+            return StarCraftScreenState.GameRoom;
+        }
+
+        if (strongHudDetected && hudRatio >= 0.01 && !dialogDetected && roomFrameRatio < 0.0022)
+        {
+            return StarCraftScreenState.InGame;
+        }
+
+        if (roomInfoPanelDetected || lanLobbyChromeDetected)
         {
             return StarCraftScreenState.GameRoom;
         }

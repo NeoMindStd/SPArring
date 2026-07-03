@@ -44,11 +44,13 @@ public static class BotMatchLaunchPlanBuilder
         var gameName = string.IsNullOrWhiteSpace(selection.GameName)
             ? "Sparring Bot Match"
             : selection.GameName.Trim();
+        var leftCharacterName = PracticeCharacterName.FromBotName(leftBot.Name, gameName);
+        var rightCharacterName = PracticeCharacterName.FromBotName(rightBot.Name, gameName);
 
         var left = new ClientLaunchSettings(
             Role: ClientRuntimeRole.AiOpponent,
             RuntimeRoot: paths.PlayerRuntimeRoot,
-            CharacterName: PracticeCharacterName.FromBotName(leftBot.Name),
+            CharacterName: leftCharacterName,
             Race: leftBot.Race,
             EnemyRace: rightBot.Race,
             MapFileName: map.FileName,
@@ -68,11 +70,11 @@ public static class BotMatchLaunchPlanBuilder
         var right = new ClientLaunchSettings(
             Role: ClientRuntimeRole.AiOpponent,
             RuntimeRoot: paths.AiRuntimeRoot,
-            CharacterName: PracticeCharacterName.FromBotName(rightBot.Name),
+            CharacterName: rightCharacterName,
             Race: rightBot.Race,
             EnemyRace: leftBot.Race,
             MapFileName: string.Empty,
-            GameName: "JOIN_FIRST",
+            GameName: left.CharacterName,
             AiModule: rightBot.UsesBwapiIniAiModule ? rightBot.ExecutableName : string.Empty,
             BotExecutable: rightBot.ExecutableName,
             BotExecutableKind: rightBot.ExecutableKind,

@@ -1,5 +1,6 @@
 using Sparring.Core;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace Sparring.Client;
 
@@ -14,11 +15,15 @@ internal static partial class SmokeChecks
 
         var request = SmokeBotMatchRequest.Parse(args ?? []);
         var basePaths = PracticePaths.Defaults();
-        var botMatchRoot = Path.Combine(
+        var defaultBotMatchRoot = Path.Combine(
             Path.GetDirectoryName(basePaths.PlayerRuntimeRoot) ?? @"C:\sparring",
             "bot-match");
+        var botMatchRoot = string.IsNullOrWhiteSpace(request.BotMatchRoot)
+            ? defaultBotMatchRoot
+            : Path.GetFullPath(request.BotMatchRoot.Trim());
         var leftRoot = Path.Combine(botMatchRoot, "left");
         var rightRoot = Path.Combine(botMatchRoot, "right");
+        var artifactPrefix = SanitizeArtifactPrefix(request.ArtifactPrefix);
         var paths = basePaths with
         {
             PlayerRuntimeRoot = leftRoot,
@@ -27,8 +32,15 @@ internal static partial class SmokeChecks
         var runtimeOptions = PracticeRuntimeOptions.Defaults();
         if (!string.IsNullOrWhiteSpace(request.ReplayRoot))
         {
-            runtimeOptions = runtimeOptions with { ReplayRoot = request.ReplayRoot.Trim() };
+            var replayRoot = Path.IsPathRooted(request.ReplayRoot.Trim())
+                ? request.ReplayRoot.Trim()
+                : Path.Combine(basePaths.RepositoryRoot, request.ReplayRoot.Trim());
+            runtimeOptions = runtimeOptions with { ReplayRoot = replayRoot };
             Directory.CreateDirectory(runtimeOptions.ReplayRoot);
+        }
+        if (request.SpeedOverrideMs is { } speedOverrideMs)
+        {
+            runtimeOptions = runtimeOptions with { SpeedOverrideMs = speedOverrideMs };
         }
 
         LocalRuntimeProcessCleaner? cleaner = null;
@@ -46,12 +58,16 @@ internal static partial class SmokeChecks
             var leftBot = SelectDllBot(catalog.Bots, request.LeftBotName, "left");
             var rightBot = SelectDllBot(catalog.Bots, request.RightBotName, "right");
             var map = SelectBotMatchMap(catalog, leftBot, rightBot, request.MapName, request.AllowIncompatible);
+            var gameName = string.IsNullOrWhiteSpace(request.GameName)
+                ? $"Sparring Bot Match {Environment.ProcessId}"
+                : request.GameName.Trim();
             if (request.DryRun)
             {
                 Console.WriteLine(
                     $"smoke-bot-match dry-run: left={leftBot.Name}, right={rightBot.Name}, map={map.Name}, " +
+                    $"gameName={gameName}, " +
                     $"leftRuntime={leftRoot}, rightRuntime={rightRoot}, allowIncompatible={request.AllowIncompatible}, " +
-                    $"untilEnd={request.UntilEnd}, replayRoot={runtimeOptions.ReplayRoot}");
+                    $"untilEnd={request.UntilEnd}, joinDelaySeconds={request.JoinDelaySeconds}, replayRoot={runtimeOptions.ReplayRoot}");
                 return 0;
             }
 
@@ -70,7 +86,7 @@ internal static partial class SmokeChecks
                     leftBot.Id,
                     rightBot.Id,
                     map.Id,
-                    "Sparring Bot Match",
+                    gameName,
                     request.LeftBotBuildId,
                     request.RightBotBuildId,
                     request.AllowIncompatible));
@@ -99,7 +115,7 @@ internal static partial class SmokeChecks
                 PracticeSessionLaunchOptions.Defaults() with
                 {
                     StarCraftStartupTimeout = TimeSpan.FromSeconds(50),
-                    AiLaunchDelay = TimeSpan.FromSeconds(4),
+                    AiLaunchDelay = TimeSpan.FromSeconds(request.JoinDelaySeconds),
                     StopExistingLocalRuntime = true
                 });
             launchedLeftStarCraftProcessId = report.Left.StarCraftProcessId;
@@ -110,7 +126,9 @@ internal static partial class SmokeChecks
                 $"leftPath={ProcessPath(report.Left.StarCraftProcessId)}, rightPath={ProcessPath(report.Right.StarCraftProcessId)}");
 
             var screenBounds = Screen.PrimaryScreen?.WorkingArea ?? new Rectangle(0, 0, 1280, 720);
-            var (leftBounds, rightBounds) = BotMatchWindowLayout.SideBySide(screenBounds);
+            var (leftBounds, rightBounds) = request.WindowRow is { } windowRow
+                ? BotMatchWindowLayout.RowPair(screenBounds, windowRow, request.WindowRows)
+                : BotMatchWindowLayout.SideBySide(screenBounds);
             var leftArranged = ArrangeBotMatchWindow(report.Left.StarCraftProcessId, leftBounds);
             var rightArranged = ArrangeBotMatchWindow(report.Right.StarCraftProcessId, rightBounds);
             if (report.Right.StarCraftProcessId is not null)
@@ -135,8 +153,8 @@ internal static partial class SmokeChecks
             var rightState = report.Right.StarCraftProcessId is null
                 ? StarCraftScreenState.Unknown
                 : StarCraftScreenDetector.Detect(report.Right.StarCraftProcessId.Value);
-            SaveSmokeWindowScreenshot(basePaths, report.Left.StarCraftProcessId, "smoke-bot-match-left-final.png");
-            SaveSmokeWindowScreenshot(basePaths, report.Right.StarCraftProcessId, "smoke-bot-match-right-final.png");
+            SaveSmokeWindowScreenshot(basePaths, report.Left.StarCraftProcessId, $"{artifactPrefix}-left-final.png");
+            SaveSmokeWindowScreenshot(basePaths, report.Right.StarCraftProcessId, $"{artifactPrefix}-right-final.png");
             BotMatchUntilEndResult? untilEndResult = null;
 
             if (request.ObserveSeconds > 0 && leftInGame && rightInGame)
@@ -148,8 +166,8 @@ internal static partial class SmokeChecks
                 rightState = report.Right.StarCraftProcessId is null
                     ? StarCraftScreenState.Unknown
                     : StarCraftScreenDetector.Detect(report.Right.StarCraftProcessId.Value);
-                SaveSmokeWindowScreenshot(basePaths, report.Left.StarCraftProcessId, "smoke-bot-match-left-observe.png");
-                SaveSmokeWindowScreenshot(basePaths, report.Right.StarCraftProcessId, "smoke-bot-match-right-observe.png");
+                SaveSmokeWindowScreenshot(basePaths, report.Left.StarCraftProcessId, $"{artifactPrefix}-left-observe.png");
+                SaveSmokeWindowScreenshot(basePaths, report.Right.StarCraftProcessId, $"{artifactPrefix}-right-observe.png");
             }
 
             if (request.UntilEnd && leftInGame && rightInGame)
@@ -161,7 +179,8 @@ internal static partial class SmokeChecks
                     runtimeOptions.ReplayRoot,
                     launchStartUtc,
                     TimeSpan.FromSeconds(request.MaxSeconds),
-                    TimeSpan.FromSeconds(request.SampleSeconds));
+                    TimeSpan.FromSeconds(request.SampleSeconds),
+                    artifactPrefix);
                 leftState = untilEndResult.LeftState;
                 rightState = untilEndResult.RightState;
             }
@@ -235,6 +254,44 @@ internal static partial class SmokeChecks
                          leftRuntimeErrorsClean &&
                          rightRuntimeErrorsClean &&
                          untilEndOk;
+            var newReplayFiles = untilEndResult?.NewReplayFiles ?? [];
+            var winner = InferBotMatchWinner(leftState, rightState, newReplayFiles, leftBot.Name, rightBot.Name);
+            if (!string.IsNullOrWhiteSpace(request.ResultJson))
+            {
+                WriteBotMatchResultJson(
+                    basePaths,
+                    request.ResultJson,
+                    new BotMatchResultReport(
+                        LeftBot: leftBot.Name,
+                        RightBot: rightBot.Name,
+                        Map: map.Name,
+                        GameName: gameName,
+                        LeftPid: report.Left.StarCraftProcessId,
+                        RightPid: report.Right.StarCraftProcessId,
+                        LeftState: leftState.ToString(),
+                        RightState: rightState.ToString(),
+                        LeftInGame: leftInGame,
+                        RightInGame: rightInGame,
+                        LeftAlive: leftAlive,
+                        RightAlive: rightAlive,
+                        LeftRuntimeErrorsClean: leftRuntimeErrorsClean,
+                        RightRuntimeErrorsClean: rightRuntimeErrorsClean,
+                        UntilEnd: request.UntilEnd,
+                        BotMatchEnded: untilEndResult?.Ended,
+                        EndReason: untilEndResult?.Reason,
+                        WinnerSide: winner.WinnerSide,
+                        WinnerBot: winner.WinnerSide switch
+                        {
+                            "left" => leftBot.Name,
+                            "right" => rightBot.Name,
+                            _ => null
+                        },
+                        WinnerReason: winner.Reason,
+                        Passed: passed,
+                        ReplayFiles: DescribeReplayFiles(newReplayFiles),
+                        ArtifactPrefix: artifactPrefix,
+                        BotMatchRoot: botMatchRoot));
+            }
             Console.Error.WriteLine(
                 $"smoke-bot-match: left={leftBot.Name}, right={rightBot.Name}, map={map.Name}, " +
                 $"leftStarts={report.Left.CompletedStartCount}, rightStarts={report.Right.CompletedStartCount}, " +
@@ -246,7 +303,8 @@ internal static partial class SmokeChecks
                 $"rightRuntimeErrorFiles={RuntimeErrorLogSnapshot.Format(newRightRuntimeErrors)}, " +
                 $"closedApplicationErrorDialogs={closedApplicationErrorDialogs}, " +
                 $"untilEnd={request.UntilEnd}, botMatchEnded={untilEndResult?.Ended.ToString() ?? "n/a"}, " +
-                $"endReason={untilEndResult?.Reason ?? "n/a"}, newReplayFiles={FormatReplayFiles(untilEndResult?.NewReplayFiles)}, " +
+                $"endReason={untilEndResult?.Reason ?? "n/a"}, newReplayFiles={FormatReplayFiles(newReplayFiles)}, " +
+                $"winnerSide={winner.WinnerSide}, winnerBot={winner.WinnerSide switch { "left" => leftBot.Name, "right" => rightBot.Name, _ => "unknown" }}, winnerReason={winner.Reason}, " +
                 $"keepOpen={request.KeepOpen}");
 
             if (request.KeepOpen)
@@ -334,7 +392,8 @@ internal static partial class SmokeChecks
         string replayRoot,
         DateTime launchStartUtc,
         TimeSpan maxDuration,
-        TimeSpan sampleInterval)
+        TimeSpan sampleInterval,
+        string artifactPrefix)
     {
         var monitor = new BotMatchEndMonitor(stableNonInGameSamples: 3, replayGraceSamples: 4);
         var startedUtc = DateTime.UtcNow;
@@ -367,15 +426,15 @@ internal static partial class SmokeChecks
             if (now - lastScreenshotUtc >= TimeSpan.FromMinutes(2))
             {
                 var elapsedSeconds = (int)Math.Round((now - startedUtc).TotalSeconds);
-                SaveSmokeWindowScreenshot(paths, leftProcessId, $"smoke-bot-match-left-until-end-{elapsedSeconds:0000}.png");
-                SaveSmokeWindowScreenshot(paths, rightProcessId, $"smoke-bot-match-right-until-end-{elapsedSeconds:0000}.png");
+                SaveSmokeWindowScreenshot(paths, leftProcessId, $"{artifactPrefix}-left-until-end-{elapsedSeconds:0000}.png");
+                SaveSmokeWindowScreenshot(paths, rightProcessId, $"{artifactPrefix}-right-until-end-{elapsedSeconds:0000}.png");
                 lastScreenshotUtc = now;
             }
 
             if (observation.Ended)
             {
-                SaveSmokeWindowScreenshot(paths, leftProcessId, "smoke-bot-match-left-end.png");
-                SaveSmokeWindowScreenshot(paths, rightProcessId, "smoke-bot-match-right-end.png");
+                SaveSmokeWindowScreenshot(paths, leftProcessId, $"{artifactPrefix}-left-end.png");
+                SaveSmokeWindowScreenshot(paths, rightProcessId, $"{artifactPrefix}-right-end.png");
                 if (lastNewReplays.Count == 0)
                 {
                     lastNewReplays = WaitForReplayFilesAfterEnd(
@@ -394,8 +453,8 @@ internal static partial class SmokeChecks
             }
         }
 
-        SaveSmokeWindowScreenshot(paths, leftProcessId, "smoke-bot-match-left-timeout.png");
-        SaveSmokeWindowScreenshot(paths, rightProcessId, "smoke-bot-match-right-timeout.png");
+        SaveSmokeWindowScreenshot(paths, leftProcessId, $"{artifactPrefix}-left-timeout.png");
+        SaveSmokeWindowScreenshot(paths, rightProcessId, $"{artifactPrefix}-right-timeout.png");
         return new BotMatchUntilEndResult(
             Ended: false,
             Reason: "timeout",
@@ -474,6 +533,113 @@ internal static partial class SmokeChecks
         }
 
         return string.Join(";", replayFiles.Select(Path.GetFileName));
+    }
+
+    private static string SanitizeArtifactPrefix(string? value)
+    {
+        var raw = string.IsNullOrWhiteSpace(value) ? "smoke-bot-match" : value.Trim();
+        var chars = raw
+            .Select(ch => char.IsLetterOrDigit(ch) || ch is '-' or '_' ? ch : '_')
+            .ToArray();
+        var sanitized = new string(chars).Trim('_');
+        return string.IsNullOrWhiteSpace(sanitized) ? "smoke-bot-match" : sanitized;
+    }
+
+    internal static BotMatchWinnerInference InferBotMatchWinner(
+        StarCraftScreenState leftState,
+        StarCraftScreenState rightState,
+        IReadOnlyList<string> replayFiles,
+        string leftBotName,
+        string rightBotName)
+    {
+        if (leftState == StarCraftScreenState.InGame && rightState != StarCraftScreenState.InGame)
+        {
+            return new BotMatchWinnerInference("left", "left-still-in-game");
+        }
+
+        if (rightState == StarCraftScreenState.InGame && leftState != StarCraftScreenState.InGame)
+        {
+            return new BotMatchWinnerInference("right", "right-still-in-game");
+        }
+
+        var replaySides = replayFiles
+            .Select(path => new
+            {
+                Path = path,
+                Side = InferReplaySide(path, leftBotName, rightBotName),
+                LastWriteTimeUtc = File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue
+            })
+            .Where(file => file.Side is "left" or "right" && file.LastWriteTimeUtc > DateTime.MinValue)
+            .OrderBy(file => file.LastWriteTimeUtc)
+            .ToList();
+        if (replaySides.Count >= 2)
+        {
+            var earliest = replaySides.First();
+            var latest = replaySides.Last();
+            if (earliest.Side != latest.Side &&
+                latest.LastWriteTimeUtc - earliest.LastWriteTimeUtc >= TimeSpan.FromSeconds(1))
+            {
+                return new BotMatchWinnerInference(latest.Side, "latest-replay-file");
+            }
+        }
+
+        return new BotMatchWinnerInference("unknown", "insufficient-signal");
+    }
+
+    private static string InferReplaySide(string path, string leftBotName, string rightBotName)
+    {
+        var fileName = Path.GetFileNameWithoutExtension(path);
+        var leftToken = ReplayBotToken(leftBotName);
+        var rightToken = ReplayBotToken(rightBotName);
+        var leftMatches = !string.IsNullOrWhiteSpace(leftToken) &&
+            fileName.Contains(leftToken, StringComparison.OrdinalIgnoreCase);
+        var rightMatches = !string.IsNullOrWhiteSpace(rightToken) &&
+            fileName.Contains(rightToken, StringComparison.OrdinalIgnoreCase);
+
+        return (leftMatches, rightMatches) switch
+        {
+            (true, false) => "left",
+            (false, true) => "right",
+            _ => "unknown"
+        };
+    }
+
+    private static string ReplayBotToken(string botName)
+    {
+        return new string(botName
+            .Where(char.IsLetterOrDigit)
+            .Take(6)
+            .ToArray());
+    }
+
+    private static IReadOnlyList<BotMatchReplayReport> DescribeReplayFiles(IReadOnlyList<string> replayFiles)
+    {
+        return replayFiles
+            .Select(path =>
+            {
+                var file = new FileInfo(path);
+                return new BotMatchReplayReport(
+                    Path: path,
+                    FileName: file.Name,
+                    Exists: file.Exists,
+                    LastWriteTimeUtc: file.Exists ? file.LastWriteTimeUtc : null,
+                    Length: file.Exists ? file.Length : null);
+            })
+            .ToList();
+    }
+
+    private static void WriteBotMatchResultJson(
+        PracticePaths paths,
+        string resultJson,
+        BotMatchResultReport report)
+    {
+        var path = Path.IsPathRooted(resultJson)
+            ? resultJson
+            : Path.Combine(paths.RepositoryRoot, resultJson);
+        Directory.CreateDirectory(Path.GetDirectoryName(path) ?? paths.RepositoryRoot);
+        File.WriteAllText(
+            path,
+            JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
     }
 
     private static PracticeBot SelectDllBot(IReadOnlyList<PracticeBot> bots, string? requestedName, string side)
@@ -566,6 +732,14 @@ internal static partial class SmokeChecks
         int MaxSeconds,
         int SampleSeconds,
         string? ReplayRoot,
+        string? BotMatchRoot,
+        string ArtifactPrefix,
+        string? ResultJson,
+        string? GameName,
+        int? SpeedOverrideMs,
+        int? WindowRow,
+        int WindowRows,
+        int JoinDelaySeconds,
         bool KeepOpen)
     {
         public static SmokeBotMatchRequest Parse(IReadOnlyList<string> args)
@@ -585,6 +759,28 @@ internal static partial class SmokeChecks
                 ParseBoundedSeconds(ValueAfter(args, "--max-seconds"), 1800, 10, 7200, "bot-match max seconds"),
                 ParseBoundedSeconds(ValueAfter(args, "--sample-seconds"), 5, 1, 60, "bot-match sample seconds"),
                 ValueAfter(args, "--replay-root"),
+                ValueAfter(args, "--bot-match-root") ?? ValueAfter(args, "--match-root"),
+                ValueAfter(args, "--artifact-prefix") ?? "smoke-bot-match",
+                ValueAfter(args, "--result-json"),
+                ValueAfter(args, "--game-name"),
+                ParseOptionalSpeedOverrideMs(ValueAfter(args, "--speed-override-ms")),
+                ParseOptionalBoundedInt(
+                    ValueAfter(args, "--window-row") ?? ValueAfter(args, "--layout-row"),
+                    0,
+                    16,
+                    "bot-match window row"),
+                ParseBoundedSeconds(
+                    ValueAfter(args, "--window-rows") ?? ValueAfter(args, "--layout-rows"),
+                    1,
+                    1,
+                    16,
+                    "bot-match window rows"),
+                ParseBoundedSeconds(
+                    ValueAfter(args, "--join-delay-seconds"),
+                    10,
+                    0,
+                    60,
+                    "bot-match join delay seconds"),
                 args.Any(arg => string.Equals(arg, "--keep-open", StringComparison.OrdinalIgnoreCase)));
         }
 
@@ -629,6 +825,34 @@ internal static partial class SmokeChecks
                 ? Math.Clamp(seconds, min, max)
                 : throw new InvalidOperationException($"Invalid {label}: {value}");
         }
+
+        private static int? ParseOptionalBoundedInt(
+            string? value,
+            int min,
+            int max,
+            string label)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            return int.TryParse(value, out var parsed)
+                ? Math.Clamp(parsed, min, max)
+                : throw new InvalidOperationException($"Invalid {label}: {value}");
+        }
+
+        private static int? ParseOptionalSpeedOverrideMs(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            return int.TryParse(value, out var parsed)
+                ? Math.Clamp(parsed, -1, 1000)
+                : throw new InvalidOperationException($"Invalid bot-match speed override ms: {value}");
+        }
     }
 
     internal sealed record BotMatchEndSample(
@@ -637,6 +861,43 @@ internal static partial class SmokeChecks
         StarCraftScreenState LeftState,
         StarCraftScreenState RightState,
         bool HasNewReplay);
+
+    internal sealed record BotMatchWinnerInference(
+        string WinnerSide,
+        string Reason);
+
+    private sealed record BotMatchReplayReport(
+        string Path,
+        string FileName,
+        bool Exists,
+        DateTime? LastWriteTimeUtc,
+        long? Length);
+
+    private sealed record BotMatchResultReport(
+        string LeftBot,
+        string RightBot,
+        string Map,
+        string GameName,
+        int? LeftPid,
+        int? RightPid,
+        string LeftState,
+        string RightState,
+        bool LeftInGame,
+        bool RightInGame,
+        bool LeftAlive,
+        bool RightAlive,
+        bool LeftRuntimeErrorsClean,
+        bool RightRuntimeErrorsClean,
+        bool UntilEnd,
+        bool? BotMatchEnded,
+        string? EndReason,
+        string WinnerSide,
+        string? WinnerBot,
+        string WinnerReason,
+        bool Passed,
+        IReadOnlyList<BotMatchReplayReport> ReplayFiles,
+        string ArtifactPrefix,
+        string BotMatchRoot);
 
     internal sealed record BotMatchEndObservation(
         bool Ended,

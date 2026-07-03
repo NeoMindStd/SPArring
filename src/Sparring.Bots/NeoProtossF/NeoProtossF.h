@@ -2,6 +2,7 @@
 
 #include <BWAPI.h>
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -42,10 +43,12 @@ public:
     };
 
 private:
+    struct PolicyAction;
+
     void chooseOpening();
     void updateEnemyStart(BWAPI::Unit unit);
     void setInitialMapPositions();
-    void manageWorkers();
+    void manageWorkers(const PolicyAction& action);
     void manageScout();
     bool handleEmergencyDefense();
     void releaseDefenseProbes();
@@ -60,9 +63,7 @@ private:
     void executeNakedDouble();
     void executeRealFastDark();
     void executeForwardGateDark();
-    void manageProduction();
     void manageResearch();
-    void manageCombat();
     void drawDebug() const;
 
     int supplyUsed() const;
@@ -70,7 +71,6 @@ private:
     int allCount(BWAPI::UnitType type) const;
     int completedCount(BWAPI::UnitType type) const;
     int armyCount() const;
-    int workerTarget() const;
     bool hasOrBuilding(BWAPI::UnitType type, int count = 1) const;
     bool hasCompleted(BWAPI::UnitType type, int count = 1) const;
     bool canAfford(BWAPI::UnitType type) const;
@@ -92,15 +92,79 @@ private:
     int enemyThreatCountNear(BWAPI::Position near, int radius, bool workersOnly) const;
     BWAPI::Unit nearestEnemyTarget() const;
     BWAPI::Unit nearestMineral(BWAPI::Position near) const;
-    BWAPI::Unit nearestRefineryNeedingWorkers(BWAPI::Position near) const;
+    BWAPI::Unit nearestRefineryNeedingWorkers(BWAPI::Position near, const PolicyAction& action) const;
     BWAPI::TilePosition findExpansionTile() const;
     BWAPI::TilePosition findForwardTile() const;
     BWAPI::Position attackTarget() const;
-    int gasWorkerTarget(BWAPI::Unit refinery) const;
+    int gasWorkerTarget(BWAPI::Unit refinery, const PolicyAction& action) const;
     int gasWorkersFor(BWAPI::Unit refinery) const;
     double distance(BWAPI::Position a, BWAPI::Position b) const;
     std::string configuredBuildId() const;
     std::string openingName() const;
+
+    enum class PolicyIntent
+    {
+        Macro,
+        Defend,
+        Produce,
+        Expand,
+        Attack
+    };
+
+    struct PolicyState
+    {
+        int Frame = 0;
+        int Supply = 0;
+        int Workers = 0;
+        int Army = 0;
+        int Gateways = 0;
+        int Nexuses = 0;
+        int Minerals = 0;
+        int Gas = 0;
+        int EnemyThreatsNearMain = 0;
+        bool OpeningComplete = false;
+    };
+
+    struct PolicyAction
+    {
+        PolicyIntent Intent = PolicyIntent::Macro;
+        int WorkerTarget = 0;
+        int GasWorkersPerAssimilator = 3;
+        int NexusTarget = 1;
+        int GatewayTarget = 1;
+        int ZealotCap = 0;
+        int DragoonCap = 0;
+        int DarkTemplarCap = 0;
+        int ObserverCap = 0;
+        int StargateUnitCap = 0;
+        BWAPI::UnitType StargateUnit;
+        bool TakeExpansion = false;
+        bool Attack = false;
+        double AttackPressure = 0.0;
+        int WorkerDefenders = 0;
+    };
+
+    struct PolicyModel
+    {
+        std::map<std::string, std::vector<double>> Outputs;
+    };
+
+    struct PendingBuild
+    {
+        BWAPI::UnitType Type;
+        int ObservedCount = 0;
+        int Frame = 0;
+    };
+
+    void loadPolicyModel();
+    PolicyState capturePolicyState() const;
+    PolicyAction evaluatePolicy(const PolicyState& state) const;
+    void executePolicyAction(const PolicyAction& action);
+    std::vector<double> policyFeatures(const PolicyState& state) const;
+    double scorePolicyOutput(const std::string& output, const std::vector<double>& features, const std::vector<double>& fallback) const;
+    int queuedProbeCount() const;
+    int pendingBuildCount(BWAPI::UnitType type) const;
+    void rememberPendingBuild(BWAPI::UnitType type, int observedCount);
 
     Opening opening_ = Opening::FastPowerDragoon;
     BWAPI::TilePosition mainTile_ = BWAPI::TilePositions::Invalid;
@@ -114,6 +178,10 @@ private:
     int lastDefenseFrame_ = -1000;
     int ggFrame_ = -1;
     bool ggSent_ = false;
+    bool policyLoaded_ = false;
+    int nextPendingBuildId_ = 1;
+    PolicyModel policyModel_;
+    std::map<int, PendingBuild> pendingBuilds_;
     std::set<int> defenseProbeIds_;
     std::set<int> visitedStartIndices_;
 };

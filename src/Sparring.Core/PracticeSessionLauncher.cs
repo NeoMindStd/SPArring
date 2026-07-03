@@ -122,6 +122,7 @@ public sealed class PracticeSessionLauncher
         TimeSpan timeout,
         IReadOnlySet<int>? additionalExcludedStarCraftProcessIds = null)
     {
+        using var startupGate = ChaosLauncherStartupGate.Enter(TimeSpan.FromMinutes(5));
         var beforeStarCraftProcessIds = CurrentStarCraftProcessIds();
         if (additionalExcludedStarCraftProcessIds is not null)
         {
@@ -298,6 +299,63 @@ public sealed class PracticeSessionLauncher
 
     [DllImport("user32.dll")]
     private static extern uint GetWindowThreadProcessId(IntPtr handle, out int processId);
+}
+
+public static class ChaosLauncherStartupGate
+{
+    public const string MutexName = @"Local\Sparring.ChaosLauncher.Startup";
+
+    public static IDisposable Enter(TimeSpan timeout)
+    {
+        var mutex = new Mutex(initiallyOwned: false, MutexName);
+        var acquired = false;
+        try
+        {
+            try
+            {
+                acquired = mutex.WaitOne(timeout);
+            }
+            catch (AbandonedMutexException)
+            {
+                acquired = true;
+            }
+
+            if (!acquired)
+            {
+                throw new TimeoutException("Timed out waiting for the ChaosLauncher startup gate.");
+            }
+
+            return new Releaser(mutex);
+        }
+        catch
+        {
+            mutex.Dispose();
+            throw;
+        }
+    }
+
+    private sealed class Releaser : IDisposable
+    {
+        private readonly Mutex _mutex;
+        private bool _disposed;
+
+        public Releaser(Mutex mutex)
+        {
+            _mutex = mutex;
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _mutex.ReleaseMutex();
+            _mutex.Dispose();
+        }
+    }
 }
 
 public sealed class LocalRuntimeProcessCleaner

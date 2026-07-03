@@ -307,6 +307,40 @@ public sealed class StarCraftScreenAnalyzerTests
     }
 
     [Fact]
+    public void AnalyzeKeepsScaledLanCreateScreenAsGameRoom()
+    {
+        using var bitmap = new Bitmap(386, 291);
+        FillRectangle(bitmap, 0, 0, bitmap.Width, bitmap.Height, Color.FromArgb(72, 72, 68));
+        FillRectangle(bitmap, 0, 210, bitmap.Width, 81, Color.FromArgb(4, 4, 5));
+        FillRectangle(bitmap, 0, 210, bitmap.Width, 18, Color.FromArgb(38, 58, 82));
+
+        FillRectangle(bitmap, 36, 55, 160, 12, Color.FromArgb(35, 180, 35));
+        FillRectangle(bitmap, 260, 96, 72, 8, Color.FromArgb(218, 220, 238));
+        FillRectangle(bitmap, 260, 118, 80, 8, Color.FromArgb(218, 220, 238));
+        FillRectangle(bitmap, 260, 140, 98, 8, Color.FromArgb(218, 220, 238));
+        FillRectangle(bitmap, 298, 228, 54, 16, Color.FromArgb(35, 180, 35));
+        FillRectangle(bitmap, 290, 246, 72, 16, Color.FromArgb(35, 180, 35));
+
+        Assert.Equal(StarCraftScreenState.GameRoom, StarCraftScreenAnalyzer.Analyze(bitmap));
+    }
+
+    [Fact]
+    public void AnalyzeKeepsCapturedLanCreateScreenAsGameRoom()
+    {
+        using var bitmap = new Bitmap(FindFixture("starcraft-lan-create-screen.png"));
+
+        Assert.Equal(StarCraftScreenState.GameRoom, StarCraftScreenAnalyzer.Analyze(bitmap));
+    }
+
+    [Fact]
+    public void AnalyzeTreatsCapturedRightStartScreenAsInGame()
+    {
+        using var bitmap = new Bitmap(FindFixture("starcraft-ingame-right-start.png"));
+
+        Assert.Equal(StarCraftScreenState.InGame, StarCraftScreenAnalyzer.Analyze(bitmap));
+    }
+
+    [Fact]
     public void AnalyzeTreatsScenarioErrorDialogAsBlockedInsteadOfInGame()
     {
         using var bitmap = CreateDarkBitmap();
@@ -348,5 +382,22 @@ public sealed class StarCraftScreenAnalyzerTests
         using var graphics = Graphics.FromImage(bitmap);
         using var brush = new SolidBrush(color);
         graphics.FillRectangle(brush, x, y, width, height);
+    }
+
+    private static string FindFixture(string fileName)
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, "tests", "Sparring.Tests", "Fixtures", fileName);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new FileNotFoundException($"Could not locate fixture: {fileName}");
     }
 }

@@ -137,7 +137,7 @@ public static class PracticeCharacterName
 {
     private const int MaxCharacterNameLength = 24;
 
-    public static string FromBotName(string botName)
+    public static string FromBotName(string botName, string? qualifier = null)
     {
         var sanitized = new string((botName ?? string.Empty)
             .Where(character => !char.IsControl(character))
@@ -149,8 +149,39 @@ public static class PracticeCharacterName
             return "SparringBot";
         }
 
+        var suffix = ShortQualifierSuffix(qualifier);
+        if (!string.IsNullOrWhiteSpace(suffix))
+        {
+            var suffixWithSeparator = "-" + suffix;
+            var baseLength = Math.Max(1, MaxCharacterNameLength - suffixWithSeparator.Length);
+            var baseName = sanitized.Length <= baseLength
+                ? sanitized
+                : sanitized[..baseLength].Trim();
+            return (baseName + suffixWithSeparator).Trim();
+        }
+
         return sanitized.Length <= MaxCharacterNameLength
             ? sanitized
             : sanitized[..MaxCharacterNameLength].Trim();
+    }
+
+    private static string? ShortQualifierSuffix(string? qualifier)
+    {
+        if (string.IsNullOrWhiteSpace(qualifier))
+        {
+            return null;
+        }
+
+        unchecked
+        {
+            uint hash = 2166136261;
+            foreach (var character in qualifier.Trim())
+            {
+                hash ^= char.ToUpperInvariant(character);
+                hash *= 16777619;
+            }
+
+            return (hash & 0xFFFFFF).ToString("x6");
+        }
     }
 }

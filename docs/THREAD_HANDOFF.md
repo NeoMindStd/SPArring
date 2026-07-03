@@ -770,3 +770,49 @@ This section supersedes the deferred roadmap notes immediately above.
   - Compact Hotkeys command card/detail blocks are reduced so more useful content is visible without overlap.
   - Setup first-screen wording now uses `Sparring을` instead of `Sparring를`.
   - Launcher UI smoke now fails when the important difficulty label text is clipped.
+
+## 2026-07-03 Neo Policy / Bot-vs-Bot Serial Handoff
+
+- Branch/worktree:
+  - Current branch: `codex/neo-e-build-1.8.0`.
+  - Do not release/tag/deploy from this handoff. User asked only to commit and push so another computer can continue.
+- Bot-vs-bot validation mode:
+  - Parallel Local PC bot-vs-bot validation on one Windows machine is not reliable.
+  - Reproduced with `Dragon` vs `Hannes Bredberg`: first match reached in-game, second host created a visible room after the first was in-game, but the second joiner could not join. Manual OK/Enter/double-click produced `Unable to join game`.
+  - `docs\OPERATIONS_AND_VERIFICATION.md` now records that Neo/runtime validation should run one active Local PC match at a time unless a separate machine or isolated network strategy is introduced.
+- Implemented infrastructure changes:
+  - `PracticeSessionLauncher` now serializes ChaosLauncher startup through `Local\Sparring.ChaosLauncher.Startup` to avoid global registry/plugin config races.
+  - Bot-match launch plans use game-name-qualified character names so multiple test rooms do not collide by plain bot name.
+  - `--smoke-bot-match` now supports artifact prefixes, result JSON, configurable bot-match roots, row-pair window layout, join delay, speed override, and winner inference helpers.
+  - `StarCraftScreenAnalyzer` now has captured LAN room fixtures and avoids classifying LAN create/games screens as `InGame`; captured right-start in-game screen remains covered.
+- Neo Protoss source changes:
+  - `NeoProtossF` and `NeoProtossE` were moved toward an opening-executor plus lightweight sidecar policy layer (`neo-policy.tsv`).
+  - Added policy outputs for worker target, gas workers, Nexus/Gateway targets, unit caps, attack pressure, and defense workers.
+  - Added source tests covering policy use, queued Probe production, pending-build reservation, gas worker target handling, and worker-defense/scout safety.
+  - New sidecar files are under `data\bots\NeoProtossF\neo-policy.tsv` and `data\bots\NeoProtossE\neo-policy.tsv`.
+- Current blocker:
+  - This PC has only about 7 GB free on C: and cannot install MSVC Build Tools reliably.
+  - `scripts\build-neo-bots.ps1` fails because `vswhere.exe` / MSVC Build Tools are unavailable.
+  - Attempted VS Build Tools install from `%TEMP%\vs_BuildTools.exe` with the C++ workload and Windows 10 SDK returned `exitCode=1602`.
+  - The packaged `NeoProtossF.dll` and `NeoProtossE.dll` are older than the edited source and policy files, so actual game runtime does not yet validate the new policy changes.
+- Runtime observations with current packaged DLLs:
+  - `NeoProtossF` vs `Dragon` on `(4)Fighting Spirit`: in-game/no runtime errors, but at about five minutes it was mostly Probes/Nexus/Gateway infrastructure with very late gas and no visible Dragoon/tech transition; Dragon attacked into weak defense.
+  - `NeoProtossE` vs `Dragon` on `(4)Fighting Spirit`: in-game/no runtime errors; more Zealot/Gateway presence than F, but still zero gas and missing Dragoon/tech transition at about five minutes.
+  - `NeoTerranF` vs `Hannes Bredberg`: in-game/no runtime errors; three-minute screen showed SCV, Refinery, gas, Barracks, and production progression.
+  - `NeoZergF` vs `Dragon`: in-game/no runtime errors; three-minute screen showed Drone, Extractor/gas, and early tech progression.
+- Evidence artifacts:
+  - `artifacts\screenshots\neo-pf-dragon-001-left-observe.png`
+  - `artifacts\screenshots\neo-pe-dragon-001-left-observe.png`
+  - `artifacts\screenshots\neo-tf-hannes-001-left-observe.png`
+  - `artifacts\screenshots\neo-zf-dragon-001-left-observe.png`
+  - Result JSONs are under `artifacts\neo-serial-20260703\...\result.json`.
+- Verification completed before handoff:
+  - `dotnet test .\Sparring.sln -v:minimal`: 392 passed.
+  - `.\scripts\smoke.ps1`: exit code 0, Release build warning 2 / error 0 due to NU1900 vulnerability-feed lookup warnings.
+  - Actual single `--smoke-bot-match` with `Dragon` vs `Hannes Bredberg` passed with `leftState=InGame`, `rightState=InGame`, `Passed=true`.
+  - No local StarCraft/ChaosLauncher/Sparring processes remained after cleanup.
+- Next computer should:
+  - Ensure at least 20 GB free or install MSVC Build Tools on a machine that already has the C++ workload.
+  - Run `.\scripts\build-neo-bots.ps1` and confirm fresh `data\bots\NeoProtossF\NeoProtossF.dll` / `data\bots\NeoProtossE\NeoProtossE.dll`.
+  - Re-run serial bot-vs-bot checks for NeoProtossF/E on `(4)Fighting Spirit`, watching 3-6 minute gas, Gateway unit, Dragoon/tech, and defense behavior.
+  - Then run `dotnet test .\Sparring.sln -v:minimal`, `.\scripts\smoke.ps1`, and only perform release/tag/push if explicitly requested at that time.

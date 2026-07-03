@@ -1,0 +1,17 @@
+# output bias frame minerals gas supply workers army gateways nexuses enemyThreats openingComplete
+intent_macro 0.0 0.0 0.5 0.0 0.2 0.8 -0.2 0.0 0.0 -0.4 0.0
+intent_defend -0.7 0.0 0.0 0.0 0.0 0.0 -0.1 0.0 0.0 4.2 0.0
+intent_produce 0.3 0.0 0.6 0.4 0.3 0.0 -0.25 0.9 0.0 0.0 0.5
+intent_expand -1.3 0.35 1.5 0.0 1.1 0.4 0.25 0.0 -1.5 -2.0 1.1
+intent_attack -1.0 0.5 0.0 0.0 0.6 0.0 2.0 0.25 0.0 -1.4 1.3
+worker_target 24.0 5.5 0.0 0.0 11.0 24.0 -2.5 0.0 13.0 0.0 7.0
+gas_workers 3.0 0.0 0.0 -1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.7
+nexus_target 1.0 0.45 0.9 0.0 1.3 0.0 0.15 0.0 -0.9 -1.5 1.1
+gateway_target 1.0 0.0 1.3 0.0 4.6 0.0 0.5 -0.3 2.4 0.0 1.4
+zealot_cap 2.0 1.1 0.0 0.0 9.0 0.0 0.7 0.0 0.0 1.0 2.5
+dragoon_cap 0.0 1.2 0.0 0.4 16.0 0.0 1.1 0.0 0.0 0.0 9.0
+dark_templar_cap -2.0 0.9 0.0 0.8 7.0 0.0 0.0 0.0 0.0 -1.0 3.5
+observer_cap -1.0 0.2 0.0 0.3 2.2 0.0 0.0 0.0 0.0 0.4 1.0
+stargate_unit_cap -1.0 0.45 0.0 0.5 2.2 0.0 0.2 0.0 0.0 -0.4 1.2
+attack_pressure -0.6 0.5 0.0 0.0 0.6 0.0 1.9 0.25 0.0 -1.3 1.3
+defense_workers 0.0 0.0 0.0 0.0 0.0 0.0 -0.5 0.0 0.0 2.0 0.0

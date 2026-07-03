@@ -20,7 +20,11 @@ public sealed class BotMatchLaunchPlanBuilderTests
         Assert.Equal(ClientRuntimeRole.AiOpponent, plan.Left.Role);
         Assert.Equal(ClientRuntimeRole.AiOpponent, plan.Right.Role);
         Assert.Equal("Sparring Bot Match", plan.Left.GameName);
-        Assert.Equal("JOIN_FIRST", plan.Right.GameName);
+        Assert.StartsWith("LeftBot-", plan.Left.CharacterName);
+        Assert.StartsWith("RightBot-", plan.Right.CharacterName);
+        Assert.Equal(plan.Left.CharacterName, plan.Right.GameName);
+        Assert.True(plan.Left.CharacterName.Length <= 24);
+        Assert.True(plan.Right.CharacterName.Length <= 24);
         Assert.Equal("Fighting.scx", plan.Left.MapFileName);
         Assert.Equal(string.Empty, plan.Right.MapFileName);
         Assert.Equal("LeftBot.dll", plan.Left.AiModule);
@@ -80,6 +84,28 @@ public sealed class BotMatchLaunchPlanBuilderTests
 
         Assert.Equal("LeftBot", plan.LeftBot.Name);
         Assert.Equal("RightBot", plan.RightBot.Name);
+    }
+
+    [Fact]
+    public void BuildUsesGameNameToDisambiguateParallelBotMatchHosts()
+    {
+        var leftBotId = Guid.NewGuid();
+        var rightBotId = Guid.NewGuid();
+        var mapId = Guid.NewGuid();
+        var catalog = Catalog(leftBotId, rightBotId, mapId);
+
+        var first = BotMatchLaunchPlanBuilder.Build(
+            catalog,
+            SafePaths(),
+            new BotMatchSelection(leftBotId, rightBotId, mapId, "rating-001"));
+        var second = BotMatchLaunchPlanBuilder.Build(
+            catalog,
+            SafePaths(),
+            new BotMatchSelection(leftBotId, rightBotId, mapId, "rating-002"));
+
+        Assert.NotEqual(first.Left.CharacterName, second.Left.CharacterName);
+        Assert.Equal(first.Left.CharacterName, first.Right.GameName);
+        Assert.Equal(second.Left.CharacterName, second.Right.GameName);
     }
 
     private static PracticeCatalog Catalog(Guid leftBotId, Guid rightBotId, Guid mapId)

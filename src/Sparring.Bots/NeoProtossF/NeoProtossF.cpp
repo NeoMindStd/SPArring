@@ -114,6 +114,7 @@ void NeoProtossF::onStart()
     Broodwar->setCommandOptimizationLevel(2);
     setInitialMapPositions();
     chooseOpening();
+    loadPolicyModel();
 }
 
 void NeoProtossF::onEnd(bool isWinner)
@@ -144,10 +145,12 @@ void NeoProtossF::onFrame()
         return;
     }
 
-    manageWorkers();
+    const PolicyState policyState = capturePolicyState();
+    const PolicyAction policyAction = evaluatePolicy(policyState);
+    manageWorkers(policyAction);
     const bool emergency = handleEmergencyDefense();
     executeOpening();
-    manageProduction();
+    executePolicyAction(policyAction);
     manageResearch();
     maybeSendGg();
     if (ggSent_)
@@ -159,10 +162,11 @@ void NeoProtossF::onFrame()
         return;
     }
 
-    if (!emergency)
+    if (emergency)
     {
-        manageCombat();
+        return;
     }
+
     return;
 }
 
@@ -275,8 +279,12 @@ void NeoProtossF::updateEnemyStart(Unit unit)
     enemyStartTile_ = unit->getTilePosition();
 }
 
-void NeoProtossF::manageWorkers()
+void NeoProtossF::manageWorkers(const PolicyAction& action)
 {
+    int plannedProbes = allCount(UnitTypes::Protoss_Probe);
+    const int queuedProbes = queuedProbeCount();
+    plannedProbes += queuedProbes;
+
     for (auto unit : Broodwar->self()->getUnits())
     {
         if (!unit || !unit->exists() || !unit->isCompleted())
@@ -285,11 +293,14 @@ void NeoProtossF::manageWorkers()
         }
 
         if (unit->getType() == UnitTypes::Protoss_Nexus &&
-            unit->isIdle() &&
-            allCount(UnitTypes::Protoss_Probe) < workerTarget() &&
+            unit->getTrainingQueue().size() < 2 &&
+            plannedProbes < action.WorkerTarget &&
             canAfford(UnitTypes::Protoss_Probe))
         {
-            unit->train(UnitTypes::Protoss_Probe);
+            if (unit->train(UnitTypes::Protoss_Probe))
+            {
+                ++plannedProbes;
+            }
         }
     }
 
@@ -324,7 +335,7 @@ void NeoProtossF::manageWorkers()
             if (gasTarget &&
                 gasTarget->exists() &&
                 gasTarget->getType() == UnitTypes::Protoss_Assimilator &&
-                gasWorkersFor(gasTarget) > gasWorkerTarget(gasTarget))
+                gasWorkersFor(gasTarget) > gasWorkerTarget(gasTarget, action))
             {
                 Unit mineral = nearestMineral(probe->getPosition());
                 if (mineral)
@@ -336,7 +347,7 @@ void NeoProtossF::manageWorkers()
             continue;
         }
 
-        Unit gas = nearestRefineryNeedingWorkers(probe->getPosition());
+        Unit gas = nearestRefineryNeedingWorkers(probe->getPosition(), action);
         if (gas && !probe->isCarryingMinerals() && !probe->isCarryingGas())
         {
             probe->gather(gas);
@@ -427,14 +438,20 @@ bool NeoProtossF::handleEmergencyDefense()
     const bool workerHarass = threat->getType().isWorker();
     const int combatNearMain = combatUnitCountNear(mainPosition, 760);
     const int workerThreatCount = enemyThreatCountNear(mainPosition, 560, true);
+    const bool closeWorkerHarass = workerHarass &&
+        distance(threat->getPosition(), mainPosition) <= 240;
+    const bool realWorkerHarass =
+        workerHarass &&
+        combatNearMain == 0 &&
+        (threat->isAttacking() ||
+            closeWorkerHarass ||
+            workerThreatCount >= 2);
     if (workerHarass && combatNearMain > 0)
     {
         releaseDefenseProbes();
     }
 
-    if (workerHarass &&
-        !threat->isAttacking() &&
-        distance(threat->getPosition(), mainPosition) > 320)
+    if (workerHarass && !realWorkerHarass)
     {
         releaseDefenseProbes();
         return false;
@@ -505,6 +522,8 @@ bool NeoProtossF::handleEmergencyDefense()
             probe->getType() != UnitTypes::Protoss_Probe ||
             !probe->isCompleted() ||
             probe->isConstructing() ||
+            probe->isCarryingMinerals() ||
+            probe->isCarryingGas() ||
             defenseProbeIds_.find(probe->getID()) != defenseProbeIds_.end())
         {
             continue;
@@ -754,66 +773,6 @@ void NeoProtossF::executeForwardGateDark()
     if (supplyUsed() >= 17) ensureBuilding(UnitTypes::Protoss_Gateway, 3, forward, 24);
 }
 
-void NeoProtossF::manageProduction()
-{
-    if (opening_ == Opening::Nexus23 && allCount(UnitTypes::Protoss_Nexus) < 2)
-    {
-        if (hasCompleted(UnitTypes::Protoss_Cybernetics_Core))
-        {
-            trainGatewayUnit(UnitTypes::Protoss_Dragoon, 2);
-        }
-        else
-        {
-            trainGatewayUnit(UnitTypes::Protoss_Zealot, 1);
-        }
-
-        return;
-    }
-
-    const bool darkPlan = opening_ == Opening::Arbiter29 ||
-        opening_ == Opening::GateDoubleCorsairDark ||
-        opening_ == Opening::RealFastDark ||
-        opening_ == Opening::ForwardGateDark;
-    const bool zealotPlan = opening_ == Opening::TwoGate1012 ||
-        opening_ == Opening::ForgeDouble ||
-        opening_ == Opening::GateDoubleCorsairDark ||
-        opening_ == Opening::ForwardGateDark;
-
-    if (darkPlan && hasCompleted(UnitTypes::Protoss_Templar_Archives))
-    {
-        trainGatewayUnit(UnitTypes::Protoss_Dark_Templar, 8);
-    }
-
-    if (!darkPlan && hasCompleted(UnitTypes::Protoss_Cybernetics_Core))
-    {
-        trainGatewayUnit(UnitTypes::Protoss_Dragoon, opening_ == Opening::TwoGate1012 ? 6 : 40);
-    }
-
-    if (zealotPlan || !hasCompleted(UnitTypes::Protoss_Cybernetics_Core))
-    {
-        trainGatewayUnit(UnitTypes::Protoss_Zealot, opening_ == Opening::TwoGate1012 ? 10 : 30);
-    }
-
-    if (opening_ == Opening::Arbiter29 && hasCompleted(UnitTypes::Protoss_Arbiter_Tribunal))
-    {
-        trainFromIdle(UnitTypes::Protoss_Stargate, UnitTypes::Protoss_Arbiter, 2);
-    }
-    else if (opening_ == Opening::GateDoubleCorsairDark)
-    {
-        trainFromIdle(UnitTypes::Protoss_Stargate, UnitTypes::Protoss_Corsair, 4);
-    }
-
-    if (hasCompleted(UnitTypes::Protoss_Robotics_Facility))
-    {
-        ensureBuilding(UnitTypes::Protoss_Observatory, 1, mainTile_);
-    }
-
-    if (hasCompleted(UnitTypes::Protoss_Observatory))
-    {
-        trainFromIdle(UnitTypes::Protoss_Robotics_Facility, UnitTypes::Protoss_Observer, 2);
-    }
-}
-
 void NeoProtossF::manageResearch()
 {
     if (hasCompleted(UnitTypes::Protoss_Cybernetics_Core))
@@ -840,70 +799,6 @@ void NeoProtossF::manageResearch()
     {
         researchFromIdle(UnitTypes::Protoss_Arbiter_Tribunal, TechTypes::Stasis_Field);
     }
-}
-
-void NeoProtossF::manageCombat()
-{
-    const int frame = Broodwar->getFrameCount();
-    if (frame - lastAttackFrame_ < 96)
-    {
-        return;
-    }
-
-    const int zealots = completedCount(UnitTypes::Protoss_Zealot);
-    const int dragoons = completedCount(UnitTypes::Protoss_Dragoon);
-    const int darks = completedCount(UnitTypes::Protoss_Dark_Templar);
-    const int arbiters = completedCount(UnitTypes::Protoss_Arbiter);
-    bool shouldAttack = false;
-
-    if (opening_ == Opening::TwoGate1012)
-    {
-        shouldAttack = zealots >= 3 || frame > 24 * 280;
-    }
-    else if (opening_ == Opening::FastPowerDragoon)
-    {
-        shouldAttack = (zealots >= 2 && dragoons >= 5) || frame > 24 * 360;
-    }
-    else if (opening_ == Opening::RealFastDark || opening_ == Opening::ForwardGateDark)
-    {
-        shouldAttack = darks >= 2 || frame > 24 * 330;
-    }
-    else if (opening_ == Opening::Arbiter29)
-    {
-        shouldAttack = darks >= 2 || arbiters >= 1 || armyCount() >= 12;
-    }
-    else
-    {
-        shouldAttack = armyCount() >= 10 || supplyUsed() >= 120;
-    }
-
-    if (!shouldAttack)
-    {
-        return;
-    }
-
-    Position target = attackTarget();
-    if (!target)
-    {
-        return;
-    }
-
-    for (auto unit : Broodwar->self()->getUnits())
-    {
-        if (!unit || !unit->exists() || !unit->isCompleted() || !isCombatUnit(unit->getType()))
-        {
-            continue;
-        }
-
-        if (unit->isStasised() || unit->isLockedDown() || unit->isLoaded())
-        {
-            continue;
-        }
-
-        unit->attack(target);
-    }
-
-    lastAttackFrame_ = frame;
 }
 
 void NeoProtossF::drawDebug() const
@@ -976,12 +871,6 @@ int NeoProtossF::armyCount() const
     return count;
 }
 
-int NeoProtossF::workerTarget() const
-{
-    const int nexuses = std::max(1, allCount(UnitTypes::Protoss_Nexus));
-    return std::min(65, 22 + nexuses * 16);
-}
-
 bool NeoProtossF::hasOrBuilding(UnitType type, int count) const
 {
     return allCount(type) >= count;
@@ -1010,6 +899,299 @@ bool NeoProtossF::canAfford(TechType type) const
         Broodwar->self()->gas() >= type.gasPrice();
 }
 
+void NeoProtossF::loadPolicyModel()
+{
+    if (policyLoaded_)
+    {
+        return;
+    }
+
+    policyLoaded_ = true;
+    policyModel_.Outputs.clear();
+
+    const char* candidates[] =
+    {
+        "bwapi-data\\AI\\Sparring\\Bots\\NeoProtossF\\neo-policy.tsv",
+        "bwapi-data\\AI\\neo-policy.tsv"
+    };
+
+    for (const char* path : candidates)
+    {
+        std::ifstream file(path);
+        if (!file)
+        {
+            continue;
+        }
+
+        std::string line;
+        while (std::getline(file, line))
+        {
+            if (line.empty() || line[0] == '#')
+            {
+                continue;
+            }
+
+            std::istringstream stream(line);
+            std::string output;
+            stream >> output;
+            std::vector<double> weights;
+            double value = 0.0;
+            while (stream >> value)
+            {
+                weights.push_back(value);
+            }
+
+            if (!output.empty() && !weights.empty())
+            {
+                policyModel_.Outputs[output] = weights;
+            }
+        }
+
+        return;
+    }
+}
+
+NeoProtossF::PolicyState NeoProtossF::capturePolicyState() const
+{
+    PolicyState state;
+    state.Frame = Broodwar->getFrameCount();
+    state.Supply = supplyUsed();
+    state.Workers = allCount(UnitTypes::Protoss_Probe);
+    state.Army = armyCount();
+    state.Gateways = allCount(UnitTypes::Protoss_Gateway);
+    state.Nexuses = allCount(UnitTypes::Protoss_Nexus);
+    state.Minerals = Broodwar->self()->minerals();
+    state.Gas = Broodwar->self()->gas();
+    state.EnemyThreatsNearMain = enemyThreatCountNear(Position(mainTile_), 720, false);
+    state.OpeningComplete = state.Supply >= 30 || state.Frame > 24 * 360;
+    return state;
+}
+
+std::vector<double> NeoProtossF::policyFeatures(const PolicyState& state) const
+{
+    return
+    {
+        1.0,
+        static_cast<double>(state.Frame) / 10000.0,
+        static_cast<double>(state.Minerals) / 500.0,
+        static_cast<double>(state.Gas) / 300.0,
+        static_cast<double>(state.Supply) / 100.0,
+        static_cast<double>(state.Workers) / 60.0,
+        static_cast<double>(state.Army) / 30.0,
+        static_cast<double>(state.Gateways) / 8.0,
+        static_cast<double>(state.Nexuses) / 4.0,
+        static_cast<double>(state.EnemyThreatsNearMain) / 8.0,
+        state.OpeningComplete ? 1.0 : 0.0
+    };
+}
+
+double NeoProtossF::scorePolicyOutput(const std::string& output, const std::vector<double>& features, const std::vector<double>& fallback) const
+{
+    const std::vector<double>* weights = &fallback;
+    const auto found = policyModel_.Outputs.find(output);
+    if (found != policyModel_.Outputs.end())
+    {
+        weights = &found->second;
+    }
+
+    double score = 0.0;
+    const size_t count = std::min(weights->size(), features.size());
+    for (size_t i = 0; i < count; ++i)
+    {
+        score += (*weights)[i] * features[i];
+    }
+
+    return score;
+}
+
+NeoProtossF::PolicyAction NeoProtossF::evaluatePolicy(const PolicyState& state) const
+{
+    const std::vector<double> features = policyFeatures(state);
+    const std::string intents[] = { "intent_macro", "intent_defend", "intent_produce", "intent_expand", "intent_attack" };
+    const std::vector<double> intentFallbacks[] =
+    {
+        { 0.0, 0.0, 0.5, 0.0, 0.2, 0.8, -0.2, 0.0, 0.0, -0.4, 0.0 },
+        { -0.8, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2, 0.0, 0.0, 4.0, 0.0 },
+        { 0.2, 0.0, 0.5, 0.4, 0.2, 0.0, -0.3, 0.8, 0.0, 0.0, 0.4 },
+        { -1.5, 0.3, 1.4, 0.0, 1.0, 0.4, 0.2, 0.0, -1.6, -2.0, 1.0 },
+        { -1.2, 0.4, 0.0, 0.0, 0.5, 0.0, 1.8, 0.2, 0.0, -1.5, 1.2 }
+    };
+
+    int bestIndex = 0;
+    double bestScore = scorePolicyOutput(intents[0], features, intentFallbacks[0]);
+    for (int i = 1; i < 5; ++i)
+    {
+        const double score = scorePolicyOutput(intents[i], features, intentFallbacks[i]);
+        if (score > bestScore)
+        {
+            bestScore = score;
+            bestIndex = i;
+        }
+    }
+
+    const auto countOutput = [&](const std::string& output, const std::vector<double>& fallback, int minimum, int maximum)
+    {
+        const double raw = scorePolicyOutput(output, features, fallback);
+        const int rounded = static_cast<int>(std::floor(raw + 0.5));
+        return std::max(minimum, std::min(maximum, rounded));
+    };
+
+    PolicyAction action;
+    action.Intent =
+        bestIndex == 1 ? PolicyIntent::Defend :
+        bestIndex == 2 ? PolicyIntent::Produce :
+        bestIndex == 3 ? PolicyIntent::Expand :
+        bestIndex == 4 ? PolicyIntent::Attack :
+        PolicyIntent::Macro;
+    action.WorkerTarget = countOutput("worker_target", { 22.0, 5.0, 0.0, 0.0, 10.0, 22.0, -3.0, 0.0, 12.0, 0.0, 6.0 }, 18, 65);
+    action.GasWorkersPerAssimilator = countOutput("gas_workers", { 3.0, 0.0, 0.0, -1.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5 }, 1, 3);
+    action.NexusTarget = countOutput("nexus_target", { 1.0, 0.4, 0.8, 0.0, 1.2, 0.0, 0.1, 0.0, -1.0, -1.5, 1.0 }, 1, 4);
+    action.GatewayTarget = countOutput("gateway_target", { 1.0, 0.0, 1.2, 0.0, 4.0, 0.0, 0.4, -0.4, 2.0, 0.0, 1.2 }, 1, 6);
+    action.ZealotCap = countOutput("zealot_cap", { 2.0, 1.0, 0.0, 0.0, 8.0, 0.0, 0.6, 0.0, 0.0, 1.0, 2.0 }, 2, 30);
+    action.DragoonCap = countOutput("dragoon_cap", { 0.0, 1.0, 0.0, 0.4, 14.0, 0.0, 1.0, 0.0, 0.0, 0.0, 8.0 }, 0, 40);
+    action.DarkTemplarCap = countOutput("dark_templar_cap", { -2.0, 0.8, 0.0, 0.8, 6.0, 0.0, 0.0, 0.0, 0.0, -1.0, 3.0 }, 0, 8);
+    action.ObserverCap = countOutput("observer_cap", { -1.0, 0.2, 0.0, 0.3, 2.0, 0.0, 0.0, 0.0, 0.0, 0.4, 1.0 }, 0, 2);
+    action.StargateUnit = opening_ == Opening::Arbiter29 ? UnitTypes::Protoss_Arbiter : UnitTypes::Protoss_Corsair;
+    action.StargateUnitCap = countOutput("stargate_unit_cap", { -1.0, 0.4, 0.0, 0.5, 2.0, 0.0, 0.2, 0.0, 0.0, -0.4, 1.0 }, 0, 4);
+    action.AttackPressure = scorePolicyOutput("attack_pressure", features, { -0.7, 0.4, 0.0, 0.0, 0.5, 0.0, 1.6, 0.2, 0.0, -1.4, 1.2 });
+    action.WorkerDefenders = countOutput("defense_workers", { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 2.0, 0.0 }, 0, 4);
+    action.TakeExpansion = state.OpeningComplete && action.NexusTarget > state.Nexuses;
+    action.Attack = state.OpeningComplete && action.AttackPressure > 0.75;
+
+    if (action.Intent == PolicyIntent::Defend)
+    {
+        action.ZealotCap = std::max(action.ZealotCap, allCount(UnitTypes::Protoss_Zealot) + action.WorkerDefenders);
+        action.Attack = false;
+    }
+
+    return action;
+}
+
+void NeoProtossF::executePolicyAction(const PolicyAction& action)
+{
+    if (action.TakeExpansion)
+    {
+        ensureExpansion(action.NexusTarget);
+    }
+
+    if (hasOrBuilding(UnitTypes::Protoss_Gateway))
+    {
+        trainGatewayUnit(UnitTypes::Protoss_Zealot, action.ZealotCap);
+        if (hasCompleted(UnitTypes::Protoss_Cybernetics_Core))
+        {
+            trainGatewayUnit(UnitTypes::Protoss_Dragoon, action.DragoonCap);
+        }
+        if (hasCompleted(UnitTypes::Protoss_Templar_Archives))
+        {
+            trainGatewayUnit(UnitTypes::Protoss_Dark_Templar, action.DarkTemplarCap);
+        }
+    }
+
+    if (hasOrBuilding(UnitTypes::Protoss_Gateway) && action.DragoonCap > 0 && !hasOrBuilding(UnitTypes::Protoss_Cybernetics_Core))
+    {
+        ensureBuilding(UnitTypes::Protoss_Cybernetics_Core, 1, mainTile_);
+    }
+
+    if (action.GatewayTarget > allCount(UnitTypes::Protoss_Gateway))
+    {
+        ensureBuilding(UnitTypes::Protoss_Gateway, action.GatewayTarget, mainTile_);
+    }
+
+    if (action.ObserverCap > 0 && hasCompleted(UnitTypes::Protoss_Robotics_Facility))
+    {
+        ensureBuilding(UnitTypes::Protoss_Observatory, 1, mainTile_);
+    }
+
+    if (action.ObserverCap > 0 && hasCompleted(UnitTypes::Protoss_Observatory))
+    {
+        trainFromIdle(UnitTypes::Protoss_Robotics_Facility, UnitTypes::Protoss_Observer, action.ObserverCap);
+    }
+
+    if (action.StargateUnitCap > 0 && hasCompleted(UnitTypes::Protoss_Stargate))
+    {
+        trainFromIdle(UnitTypes::Protoss_Stargate, action.StargateUnit, action.StargateUnitCap);
+    }
+
+    if (!action.Attack)
+    {
+        return;
+    }
+
+    Position target = attackTarget();
+    if (!target)
+    {
+        return;
+    }
+
+    for (auto unit : Broodwar->self()->getUnits())
+    {
+        if (!unit || !unit->exists() || !unit->isCompleted() || !isCombatUnit(unit->getType()))
+        {
+            continue;
+        }
+
+        if (unit->isStasised() || unit->isLockedDown() || unit->isLoaded())
+        {
+            continue;
+        }
+
+        unit->attack(target);
+    }
+
+    lastAttackFrame_ = Broodwar->getFrameCount();
+}
+
+int NeoProtossF::queuedProbeCount() const
+{
+    int count = 0;
+    for (auto unit : Broodwar->self()->getUnits())
+    {
+        if (!unit ||
+            !unit->exists() ||
+            unit->getType() != UnitTypes::Protoss_Nexus)
+        {
+            continue;
+        }
+
+        for (auto queued : unit->getTrainingQueue())
+        {
+            if (queued == UnitTypes::Protoss_Probe)
+            {
+                ++count;
+            }
+        }
+    }
+
+    return count;
+}
+
+int NeoProtossF::pendingBuildCount(UnitType type) const
+{
+    int count = 0;
+    const int frame = Broodwar->getFrameCount();
+    for (const auto& entry : pendingBuilds_)
+    {
+        const PendingBuild& build = entry.second;
+        if (build.Type == type &&
+            frame - build.Frame <= 24 * 20 &&
+            allCount(type) <= build.ObservedCount)
+        {
+            ++count;
+        }
+    }
+
+    return count;
+}
+
+void NeoProtossF::rememberPendingBuild(UnitType type, int observedCount)
+{
+    PendingBuild build;
+    build.Type = type;
+    build.ObservedCount = observedCount;
+    build.Frame = Broodwar->getFrameCount();
+    pendingBuilds_[nextPendingBuildId_++] = build;
+}
+
 bool NeoProtossF::ensurePylon()
 {
     if (allCount(UnitTypes::Protoss_Pylon) == 0)
@@ -1029,7 +1211,8 @@ bool NeoProtossF::ensurePylon()
 
 bool NeoProtossF::ensureBuilding(UnitType type, int targetCount, TilePosition near, int maxRange)
 {
-    if (allCount(type) >= targetCount || !canAfford(type))
+    const int observedCount = allCount(type);
+    if (observedCount + pendingBuildCount(type) >= targetCount || !canAfford(type))
     {
         return false;
     }
@@ -1065,6 +1248,7 @@ bool NeoProtossF::ensureBuilding(UnitType type, int targetCount, TilePosition ne
     if (worker->build(type, buildTile))
     {
         lastBuildFrame_ = frame;
+        rememberPendingBuild(type, observedCount);
         return true;
     }
 
@@ -1073,7 +1257,9 @@ bool NeoProtossF::ensureBuilding(UnitType type, int targetCount, TilePosition ne
 
 bool NeoProtossF::ensureAssimilator(int targetCount)
 {
-    if (allCount(UnitTypes::Protoss_Assimilator) >= targetCount || !canAfford(UnitTypes::Protoss_Assimilator))
+    const int observedCount = allCount(UnitTypes::Protoss_Assimilator);
+    if (observedCount + pendingBuildCount(UnitTypes::Protoss_Assimilator) >= targetCount ||
+        !canAfford(UnitTypes::Protoss_Assimilator))
     {
         return false;
     }
@@ -1109,6 +1295,7 @@ bool NeoProtossF::ensureAssimilator(int targetCount)
     if (worker->build(UnitTypes::Protoss_Assimilator, best->getTilePosition()))
     {
         lastBuildFrame_ = Broodwar->getFrameCount();
+        rememberPendingBuild(UnitTypes::Protoss_Assimilator, observedCount);
         return true;
     }
 
@@ -1226,7 +1413,12 @@ Unit NeoProtossF::pickWorker(Position near) const
             !unit->isCompleted() ||
             unit->isConstructing() ||
             unit->isLoaded() ||
-            unit->isStasised())
+            unit->isStasised() ||
+            defenseProbeIds_.find(unit->getID()) != defenseProbeIds_.end() ||
+            (scout_ && scout_->exists() && scout_->getID() == unit->getID()) ||
+            unit->isGatheringGas() ||
+            unit->isCarryingMinerals() ||
+            unit->isCarryingGas())
         {
             continue;
         }
@@ -1375,7 +1567,7 @@ Unit NeoProtossF::nearestMineral(Position near) const
     return best;
 }
 
-Unit NeoProtossF::nearestRefineryNeedingWorkers(Position near) const
+Unit NeoProtossF::nearestRefineryNeedingWorkers(Position near, const PolicyAction& action) const
 {
     Unit best = nullptr;
     double bestDistance = std::numeric_limits<double>::max();
@@ -1385,7 +1577,7 @@ Unit NeoProtossF::nearestRefineryNeedingWorkers(Position near) const
             !unit->exists() ||
             unit->getType() != UnitTypes::Protoss_Assimilator ||
             !unit->isCompleted() ||
-            gasWorkersFor(unit) >= gasWorkerTarget(unit))
+            gasWorkersFor(unit) >= gasWorkerTarget(unit, action))
         {
             continue;
         }
@@ -1468,33 +1660,14 @@ Position NeoProtossF::attackTarget() const
     return Position(Broodwar->mapWidth() * 16, Broodwar->mapHeight() * 16);
 }
 
-int NeoProtossF::gasWorkerTarget(Unit refinery) const
+int NeoProtossF::gasWorkerTarget(Unit refinery, const PolicyAction& action) const
 {
     if (!refinery || !refinery->exists() || !refinery->isCompleted())
     {
         return 0;
     }
 
-    const int gas = Broodwar->self()->gas();
-    const int minerals = Broodwar->self()->minerals();
-    const int supply = supplyUsed();
-
-    if (gas >= 300 && minerals < 200)
-    {
-        return 1;
-    }
-
-    if (supply < 40 && gas >= 180 && minerals < 150)
-    {
-        return 1;
-    }
-
-    if (supply < 32 && gas >= 110 && minerals < 120)
-    {
-        return 2;
-    }
-
-    return 3;
+    return std::max(0, std::min(3, action.GasWorkersPerAssimilator));
 }
 
 int NeoProtossF::gasWorkersFor(Unit refinery) const

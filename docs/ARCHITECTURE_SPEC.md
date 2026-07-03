@@ -129,7 +129,9 @@ Sparring `data` 폴더는 런타임 자산의 읽기 전용 출처이며 실행 
 - PlayerHost `AiModule`은 항상 빈 문자열이어야 한다.
 - AiOpponent `AiModule`은 선택 봇이 BWAPI DLL 방식일 때 복사된 상대 경로를 사용한다.
 - PlayerHost는 맵 파일을 지정해 방을 만든다.
-- AiOpponent는 맵을 비우고 `game = JOIN_FIRST`로 첫 방에 참가한다.
+- 일반 연습 세션의 AiOpponent는 맵을 비우고 `game = JOIN_FIRST`로 첫 방에 참가한다.
+- 봇-vs-봇 smoke에서는 병렬 검증 중 잘못된 방을 고르지 않도록 오른쪽 클라이언트가 왼쪽 호스트의 캐릭터명 기반 방 이름을 지정한다.
+- ChaosLauncher는 레지스트리/전역 플러그인 상태를 공유하므로 시작 구간을 전역 mutex로 직렬화한다. 이 직렬화는 시작 설정 충돌을 막기 위한 것이며, 같은 PC에서 Local PC LAN 경기를 여러 개 동시에 유지할 수 있다는 보장은 아니다.
 
 ## 런타임 자산 흐름
 
